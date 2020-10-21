@@ -1,0 +1,19 @@
+cargo-features = ["strip"]
+
+[package]
+name = "mmtc"
+version = "0.1.0"
+authors = ["figsoda <figsoda@pm.me>"]
+edition = "2018"
+license = "MPL-2.0"
+description = "Minimal mpd terminal client"
+homepage = "https://github.com/figsoda/mmtc"
+repository = "https://github.com/figsoda/mmtc"
+readme = "README.md"
+
+[dependencies]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "symbols"

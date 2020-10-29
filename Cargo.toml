@@ -12,6 +12,14 @@ repository = "https://github.com/figsoda/mmtc"
 readme = "README.md"
 
 [dependencies]
+anyhow = "1.0.33"
+crossterm = "0.18.1"
+expand = "0.1.2"
+tui = { version = "0.12.0", default-features = false, features = ["crossterm"] }
+
+[dependencies.tokio]
+version = "0.3.2"
+features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"]
 
 [profile.release]
 lto = true

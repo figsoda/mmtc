@@ -1,7 +1,10 @@
 #![feature(async_closure)]
+#![feature(box_patterns)]
 #![forbid(unsafe_code)]
 
+mod config;
 mod fail;
+mod layout;
 mod mpd;
 
 use anyhow::{Context, Result};
@@ -14,12 +17,7 @@ use tokio::{
     sync::Mutex,
     time::{sleep_until, Duration, Instant},
 };
-use tui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout, Rect},
-    widgets::{List, ListItem, Paragraph},
-    Terminal,
-};
+use tui::{backend::CrosstermBackend, Terminal};
 
 use std::{
     io::{stdout, Write},
@@ -28,7 +26,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::mpd::{Song, Status, Track};
+use crate::config::Config;
 
 fn cleanup() -> Result<()> {
     disable_raw_mode().context("Failed to clean up terminal")?;
@@ -53,15 +51,8 @@ async fn main() -> Result<()> {
 }
 
 async fn run() -> Result<()> {
+    let cfg: Config = ron::from_str(&std::fs::read_to_string("mmtc.ron").unwrap()).unwrap();
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6600);
-
-    let queue_layout = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(vec![
-            Constraint::Ratio(1, 3),
-            Constraint::Ratio(1, 3),
-            Constraint::Ratio(1, 3),
-        ]);
 
     let mut idle_cl = mpd::init(addr).await.with_context(fail::connect(addr))?;
     let mut status_cl = mpd::init(addr).await.with_context(fail::connect(addr))?;
@@ -106,79 +97,10 @@ async fn run() -> Result<()> {
         let deadline = Instant::now() + Duration::from_secs_f32(1.0 / 30.0);
 
         let queue = &*queue.lock().await;
-        let status = (*status.lock().await).clone();
+        let status = &*status.lock().await;
 
         term.draw(|frame| {
-            let len = queue.len();
-            let mut titles = Vec::with_capacity(len);
-            let mut artists = Vec::with_capacity(len);
-            let mut albums = Vec::with_capacity(len);
-
-            for Track {
-                title,
-                artist,
-                album,
-                ..
-            } in queue
-            {
-                titles.push(ListItem::new(title.clone().unwrap_or_default()));
-                artists.push(ListItem::new(artist.clone().unwrap_or_default()));
-                albums.push(ListItem::new(album.clone().unwrap_or_default()));
-            }
-
-            let Rect {
-                x,
-                y,
-                width,
-                height,
-            } = frame.size();
-            let chunks = queue_layout.split(Rect {
-                x,
-                y,
-                width,
-                height: y + height - 1,
-            });
-            frame.render_widget(List::new(titles), chunks[0]);
-            frame.render_widget(List::new(artists), chunks[1]);
-            frame.render_widget(List::new(albums), chunks[2]);
-
-            if let Status {
-                song: Some(Song { pos, elapsed }),
-                ..
-            } = status
-            {
-                if let Some(Track {
-                    file,
-                    artist,
-                    album,
-                    title,
-                    time,
-                }) = queue.get(pos)
-                {
-                    frame.render_widget(
-                        Paragraph::new(format!(
-                            "[{:02}:{:02}/{:02}:{:02}] {}",
-                            elapsed / 60,
-                            elapsed % 60,
-                            time / 60,
-                            time % 60,
-                            match (title, artist, album) {
-                                (Some(title), Some(artist), Some(album)) =>
-                                    format!("{} - {} - {}", title, artist, album),
-                                (Some(title), Some(artist), _) => format!("{} - {}", title, artist),
-                                (Some(title), ..) => title.clone(),
-                                _ => file.clone(),
-                            }
-                        )),
-                        Rect {
-                            x,
-                            y: y + height - 1,
-                            width,
-                            height: 1,
-                        },
-                    )
-                }
-            }
+            layout::render(frame, frame.size(), &cfg.layout, queue, status);
         })
         .context("Failed to draw to terminal")?;
 

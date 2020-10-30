@@ -63,6 +63,11 @@ pub enum Texts {
 #[derive(Debug, Deserialize)]
 pub enum Condition {
     Playing,
+    Repeat,
+    Random,
+    Single,
+    Oneshot,
+    Consume,
     TitleExist,
     ArtistExist,
     AlbumExist,

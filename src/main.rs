@@ -62,6 +62,9 @@ async fn run() -> Result<()> {
     let status = Arc::new(Mutex::new(mpd::status(&mut status_cl).await?));
     let status1 = Arc::clone(&status);
 
+    let frame_interval = Duration::from_secs_f64(1.0 / cfg.fps);
+    let update_interval = Duration::from_secs_f64(1.0 / cfg.ups);
+
     tokio::spawn(async move {
         loop {
             mpd::idle_playlist(&mut idle_cl)
@@ -77,7 +80,7 @@ async fn run() -> Result<()> {
 
     tokio::spawn(async move {
         loop {
-            let deadline = Instant::now() + Duration::from_millis(250);
+            let deadline = Instant::now() + update_interval;
             *status1.lock().await = mpd::status(&mut status_cl)
                 .await
                 .context("Failed to query status")
@@ -94,8 +97,7 @@ async fn run() -> Result<()> {
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
     loop {
-        let deadline = Instant::now() + Duration::from_secs_f32(1.0 / 30.0);
-
+        let deadline = Instant::now() + frame_interval;
         let queue = &*queue.lock().await;
         let status = &*status.lock().await;
 

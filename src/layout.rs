@@ -77,7 +77,7 @@ pub fn render(
                 match x {
                     Constrained::Free(w) => {
                         ws.push(w);
-                        cs.push(Constraint::Min(1));
+                        cs.push(Constraint::Min(0));
                     }
                     Constrained::Fixed(n, w) => {
                         ws.push(w);

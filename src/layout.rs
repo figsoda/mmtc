@@ -33,20 +33,13 @@ pub fn render(
             });
 
             for x in xs {
-                match x {
-                    Constrained::Free(w) => {
-                        ws.push(w);
-                        cs.push(Constraint::Min(0));
-                    }
-                    Constrained::Fixed(n, w) => {
-                        ws.push(w);
-                        cs.push(Constraint::Length(*n));
-                    }
-                    Constrained::Ratio(n, w) => {
-                        ws.push(w);
-                        cs.push(Constraint::Ratio(*n, denom));
-                    }
-                }
+                let (w, constraint) = match x {
+                    Constrained::Free(w) => (w, Constraint::Min(1)),
+                    Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
+                    Constrained::Ratio(n, w) => (w, Constraint::Ratio(*n, denom)),
+                };
+                ws.push(w);
+                cs.push(constraint);
             }
 
             let layout = Layout::default()
@@ -74,21 +67,15 @@ pub fn render(
             });
 
             for x in xs {
-                match x {
-                    Constrained::Free(w) => {
-                        ws.push(w);
-                        cs.push(Constraint::Min(0));
-                    }
-                    Constrained::Fixed(n, w) => {
-                        ws.push(w);
-                        cs.push(Constraint::Length(*n));
-                    }
-                    Constrained::Ratio(n, w) => {
-                        ws.push(w);
-                        cs.push(Constraint::Ratio(*n, denom));
-                    }
-                }
+                let (w, constraint) = match x {
+                    Constrained::Free(w) => (w, Constraint::Min(1)),
+                    Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
+                    Constrained::Ratio(n, w) => (w, Constraint::Ratio(*n, denom)),
+                };
+                ws.push(w);
+                cs.push(constraint);
             }
+
             let layout = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(cs);
@@ -123,45 +110,26 @@ pub fn render(
                 }
             });
 
-            let len = columns.capacity();
             let current_track = if let Some(Song { pos, .. }) = status.song {
                 queue.get(pos)
             } else {
                 None
             };
+
             for column in columns {
-                match column {
-                    Constrained::Free(xs) => {
-                        let mut items = Vec::with_capacity(len);
-                        for x in queue {
-                            let mut spans = Vec::new();
-                            flatten(&mut spans, xs, status, current_track, Some(x));
-                            items.push(ListItem::new(Spans::from(spans)));
-                        }
-                        ws.push(List::new(items));
-                        cs.push(Constraint::Min(1));
-                    }
-                    Constrained::Fixed(n, xs) => {
-                        let mut items = Vec::with_capacity(len);
-                        for x in queue {
-                            let mut spans = Vec::new();
-                            flatten(&mut spans, xs, status, current_track, Some(x));
-                            items.push(ListItem::new(Spans::from(spans)));
-                        }
-                        ws.push(List::new(items));
-                        cs.push(Constraint::Length(*n));
-                    }
-                    Constrained::Ratio(n, xs) => {
-                        let mut items = Vec::with_capacity(len);
-                        for x in queue {
-                            let mut spans = Vec::new();
-                            flatten(&mut spans, xs, status, current_track, Some(x));
-                            items.push(ListItem::new(Spans::from(spans)));
-                        }
-                        ws.push(List::new(items));
-                        cs.push(Constraint::Ratio(*n, denom));
-                    }
+                let (xs, constraint) = match column {
+                    Constrained::Free(xs) => (xs, Constraint::Min(1)),
+                    Constrained::Fixed(n, xs) => (xs, Constraint::Length(*n)),
+                    Constrained::Ratio(n, xs) => (xs, Constraint::Ratio(*n, denom)),
+                };
+                let mut items = Vec::with_capacity(len);
+                for x in queue {
+                    let mut spans = Vec::new();
+                    flatten(&mut spans, xs, status, current_track, Some(x));
+                    items.push(ListItem::new(Spans::from(spans)));
                 }
+                ws.push(List::new(items));
+                cs.push(constraint);
             }
 
             let layout = Layout::default()

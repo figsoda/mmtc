@@ -187,7 +187,7 @@ fn flatten(
 ) {
     match xs {
         Texts::Empty => (),
-        Texts::Plain(x) => spans.push(Span::raw(x.clone())),
+        Texts::Text(x) => spans.push(Span::raw(x.clone())),
         Texts::CurrentElapsed => {
             if let Some(Song { elapsed, .. }) = status.song {
                 spans.push(Span::raw(format!(

@@ -1,9 +1,9 @@
 Config(
     layout: Rows([
         Fixed(1, Columns([
-            Ratio(5, Textbox(Plain("Title"))),
-            Ratio(4, Textbox(Plain("Artist"))),
-            Ratio(4, Textbox(Plain("Album"))),
+            Ratio(5, Textbox(Text("Title"))),
+            Ratio(4, Textbox(Text("Artist"))),
+            Ratio(4, Textbox(Text("Album"))),
         ])),
         Free(Queue(
             columns: [
@@ -13,19 +13,19 @@ Config(
             ],
         )),
         Fixed(1, Textbox(If(Playing, Parts([
-            Plain("["),
+            Text("["),
             CurrentElapsed,
-            Plain("/"),
+            Text("/"),
             CurrentDuration,
-            Plain("] "),
+            Text("] "),
             If(TitleExist,
                 Parts([
                     CurrentTitle,
                     If(ArtistExist, Parts([
-                        Plain(" - "),
+                        Text(" - "),
                         CurrentArtist,
                         If(AlbumExist, Parts([
-                            Plain(" - "),
+                            Text(" - "),
                             CurrentAlbum,
                         ])),
                     ])),

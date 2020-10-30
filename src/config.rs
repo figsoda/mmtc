@@ -44,7 +44,7 @@ pub enum Constrained<T> {
 #[derive(Debug)]
 pub enum Texts {
     Empty,
-    Plain(String),
+    Text(String),
     CurrentElapsed,
     CurrentDuration,
     CurrentFile,
@@ -102,7 +102,7 @@ impl<'de> Deserialize<'de> for Texts {
                 #[derive(Deserialize)]
                 #[serde(field_identifier)]
                 enum Variant {
-                    Plain,
+                    Text,
                     CurrentElapsed,
                     CurrentDuration,
                     CurrentFile,
@@ -177,7 +177,7 @@ impl<'de> Deserialize<'de> for Texts {
                 }
 
                 match variant {
-                    Variant::Plain => Ok(Texts::Plain(va.newtype_variant()?)),
+                    Variant::Text => Ok(Texts::Text(va.newtype_variant()?)),
                     Variant::CurrentElapsed => unit_variant!(CurrentElapsed),
                     Variant::CurrentDuration => unit_variant!(CurrentDuration),
                     Variant::CurrentFile => unit_variant!(CurrentFile),
@@ -199,7 +199,7 @@ impl<'de> Deserialize<'de> for Texts {
         de.deserialize_enum(
             "Texts",
             &[
-                "Plain",
+                "Text",
                 "CurrentElapsed",
                 "CurrentDuration",
                 "CurrentFile",

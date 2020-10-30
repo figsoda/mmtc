@@ -5,7 +5,7 @@ Config(
             Ratio(4, Textbox(Text("Artist"))),
             Ratio(4, Textbox(Text("Album"))),
         ])),
-        Free(Queue(
+        Min(0, Queue(
             columns: [
                 Ratio(5, QueueTitle),
                 Ratio(4, QueueArtist),

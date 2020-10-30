@@ -34,8 +34,9 @@ pub fn render(
 
             for x in xs {
                 let (w, constraint) = match x {
-                    Constrained::Free(w) => (w, Constraint::Min(1)),
                     Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
+                    Constrained::Max(n, w) => (w, Constraint::Max(*n)),
+                    Constrained::Min(n, w) => (w, Constraint::Min(*n)),
                     Constrained::Ratio(n, w) => (w, Constraint::Ratio(*n, denom)),
                 };
                 ws.push(w);
@@ -68,8 +69,9 @@ pub fn render(
 
             for x in xs {
                 let (w, constraint) = match x {
-                    Constrained::Free(w) => (w, Constraint::Min(1)),
                     Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
+                    Constrained::Max(n, w) => (w, Constraint::Max(*n)),
+                    Constrained::Min(n, w) => (w, Constraint::Min(*n)),
                     Constrained::Ratio(n, w) => (w, Constraint::Ratio(*n, denom)),
                 };
                 ws.push(w);
@@ -118,8 +120,9 @@ pub fn render(
 
             for column in columns {
                 let (xs, constraint) = match column {
-                    Constrained::Free(xs) => (xs, Constraint::Min(1)),
-                    Constrained::Fixed(n, xs) => (xs, Constraint::Length(*n)),
+                    Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
+                    Constrained::Max(n, w) => (w, Constraint::Max(*n)),
+                    Constrained::Min(n, w) => (w, Constraint::Min(*n)),
                     Constrained::Ratio(n, xs) => (xs, Constraint::Ratio(*n, denom)),
                 };
                 let mut items = Vec::with_capacity(len);

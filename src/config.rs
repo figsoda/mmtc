@@ -36,7 +36,8 @@ pub enum Widget {
 
 #[derive(Debug, Deserialize)]
 pub enum Constrained<T> {
-    Free(T),
+    Max(u16, T),
+    Min(u16, T),
     Fixed(u16, T),
     Ratio(u32, T),
 }

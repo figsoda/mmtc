@@ -1,0 +1,30 @@
+Config(
+    layout: Rows([
+        Fixed(1, Columns([
+            Ratio(5, Textbox(Plain("Title"))),
+            Ratio(4, Textbox(Plain("Artist"))),
+            Ratio(4, Textbox(Plain("Album"))),
+        ])),
+        Free(Queue(
+            columns: [
+                Ratio(5, QueueTitle),
+                Ratio(4, QueueArtist),
+                Ratio(4, QueueAlbum),
+            ],
+        )),
+        Fixed(1, Textbox(If(TitleExist,
+            Parts([
+                CurrentTitle,
+                If(ArtistExist, Parts([
+                    Plain(" - "),
+                    CurrentArtist,
+                    If(AlbumExist, Parts([
+                        Plain(" - "),
+                        CurrentAlbum,
+                    ])),
+                ])),
+            ]),
+            CurrentFile,
+        ))),
+    ]),
+)

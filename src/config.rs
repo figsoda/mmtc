@@ -45,10 +45,13 @@ pub enum Constrained<T> {
 pub enum Texts {
     Empty,
     Plain(String),
+    CurrentElapsed,
+    CurrentDuration,
     CurrentFile,
     CurrentTitle,
     CurrentArtist,
     CurrentAlbum,
+    QueueDuration,
     QueueFile,
     QueueTitle,
     QueueArtist,
@@ -59,6 +62,7 @@ pub enum Texts {
 
 #[derive(Debug, Deserialize)]
 pub enum Condition {
+    Playing,
     TitleExist,
     ArtistExist,
     AlbumExist,
@@ -94,10 +98,13 @@ impl<'de> Deserialize<'de> for Texts {
                 #[serde(field_identifier)]
                 enum Variant {
                     Plain,
+                    CurrentElapsed,
+                    CurrentDuration,
                     CurrentFile,
                     CurrentTitle,
                     CurrentArtist,
                     CurrentAlbum,
+                    QueueDuration,
                     QueueFile,
                     QueueTitle,
                     QueueArtist,
@@ -166,10 +173,13 @@ impl<'de> Deserialize<'de> for Texts {
 
                 match variant {
                     Variant::Plain => Ok(Texts::Plain(va.newtype_variant()?)),
+                    Variant::CurrentElapsed => unit_variant!(CurrentElapsed),
+                    Variant::CurrentDuration => unit_variant!(CurrentDuration),
                     Variant::CurrentFile => unit_variant!(CurrentFile),
                     Variant::CurrentTitle => unit_variant!(CurrentTitle),
                     Variant::CurrentArtist => unit_variant!(CurrentArtist),
                     Variant::CurrentAlbum => unit_variant!(CurrentAlbum),
+                    Variant::QueueDuration => unit_variant!(QueueDuration),
                     Variant::QueueFile => unit_variant!(QueueFile),
                     Variant::QueueTitle => unit_variant!(QueueTitle),
                     Variant::QueueArtist => unit_variant!(QueueArtist),
@@ -185,10 +195,13 @@ impl<'de> Deserialize<'de> for Texts {
             "Texts",
             &[
                 "Plain",
+                "CurrentElapsed",
+                "CurrentDuration",
                 "CurrentFile",
                 "CurrentTitle",
                 "CurrentArtist",
                 "CurrentAlbum",
+                "QueueDuration",
                 "QueueFile",
                 "QueueTitle",
                 "QueueArtist",

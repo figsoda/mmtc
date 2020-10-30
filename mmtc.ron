@@ -12,19 +12,26 @@ Config(
                 Ratio(4, QueueAlbum),
             ],
         )),
-        Fixed(1, Textbox(If(TitleExist,
-            Parts([
-                CurrentTitle,
-                If(ArtistExist, Parts([
-                    Plain(" - "),
-                    CurrentArtist,
-                    If(AlbumExist, Parts([
+        Fixed(1, Textbox(If(Playing, Parts([
+            Plain("["),
+            CurrentElapsed,
+            Plain("/"),
+            CurrentDuration,
+            Plain("] "),
+            If(TitleExist,
+                Parts([
+                    CurrentTitle,
+                    If(ArtistExist, Parts([
                         Plain(" - "),
-                        CurrentAlbum,
+                        CurrentArtist,
+                        If(AlbumExist, Parts([
+                            Plain(" - "),
+                            CurrentAlbum,
+                        ])),
                     ])),
-                ])),
-            ]),
-            CurrentFile,
-        ))),
+                ]),
+                CurrentFile,
+            )
+        ])))),
     ]),
 )

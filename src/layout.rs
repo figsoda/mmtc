@@ -102,16 +102,13 @@ pub fn render(
         }
         Widget::Textbox(xss) => {
             let mut spans = Vec::new();
-            flatten(
-                &mut spans,
-                &xss,
-                if let Some(Song { pos, .. }) = status.song {
-                    queue.get(pos)
-                } else {
-                    None
-                },
-                None,
-            );
+            let (current_elapsed, current_track) = if let Some(Song { pos, elapsed }) = status.song
+            {
+                (Some(elapsed), queue.get(pos))
+            } else {
+                (None, None)
+            };
+            flatten(&mut spans, &xss, current_elapsed, current_track, None);
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
         Widget::Queue { columns } => {
@@ -128,10 +125,11 @@ pub fn render(
             });
 
             let len = columns.capacity();
-            let current_track = if let Some(Song { pos, .. }) = status.song {
-                queue.get(pos)
+            let (current_elapsed, current_track) = if let Some(Song { pos, elapsed }) = status.song
+            {
+                (Some(elapsed), queue.get(pos))
             } else {
-                None
+                (None, None)
             };
             for column in columns {
                 match column {
@@ -139,7 +137,7 @@ pub fn render(
                         let mut items = Vec::with_capacity(len);
                         for x in queue {
                             let mut spans = Vec::new();
-                            flatten(&mut spans, xs, current_track, Some(x));
+                            flatten(&mut spans, xs, current_elapsed, current_track, Some(x));
                             items.push(ListItem::new(Spans::from(spans)));
                         }
                         ws.push(List::new(items));
@@ -149,7 +147,7 @@ pub fn render(
                         let mut items = Vec::with_capacity(len);
                         for x in queue {
                             let mut spans = Vec::new();
-                            flatten(&mut spans, xs, current_track, Some(x));
+                            flatten(&mut spans, xs, current_elapsed, current_track, Some(x));
                             items.push(ListItem::new(Spans::from(spans)));
                         }
                         ws.push(List::new(items));
@@ -159,7 +157,7 @@ pub fn render(
                         let mut items = Vec::with_capacity(len);
                         for x in queue {
                             let mut spans = Vec::new();
-                            flatten(&mut spans, xs, current_track, Some(x));
+                            flatten(&mut spans, xs, current_elapsed, current_track, Some(x));
                             items.push(ListItem::new(Spans::from(spans)));
                         }
                         ws.push(List::new(items));
@@ -185,12 +183,27 @@ pub fn render(
 fn flatten(
     spans: &mut Vec<Span>,
     xs: &Texts,
+    current_elapsed: Option<u16>,
     current_track: Option<&Track>,
     queue_track: Option<&Track>,
 ) {
     match xs {
         Texts::Empty => (),
         Texts::Plain(x) => spans.push(Span::raw(x.clone())),
+        Texts::CurrentElapsed => {
+            if let Some(current_elapsed) = current_elapsed {
+                spans.push(Span::raw(format!(
+                    "{:02}:{:02}",
+                    current_elapsed / 60,
+                    current_elapsed % 60
+                )))
+            }
+        }
+        Texts::CurrentDuration => {
+            if let Some(Track { time, .. }) = current_track {
+                spans.push(Span::raw(format!("{:02}:{:02}", time / 60, time % 60,)))
+            }
+        }
         Texts::CurrentFile => {
             if let Some(Track { file, .. }) = current_track {
                 spans.push(Span::raw(file.clone()));
@@ -219,6 +232,11 @@ fn flatten(
             }) = current_track
             {
                 spans.push(Span::raw(album.clone()));
+            }
+        }
+        Texts::QueueDuration => {
+            if let Some(Track { time, .. }) = queue_track {
+                spans.push(Span::raw(format!("{:02}:{:02}", time / 60, time % 60,)))
             }
         }
         Texts::QueueFile => {
@@ -253,11 +271,12 @@ fn flatten(
         }
         Texts::Parts(xss) => {
             for xs in xss {
-                flatten(spans, xs, current_track, queue_track);
+                flatten(spans, xs, current_elapsed, current_track, queue_track);
             }
         }
         Texts::If(cond, box yes, box no) => {
             let xs = if match cond {
+                Condition::Playing => current_track.is_some(),
                 Condition::TitleExist => {
                     matches!(current_track, Some(Track { title: Some(_), .. }))
                 }
@@ -273,7 +292,7 @@ fn flatten(
             } else {
                 no
             };
-            flatten(spans, xs, current_track, queue_track);
+            flatten(spans, xs, current_elapsed, current_track, queue_track);
         }
     }
 }

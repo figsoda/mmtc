@@ -5,7 +5,7 @@ use serde::{
 
 use std::{
     cmp::min,
-    error,
+    error::Error as StdError,
     fmt::{self, Formatter},
 };
 
@@ -80,7 +80,7 @@ impl<'de> Deserialize<'de> for Texts {
                 formatter.write_str("enum Texts")
             }
 
-            fn visit_unit<E: error::Error>(self) -> Result<Self::Value, E> {
+            fn visit_unit<E: StdError>(self) -> Result<Self::Value, E> {
                 Ok(Texts::Empty)
             }
 

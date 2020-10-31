@@ -7,7 +7,7 @@ mod fail;
 mod layout;
 mod mpd;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Error, Result};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent},
     execute,
@@ -20,7 +20,6 @@ use tokio::{
 use tui::{backend::CrosstermBackend, Terminal};
 
 use std::{
-    fmt::Display,
     io::{stdout, Write},
     net::{IpAddr, Ipv4Addr, SocketAddr},
     process::exit,
@@ -38,11 +37,8 @@ fn cleanup() -> Result<()> {
     Ok(())
 }
 
-fn die<T>(e: impl Display) -> T {
-    if let Err(e) = cleanup() {
-        eprintln!("{}", e);
-    };
-    eprintln!("{}", e);
+fn die<T>(e: impl Into<Error>) -> T {
+    eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e.into()));
     exit(1);
 }
 
@@ -55,9 +51,12 @@ enum Command {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() {
     let res = run().await;
-    cleanup().and_then(|_| res).map_or_else(Err, |_| exit(0))
+    if let Err(e) = cleanup().and_then(|_| res) {
+        eprintln!("{:?}", e);
+        exit(1);
+    }
 }
 
 async fn run() -> Result<()> {

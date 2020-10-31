@@ -11,15 +11,9 @@ use std::{
 
 #[derive(Deserialize)]
 pub struct Config {
-    #[serde(default = "fps_default")]
-    pub fps: f64,
     #[serde(default = "ups_default")]
     pub ups: f64,
     pub layout: Widget,
-}
-
-fn fps_default() -> f64 {
-    30.0
 }
 
 fn ups_default() -> f64 {

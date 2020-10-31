@@ -11,6 +11,7 @@ use crate::fail;
 
 pub type Client = BufReader<TcpStream>;
 
+#[derive(Debug)]
 pub struct Status {
     pub repeat: bool,
     pub random: bool,
@@ -19,12 +20,13 @@ pub struct Status {
     pub song: Option<Song>,
 }
 
+#[derive(Debug)]
 pub struct Song {
     pub pos: usize,
     pub elapsed: u16,
 }
 
-
+#[derive(Debug)]
 pub struct Track {
     pub file: String,
     pub artist: Option<String>,

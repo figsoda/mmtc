@@ -173,7 +173,6 @@ fn flatten(
     selected: bool,
 ) {
     match xs {
-        Texts::Empty => (),
         Texts::Text(x) => spans.push(Span::raw(x.clone())),
         Texts::CurrentElapsed => {
             if let Some(Song { elapsed, .. }) = status.song {
@@ -259,13 +258,18 @@ fn flatten(
                 flatten(spans, xs, status, current_track, queue_track, selected);
             }
         }
-        Texts::If(cond, box yes, box no) => {
+        Texts::If(cond, box yes, Some(box no)) => {
             let xs = if eval_cond(cond, status, current_track, selected) {
                 yes
             } else {
                 no
             };
             flatten(spans, xs, status, current_track, queue_track, selected);
+        }
+        Texts::If(cond, box xs, None) => {
+            if eval_cond(cond, status, current_track, selected) {
+                flatten(spans, xs, status, current_track, queue_track, selected);
+            }
         }
     }
 }

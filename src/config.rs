@@ -3,11 +3,7 @@ use serde::{
     Deserialize, Deserializer,
 };
 
-use std::{
-    cmp::min,
-    error::Error as StdError,
-    fmt::{self, Formatter},
-};
+use std::fmt::{self, Formatter};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -39,7 +35,6 @@ pub enum Constrained<T> {
 }
 
 pub enum Texts {
-    Empty,
     Text(String),
     CurrentElapsed,
     CurrentDuration,
@@ -53,7 +48,7 @@ pub enum Texts {
     QueueArtist,
     QueueAlbum,
     Parts(Vec<Texts>),
-    If(Condition, Box<Texts>, Box<Texts>),
+    If(Condition, Box<Texts>, Option<Box<Texts>>),
 }
 
 #[derive(Deserialize)]
@@ -85,18 +80,6 @@ impl<'de> Deserialize<'de> for Texts {
 
             fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
                 formatter.write_str("enum Texts")
-            }
-
-            fn visit_unit<E: StdError>(self) -> Result<Self::Value, E> {
-                Ok(Texts::Empty)
-            }
-
-            fn visit_seq<A: SeqAccess<'de>>(self, mut sa: A) -> Result<Self::Value, A::Error> {
-                let mut xs = Vec::with_capacity(min(sa.size_hint().unwrap_or(0), 4096));
-                while let Some(x) = sa.next_element()? {
-                    xs.push(x);
-                }
-                Ok(Texts::Parts(xs))
             }
 
             fn visit_enum<A: EnumAccess<'de>>(self, ea: A) -> Result<Self::Value, A::Error> {
@@ -138,7 +121,7 @@ impl<'de> Deserialize<'de> for Texts {
                                 || Err(de::Error::invalid_length(1, &self)),
                                 |x| Ok(Box::new(x)),
                             )?,
-                            Box::new(sa.next_element()?.unwrap_or(Texts::Empty)),
+                            sa.next_element()?.map(Box::new),
                         ))
                     }
                 }

@@ -2,6 +2,7 @@ use serde::{
     de::{self, EnumAccess, SeqAccess, VariantAccess, Visitor},
     Deserialize, Deserializer,
 };
+use tui::style::Color;
 
 use std::fmt::{self, Formatter};
 
@@ -47,8 +48,15 @@ pub enum Texts {
     QueueTitle,
     QueueArtist,
     QueueAlbum,
+    Styled(Vec<AddStyle>, Box<Texts>),
     Parts(Vec<Texts>),
     If(Condition, Box<Texts>, Option<Box<Texts>>),
+}
+
+#[derive(Deserialize)]
+pub enum AddStyle {
+    Fg(Color),
+    Bg(Color),
 }
 
 #[derive(Deserialize)]
@@ -98,8 +106,30 @@ impl<'de> Deserialize<'de> for Texts {
                     QueueTitle,
                     QueueArtist,
                     QueueAlbum,
+                    Styled,
                     Parts,
                     If,
+                }
+
+                struct StyledVisitor;
+                impl<'de> Visitor<'de> for StyledVisitor {
+                    type Value = Texts;
+
+                    fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+                        formatter.write_str("variant Styled")
+                    }
+
+                    fn visit_seq<A: SeqAccess<'de>>(
+                        self,
+                        mut sa: A,
+                    ) -> Result<Self::Value, A::Error> {
+                        Ok(Texts::Styled(
+                            sa.next_element()?
+                                .ok_or_else(|| de::Error::invalid_length(0, &self))?,
+                            sa.next_element()?
+                                .ok_or_else(|| de::Error::invalid_length(1, &self))?,
+                        ))
+                    }
                 }
 
                 struct IfVisitor;
@@ -148,6 +178,7 @@ impl<'de> Deserialize<'de> for Texts {
                     Variant::QueueTitle => unit_variant!(QueueTitle),
                     Variant::QueueArtist => unit_variant!(QueueArtist),
                     Variant::QueueAlbum => unit_variant!(QueueAlbum),
+                    Variant::Styled => va.tuple_variant(2, StyledVisitor),
                     Variant::Parts => Ok(Texts::Parts(va.newtype_variant()?)),
                     Variant::If => va.tuple_variant(3, IfVisitor),
                 }
@@ -169,6 +200,7 @@ impl<'de> Deserialize<'de> for Texts {
                 "QueueTitle",
                 "QueueArtist",
                 "QueueAlbum",
+                "Styled",
                 "Parts",
                 "If",
             ],

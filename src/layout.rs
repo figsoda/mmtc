@@ -1,13 +1,14 @@
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
+    style::Style,
     text::{Span, Spans},
     widgets::{List, ListItem, ListState, Paragraph},
     Frame,
 };
 
 use crate::{
-    config::{Condition, Constrained, Texts, Widget},
+    config::{AddStyle, Condition, Constrained, Texts, Widget},
     mpd::{Song, Status, Track},
 };
 
@@ -93,12 +94,19 @@ pub fn render(
         }
         Widget::Textbox(xss) => {
             let mut spans = Vec::new();
-            let current_track = if let Some(Song { pos, .. }) = status.song {
-                queue.get(pos)
-            } else {
-                None
-            };
-            flatten(&mut spans, &xss, status, current_track, None, false);
+            flatten(
+                &mut spans,
+                &xss,
+                status,
+                if let Some(Song { pos, .. }) = status.song {
+                    queue.get(pos)
+                } else {
+                    None
+                },
+                None,
+                false,
+                Style::default(),
+            );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
         Widget::Queue { columns } => {
@@ -143,6 +151,7 @@ pub fn render(
                         current_track,
                         Some(&queue[i]),
                         i == selected,
+                        Style::default(),
                     );
                     items.push(ListItem::new(Spans::from(spans)));
                 }
@@ -171,26 +180,29 @@ fn flatten(
     current_track: Option<&Track>,
     queue_track: Option<&Track>,
     selected: bool,
+    style: Style,
 ) {
     match xs {
-        Texts::Text(x) => spans.push(Span::raw(x.clone())),
+        Texts::Text(x) => spans.push(Span::styled(x.clone(), style)),
         Texts::CurrentElapsed => {
             if let Some(Song { elapsed, .. }) = status.song {
-                spans.push(Span::raw(format!(
-                    "{:02}:{:02}",
-                    elapsed / 60,
-                    elapsed % 60
-                )))
+                spans.push(Span::styled(
+                    format!("{:02}:{:02}", elapsed / 60, elapsed % 60),
+                    style,
+                ))
             }
         }
         Texts::CurrentDuration => {
             if let Some(Track { time, .. }) = current_track {
-                spans.push(Span::raw(format!("{:02}:{:02}", time / 60, time % 60,)))
+                spans.push(Span::styled(
+                    format!("{:02}:{:02}", time / 60, time % 60),
+                    style,
+                ))
             }
         }
         Texts::CurrentFile => {
             if let Some(Track { file, .. }) = current_track {
-                spans.push(Span::raw(file.clone()));
+                spans.push(Span::styled(file.clone(), style));
             }
         }
         Texts::CurrentTitle => {
@@ -198,7 +210,7 @@ fn flatten(
                 title: Some(title), ..
             }) = current_track
             {
-                spans.push(Span::raw(title.clone()));
+                spans.push(Span::styled(title.clone(), style));
             }
         }
         Texts::CurrentArtist => {
@@ -207,7 +219,7 @@ fn flatten(
                 ..
             }) = current_track
             {
-                spans.push(Span::raw(artist.clone()));
+                spans.push(Span::styled(artist.clone(), style));
             }
         }
         Texts::CurrentAlbum => {
@@ -215,17 +227,20 @@ fn flatten(
                 album: Some(album), ..
             }) = current_track
             {
-                spans.push(Span::raw(album.clone()));
+                spans.push(Span::styled(album.clone(), style));
             }
         }
         Texts::QueueDuration => {
             if let Some(Track { time, .. }) = queue_track {
-                spans.push(Span::raw(format!("{:02}:{:02}", time / 60, time % 60,)))
+                spans.push(Span::styled(
+                    format!("{:02}:{:02}", time / 60, time % 60),
+                    style,
+                ))
             }
         }
         Texts::QueueFile => {
             if let Some(Track { file, .. }) = current_track {
-                spans.push(Span::raw(file.clone()));
+                spans.push(Span::styled(file.clone(), style));
             }
         }
         Texts::QueueTitle => {
@@ -233,7 +248,7 @@ fn flatten(
                 title: Some(title), ..
             }) = queue_track
             {
-                spans.push(Span::raw(title.clone()));
+                spans.push(Span::styled(title.clone(), style));
             }
         }
         Texts::QueueArtist => {
@@ -242,7 +257,7 @@ fn flatten(
                 ..
             }) = queue_track
             {
-                spans.push(Span::raw(artist.clone()));
+                spans.push(Span::styled(artist.clone(), style));
             }
         }
         Texts::QueueAlbum => {
@@ -250,25 +265,70 @@ fn flatten(
                 album: Some(album), ..
             }) = queue_track
             {
-                spans.push(Span::raw(album.clone()));
+                spans.push(Span::styled(album.clone(), style));
             }
+        }
+        Texts::Styled(styles, box xs) => {
+            let mut style = style;
+            for add_style in styles {
+                match add_style {
+                    AddStyle::Fg(color) => {
+                        style.fg = Some(*color);
+                    }
+                    AddStyle::Bg(color) => {
+                        style.bg = Some(*color);
+                    }
+                }
+            }
+            flatten(
+                spans,
+                xs,
+                status,
+                current_track,
+                queue_track,
+                selected,
+                style,
+            );
         }
         Texts::Parts(xss) => {
             for xs in xss {
-                flatten(spans, xs, status, current_track, queue_track, selected);
+                flatten(
+                    spans,
+                    xs,
+                    status,
+                    current_track,
+                    queue_track,
+                    selected,
+                    style,
+                );
             }
         }
         Texts::If(cond, box yes, Some(box no)) => {
-            let xs = if eval_cond(cond, status, current_track, selected) {
-                yes
-            } else {
-                no
-            };
-            flatten(spans, xs, status, current_track, queue_track, selected);
+            flatten(
+                spans,
+                if eval_cond(cond, status, current_track, selected) {
+                    yes
+                } else {
+                    no
+                },
+                status,
+                current_track,
+                queue_track,
+                selected,
+                style,
+            );
         }
         Texts::If(cond, box xs, None) => {
             if eval_cond(cond, status, current_track, selected) {
-                flatten(spans, xs, status, current_track, queue_track, selected);
+                flatten(
+                    spans,
+                    xs,
+                    status,
+                    current_track,
+                    queue_track,
+                    selected,
+                    style,
+                );
             }
         }
     }

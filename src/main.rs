@@ -162,6 +162,7 @@ async fn run() -> Result<()> {
                 .context("Failed to draw to terminal")?,
             Command::UpdateQueue(new_queue) => {
                 queue = new_queue;
+                selected = status.song.map_or(0, |song| song.pos);
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::UpdateStatus(new_status) => {

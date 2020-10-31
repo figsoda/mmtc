@@ -110,7 +110,6 @@ async fn run() -> Result<()> {
             match event::read().context("Failed to read events")? {
                 Event::Key(KeyEvent { code, .. }) => match code {
                     KeyCode::Char('q') | KeyCode::Esc => {
-                        cleanup()?;
                         return Ok(());
                     }
                     _ => (),

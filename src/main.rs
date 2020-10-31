@@ -57,6 +57,7 @@ async fn main() {
         eprintln!("{:?}", e);
         exit(1);
     }
+    exit(0);
 }
 
 async fn run() -> Result<()> {
@@ -135,7 +136,7 @@ async fn run() -> Result<()> {
 
     while let Some(cmd) = rx.recv().await {
         match cmd {
-            Command::Quit => return Ok(()),
+            Command::Quit => break,
             Command::UpdateFrame => term
                 .draw(|frame| {
                     layout::render(frame, frame.size(), &cfg.layout, &queue, &status);

@@ -9,7 +9,7 @@ use std::{
     fmt::{self, Formatter},
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Config {
     #[serde(default = "fps_default")]
     pub fps: f64,
@@ -26,7 +26,7 @@ fn ups_default() -> f64 {
     4.0
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub enum Widget {
     Rows(Vec<Constrained<Widget>>),
     Columns(Vec<Constrained<Widget>>),
@@ -34,7 +34,7 @@ pub enum Widget {
     Queue { columns: Vec<Constrained<Texts>> },
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub enum Constrained<T> {
     Max(u16, T),
     Min(u16, T),
@@ -42,7 +42,6 @@ pub enum Constrained<T> {
     Ratio(u32, T),
 }
 
-#[derive(Debug)]
 pub enum Texts {
     Empty,
     Text(String),
@@ -61,7 +60,7 @@ pub enum Texts {
     If(Condition, Box<Texts>, Box<Texts>),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub enum Condition {
     Playing,
     Repeat,

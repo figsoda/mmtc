@@ -177,10 +177,10 @@ async fn run() -> Result<()> {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else if selected == len - 1 {
                     if cfg.cycle {
-                        selected = 0
+                        selected = 0;
                     }
                 } else {
-                    selected += 1
+                    selected += 1;
                 }
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
@@ -191,10 +191,10 @@ async fn run() -> Result<()> {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else if selected == 0 {
                     if cfg.cycle {
-                        selected = len - 1
+                        selected = len - 1;
                     }
                 } else {
-                    selected -= 1
+                    selected -= 1;
                 }
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;

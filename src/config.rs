@@ -65,6 +65,10 @@ pub enum Condition {
     TitleExist,
     ArtistExist,
     AlbumExist,
+    Not(Box<Condition>),
+    And(Box<Condition>, Box<Condition>),
+    Or(Box<Condition>, Box<Condition>),
+    Xor(Box<Condition>, Box<Condition>),
 }
 
 impl<'de> Deserialize<'de> for Texts {
@@ -110,7 +114,6 @@ impl<'de> Deserialize<'de> for Texts {
                     QueueAlbum,
                     Parts,
                     If,
-                    IfNot,
                 }
 
                 struct IfVisitor;
@@ -134,30 +137,6 @@ impl<'de> Deserialize<'de> for Texts {
                             )?,
                             Box::new(sa.next_element()?.unwrap_or(Texts::Empty)),
                         ))
-                    }
-                }
-
-                struct IfNotVisitor;
-                impl<'de> Visitor<'de> for IfNotVisitor {
-                    type Value = Texts;
-
-                    fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
-                        formatter.write_str("IfNot variant")
-                    }
-
-                    fn visit_seq<A: SeqAccess<'de>>(
-                        self,
-                        mut sa: A,
-                    ) -> Result<Self::Value, A::Error> {
-                        let cond = sa
-                            .next_element()?
-                            .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                        let no = sa.next_element()?.map_or_else(
-                            || Err(de::Error::invalid_length(1, &self)),
-                            |x| Ok(Box::new(x)),
-                        )?;
-                        let yes = Box::new(sa.next_element()?.unwrap_or(Texts::Empty));
-                        Ok(Texts::If(cond, yes, no))
                     }
                 }
 
@@ -185,7 +164,6 @@ impl<'de> Deserialize<'de> for Texts {
                     Variant::QueueAlbum => unit_variant!(QueueAlbum),
                     Variant::Parts => Ok(Texts::Parts(va.newtype_variant()?)),
                     Variant::If => va.tuple_variant(3, IfVisitor),
-                    Variant::IfNot => va.tuple_variant(3, IfNotVisitor),
                 }
             }
         }
@@ -207,7 +185,6 @@ impl<'de> Deserialize<'de> for Texts {
                 "QueueAlbum",
                 "Parts",
                 "If",
-                "IfNot",
             ],
             TextsVisitor,
         )

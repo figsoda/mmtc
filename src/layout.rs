@@ -244,31 +244,41 @@ fn flatten(
             }
         }
         Texts::If(cond, box yes, box no) => {
-            let xs = if match cond {
-                Condition::Playing => current_track.is_some(),
-                Condition::Repeat => status.repeat,
-                Condition::Random => status.random,
-                Condition::Single => status.single == Some(true),
-                Condition::Oneshot => status.single == None,
-                Condition::Consume => status.consume,
-                Condition::TitleExist => {
-                    matches!(current_track, Some(Track { title: Some(_), .. }))
-                }
-                Condition::ArtistExist => matches!(
-                    current_track,
-                    Some(Track {
-                        artist: Some(_), ..
-                    }),
-                ),
-                Condition::AlbumExist => {
-                    matches!(current_track, Some(Track { album: Some(_), .. }))
-                }
-            } {
+            let xs = if eval_cond(cond, status, current_track) {
                 yes
             } else {
                 no
             };
             flatten(spans, xs, status, current_track, queue_track);
+        }
+    }
+}
+
+fn eval_cond(cond: &Condition, status: &Status, current_track: Option<&Track>) -> bool {
+    match cond {
+        Condition::Playing => current_track.is_some(),
+        Condition::Repeat => status.repeat,
+        Condition::Random => status.random,
+        Condition::Single => status.single == Some(true),
+        Condition::Oneshot => status.single == None,
+        Condition::Consume => status.consume,
+        Condition::TitleExist => matches!(current_track, Some(Track { title: Some(_), .. })),
+        Condition::ArtistExist => matches!(
+            current_track,
+            Some(Track {
+                artist: Some(_), ..
+            }),
+        ),
+        Condition::AlbumExist => matches!(current_track, Some(Track { album: Some(_), .. })),
+        Condition::Not(box x) => !eval_cond(x, status, current_track),
+        Condition::And(box x, box y) => {
+            eval_cond(x, status, current_track) && eval_cond(y, status, current_track)
+        }
+        Condition::Or(box x, box y) => {
+            eval_cond(x, status, current_track) || eval_cond(y, status, current_track)
+        }
+        Condition::Xor(box x, box y) => {
+            eval_cond(x, status, current_track) ^ eval_cond(y, status, current_track)
         }
     }
 }

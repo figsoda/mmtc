@@ -121,7 +121,7 @@ impl<'de> Deserialize<'de> for Texts {
                     type Value = Texts;
 
                     fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
-                        formatter.write_str("IfNot variant")
+                        formatter.write_str("If variant")
                     }
 
                     fn visit_seq<A: SeqAccess<'de>>(

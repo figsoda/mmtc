@@ -2,7 +2,7 @@ use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     text::{Span, Spans},
-    widgets::{List, ListItem, Paragraph},
+    widgets::{List, ListItem, ListState, Paragraph},
     Frame,
 };
 
@@ -17,6 +17,8 @@ pub fn render(
     widget: &Widget,
     queue: &Vec<Track>,
     status: &Status,
+    selected: usize,
+    liststate: &ListState,
 ) {
     match widget {
         Widget::Rows(xs) => {
@@ -51,7 +53,7 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(frame, chunk, w, queue, status);
+                render(frame, chunk, w, queue, status, selected, liststate);
             }
         }
         Widget::Columns(xs) => {
@@ -86,7 +88,7 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(frame, chunk, w, queue, status);
+                render(frame, chunk, w, queue, status, selected, liststate);
             }
         }
         Widget::Textbox(xss) => {
@@ -96,7 +98,7 @@ pub fn render(
             } else {
                 None
             };
-            flatten(&mut spans, &xss, status, current_track, None);
+            flatten(&mut spans, &xss, status, current_track, None, false);
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
         Widget::Queue { columns } => {
@@ -125,10 +127,18 @@ pub fn render(
                     Constrained::Min(n, w) => (w, Constraint::Min(*n)),
                     Constrained::Ratio(n, xs) => (xs, Constraint::Ratio(*n, denom)),
                 };
+
                 let mut items = Vec::with_capacity(len);
-                for x in queue {
+                for i in 0 .. queue.len() - 1 {
                     let mut spans = Vec::new();
-                    flatten(&mut spans, xs, status, current_track, Some(x));
+                    flatten(
+                        &mut spans,
+                        xs,
+                        status,
+                        current_track,
+                        Some(&queue[i]),
+                        i == selected,
+                    );
                     items.push(ListItem::new(Spans::from(spans)));
                 }
                 ws.push(List::new(items));
@@ -143,7 +153,7 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                frame.render_widget(w, chunk);
+                frame.render_stateful_widget(w, chunk, &mut liststate.clone());
             }
         }
     }
@@ -155,6 +165,7 @@ fn flatten(
     status: &Status,
     current_track: Option<&Track>,
     queue_track: Option<&Track>,
+    selected: bool,
 ) {
     match xs {
         Texts::Empty => (),
@@ -240,21 +251,26 @@ fn flatten(
         }
         Texts::Parts(xss) => {
             for xs in xss {
-                flatten(spans, xs, status, current_track, queue_track);
+                flatten(spans, xs, status, current_track, queue_track, selected);
             }
         }
         Texts::If(cond, box yes, box no) => {
-            let xs = if eval_cond(cond, status, current_track) {
+            let xs = if eval_cond(cond, status, current_track, selected) {
                 yes
             } else {
                 no
             };
-            flatten(spans, xs, status, current_track, queue_track);
+            flatten(spans, xs, status, current_track, queue_track, selected);
         }
     }
 }
 
-fn eval_cond(cond: &Condition, status: &Status, current_track: Option<&Track>) -> bool {
+fn eval_cond(
+    cond: &Condition,
+    status: &Status,
+    current_track: Option<&Track>,
+    selected: bool,
+) -> bool {
     match cond {
         Condition::Playing => current_track.is_some(),
         Condition::Repeat => status.repeat,
@@ -270,15 +286,19 @@ fn eval_cond(cond: &Condition, status: &Status, current_track: Option<&Track>) -
             }),
         ),
         Condition::AlbumExist => matches!(current_track, Some(Track { album: Some(_), .. })),
-        Condition::Not(box x) => !eval_cond(x, status, current_track),
+        Condition::Selected => selected,
+        Condition::Not(box x) => !eval_cond(x, status, current_track, selected),
         Condition::And(box x, box y) => {
-            eval_cond(x, status, current_track) && eval_cond(y, status, current_track)
+            eval_cond(x, status, current_track, selected)
+                && eval_cond(y, status, current_track, selected)
         }
         Condition::Or(box x, box y) => {
-            eval_cond(x, status, current_track) || eval_cond(y, status, current_track)
+            eval_cond(x, status, current_track, selected)
+                || eval_cond(y, status, current_track, selected)
         }
         Condition::Xor(box x, box y) => {
-            eval_cond(x, status, current_track) ^ eval_cond(y, status, current_track)
+            eval_cond(x, status, current_track, selected)
+                ^ eval_cond(y, status, current_track, selected)
         }
     }
 }

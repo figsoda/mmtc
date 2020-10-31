@@ -11,6 +11,8 @@ use std::{
 
 #[derive(Deserialize)]
 pub struct Config {
+    #[serde(default)]
+    pub cycle: bool,
     #[serde(default = "ups_default")]
     pub ups: f64,
     pub layout: Widget,
@@ -65,6 +67,7 @@ pub enum Condition {
     TitleExist,
     ArtistExist,
     AlbumExist,
+    Selected,
     Not(Box<Condition>),
     And(Box<Condition>, Box<Condition>),
     Or(Box<Condition>, Box<Condition>),

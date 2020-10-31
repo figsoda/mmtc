@@ -20,7 +20,7 @@ pub struct Status {
     pub song: Option<Song>,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Song {
     pub pos: usize,
     pub elapsed: u16,

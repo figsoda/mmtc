@@ -16,7 +16,7 @@ use tokio::{
     sync::mpsc,
     time::{sleep_until, Duration, Instant},
 };
-use tui::{backend::CrosstermBackend, Terminal};
+use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
     io::{stdout, Write},
@@ -47,6 +47,8 @@ enum Command {
     UpdateFrame,
     UpdateQueue(Vec<Track>),
     UpdateStatus(Status),
+    Down,
+    Up,
 }
 
 #[tokio::main]
@@ -68,6 +70,9 @@ async fn run() -> Result<()> {
 
     let mut queue = mpd::queue(&mut idle_cl).await?;
     let mut status = mpd::status(&mut status_cl).await?;
+    let mut selected = status.song.map_or(0, |song| song.pos);
+    let mut liststate = ListState::default();
+    liststate.select(Some(selected));
 
     let update_interval = Duration::from_secs_f64(1.0 / cfg.ups);
 
@@ -123,7 +128,13 @@ async fn run() -> Result<()> {
             match ev {
                 Event::Key(KeyEvent { code, .. }) => match code {
                     KeyCode::Char('q') | KeyCode::Esc => {
-                        tx.send(Command::Quit).await.unwrap_or_else(die)
+                        tx.send(Command::Quit).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char('j') | KeyCode::Down => {
+                        tx.send(Command::Down).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char('k') | KeyCode::Up => {
+                        tx.send(Command::Up).await.unwrap_or_else(die);
                     }
                     _ => (),
                 },
@@ -138,7 +149,15 @@ async fn run() -> Result<()> {
             Command::Quit => break,
             Command::UpdateFrame => term
                 .draw(|frame| {
-                    layout::render(frame, frame.size(), &cfg.layout, &queue, &status);
+                    layout::render(
+                        frame,
+                        frame.size(),
+                        &cfg.layout,
+                        &queue,
+                        &status,
+                        selected,
+                        &liststate,
+                    );
                 })
                 .context("Failed to draw to terminal")?,
             Command::UpdateQueue(new_queue) => {
@@ -147,6 +166,34 @@ async fn run() -> Result<()> {
             }
             Command::UpdateStatus(new_status) => {
                 status = new_status;
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::Down => {
+                let len = queue.len();
+                if selected >= len {
+                    selected = status.song.map_or(0, |song| song.pos);
+                } else if selected == len - 1 {
+                    if cfg.cycle {
+                        selected = 0
+                    }
+                } else {
+                    selected += 1
+                }
+                liststate.select(Some(selected));
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::Up => {
+                let len = queue.len();
+                if selected >= len {
+                    selected = status.song.map_or(0, |song| song.pos);
+                } else if selected == 0 {
+                    if cfg.cycle {
+                        selected = len - 1
+                    }
+                } else {
+                    selected -= 1
+                }
+                liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
             }
         }

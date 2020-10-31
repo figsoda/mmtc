@@ -121,6 +121,11 @@ pub fn render(
             };
 
             for column in columns {
+                let len = queue.len();
+                if len == 0 {
+                    continue;
+                }
+
                 let (xs, constraint) = match column {
                     Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
                     Constrained::Max(n, w) => (w, Constraint::Max(*n)),
@@ -129,7 +134,7 @@ pub fn render(
                 };
 
                 let mut items = Vec::with_capacity(len);
-                for i in 0 .. queue.len() - 1 {
+                for i in 0 .. len - 1 {
                     let mut spans = Vec::new();
                     flatten(
                         &mut spans,

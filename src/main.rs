@@ -163,6 +163,8 @@ async fn run() -> Result<()> {
             Command::UpdateQueue(new_queue) => {
                 queue = new_queue;
                 selected = status.song.map_or(0, |song| song.pos);
+                liststate = ListState::default();
+                liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::UpdateStatus(new_status) => {

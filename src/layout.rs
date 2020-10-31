@@ -134,7 +134,7 @@ pub fn render(
                 };
 
                 let mut items = Vec::with_capacity(len);
-                for i in 0 .. len - 1 {
+                for i in 0 .. len {
                     let mut spans = Vec::new();
                     flatten(
                         &mut spans,

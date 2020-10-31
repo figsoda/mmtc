@@ -121,6 +121,16 @@ pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {
         }
     }
 
+    if let (Some(file), Some(time)) = (file, time) {
+        tracks.push(Track {
+            file,
+            artist,
+            album,
+            title,
+            time,
+        });
+    }
+
     Ok(tracks)
 }
 

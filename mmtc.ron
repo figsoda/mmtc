@@ -1,18 +1,29 @@
 Config(
     layout: Rows([
         Fixed(1, Columns([
-            Ratio(5, Textbox(Text("Title"))),
-            Ratio(4, Textbox(Text("Artist"))),
-            Ratio(4, Textbox(Text("Album"))),
+            Ratio(12, Textbox(Text("Title"))),
+            Ratio(10, Textbox(Text("Artist"))),
+            Ratio(10, Textbox(Text("Album"))),
+            Ratio(1, Textbox(Text("Time"))),
         ])),
         Min(0, Queue(
             columns: [
-                Ratio(5, Parts([
-                    If(Selected, Text("> ")),
-                    QueueTitle,
-                ])),
-                Ratio(4, QueueArtist),
-                Ratio(4, QueueAlbum),
+                Ratio(12, If(Selected,
+                    Styled([Fg(Black), Bg(Indexed(117))], QueueTitle),
+                    Styled([Fg(Indexed(117))], QueueTitle),
+                )),
+                Ratio(10, If(Selected,
+                    Styled([Fg(Black), Bg(Indexed(111))], QueueArtist),
+                    Styled([Fg(Indexed(111))], QueueArtist),
+                )),
+                Ratio(10, If(Selected,
+                    Styled([Fg(Black), Bg(Indexed(105))], QueueTitle),
+                    Styled([Fg(Indexed(105))], QueueTitle),
+                )),
+                Ratio(1, If(Selected,
+                    Styled([Fg(Black), Bg(Indexed(177))], QueueDuration),
+                    Styled([Fg(Indexed(177))], QueueDuration),
+                )),
             ],
         )),
         Fixed(1, Textbox(If(Playing, Parts([

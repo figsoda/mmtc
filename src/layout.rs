@@ -260,7 +260,9 @@ fn flatten(
                         artist: Some(_), ..
                     }),
                 ),
-                Condition::AlbumExist => matches!(queue_track, Some(Track { album: Some(_), .. })),
+                Condition::AlbumExist => {
+                    matches!(current_track, Some(Track { album: Some(_), .. }))
+                }
             } {
                 yes
             } else {

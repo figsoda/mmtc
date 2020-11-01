@@ -10,9 +10,15 @@ use std::fmt::{self, Formatter};
 pub struct Config {
     #[serde(default)]
     pub cycle: bool,
+    #[serde(default = "jump_lines_default")]
+    pub jump_lines: usize,
     #[serde(default = "ups_default")]
     pub ups: f64,
     pub layout: Widget,
+}
+
+fn jump_lines_default() -> usize {
+    24
 }
 
 fn ups_default() -> f64 {

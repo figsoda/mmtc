@@ -19,6 +19,7 @@ use tokio::{
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
+    cmp::{max, min},
     io::{stdout, Write},
     net::{IpAddr, Ipv4Addr, SocketAddr},
     process::exit,
@@ -48,6 +49,8 @@ enum Command {
     Play,
     Down,
     Up,
+    JumpDown,
+    JumpUp,
 }
 
 #[tokio::main]
@@ -134,6 +137,12 @@ async fn run() -> Result<()> {
                     KeyCode::Char('k') | KeyCode::Up => {
                         tx.send(Command::Up).await.unwrap_or_else(die);
                     }
+                    KeyCode::Char('J') | KeyCode::PageDown => {
+                        tx.send(Command::JumpDown).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char('K') | KeyCode::PageUp => {
+                        tx.send(Command::JumpUp).await.unwrap_or_else(die);
+                    }
                     _ => (),
                 },
                 Event::Resize(..) => tx.send(Command::UpdateFrame).await.unwrap_or_else(die),
@@ -210,6 +219,34 @@ async fn run() -> Result<()> {
                     }
                 } else {
                     selected -= 1;
+                }
+                liststate.select(Some(selected));
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::JumpDown => {
+                let len = queue.len();
+                if selected >= len {
+                    selected = status.song.map_or(0, |song| song.pos);
+                } else {
+                    selected = if cfg.cycle {
+                        (selected + cfg.jump_lines) % len
+                    } else {
+                        min(selected + cfg.jump_lines, len - 1)
+                    }
+                }
+                liststate.select(Some(selected));
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::JumpUp => {
+                let len = queue.len();
+                if selected >= len {
+                    selected = status.song.map_or(0, |song| song.pos);
+                } else {
+                    selected = if cfg.cycle {
+                        (selected as isize - cfg.jump_lines as isize) % len as isize
+                    } else {
+                        max(selected as isize - cfg.jump_lines as isize, 0)
+                    } as usize
                 }
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;

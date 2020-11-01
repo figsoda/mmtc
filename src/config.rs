@@ -22,7 +22,7 @@ fn jump_lines_default() -> usize {
 }
 
 fn ups_default() -> f64 {
-    4.0
+    1.0
 }
 
 #[derive(Deserialize)]

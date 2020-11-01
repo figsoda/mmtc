@@ -53,18 +53,24 @@ pub async fn init(addr: SocketAddr) -> Result<Client> {
     Ok(cl)
 }
 
-pub async fn idle_playlist(cl: &mut Client) -> Result<()> {
-    cl.write_all(b"idle playlist\n").await?;
+pub async fn idle(cl: &mut Client) -> Result<(bool, bool)> {
+    cl.write_all(b"idle playlist player options\n").await?;
     let mut lines = cl.lines();
+
+    let mut queue = false;
+    let mut status = false;
 
     while let Some(line) = lines.next_line().await? {
         match line.as_bytes() {
+            b"changed: playlist" => queue = true,
+            b"changed: player" => status = true,
+            b"changed: options" => status = true,
             b"OK" => break,
             _ => continue,
         }
     }
 
-    Ok(())
+    Ok((queue, status))
 }
 
 pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {

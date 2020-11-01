@@ -25,7 +25,7 @@ use std::{
     process::exit,
 };
 
-use crate::{config::Config, mpd::Track};
+use crate::config::Config;
 
 fn cleanup() -> Result<()> {
     disable_raw_mode().context("Failed to clean up terminal")?;
@@ -43,7 +43,7 @@ fn die<T>(e: impl Into<Error>) -> T {
 enum Command {
     Quit,
     UpdateFrame,
-    UpdateQueue(Vec<Track>),
+    UpdateQueue,
     UpdateStatus,
     TogglePause,
     Play,
@@ -87,18 +87,17 @@ async fn run() -> Result<()> {
     tokio::spawn(async move {
         let tx = tx1;
         loop {
-            mpd::idle_playlist(&mut idle_cl)
+            let changed = mpd::idle(&mut idle_cl)
                 .await
                 .context("Failed to idle")
                 .unwrap_or_else(die);
-            tx.send(Command::UpdateQueue(
-                mpd::queue(&mut idle_cl)
-                    .await
-                    .context("Failed to query queue information")
-                    .unwrap_or_else(die),
-            ))
-            .await
-            .unwrap_or_else(die);
+            if changed.0 {
+                tx.send(Command::UpdateQueue).await.unwrap_or_else(die);
+            }
+            if changed.1 {
+                tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
+            }
+            tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
         }
     });
 
@@ -107,6 +106,7 @@ async fn run() -> Result<()> {
         loop {
             let deadline = Instant::now() + update_interval;
             tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
+            tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
             sleep_until(deadline).await;
         }
     });
@@ -179,19 +179,20 @@ async fn run() -> Result<()> {
                     );
                 })
                 .context("Failed to draw to terminal")?,
-            Command::UpdateQueue(new_queue) => {
-                queue = new_queue;
+            Command::UpdateQueue => {
+                queue = mpd::queue(&mut cl)
+                    .await
+                    .context("Failed to query queue")
+                    .unwrap_or_else(die);
                 selected = status.song.map_or(0, |song| song.pos);
                 liststate = ListState::default();
                 liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
             }
             Command::UpdateStatus => {
                 status = mpd::status(&mut cl)
                     .await
                     .context("Failed to query status")
                     .unwrap_or_else(die);
-                tx.send(Command::UpdateFrame).await?;
             }
             Command::TogglePause => {
                 mpd::toggle_pause(&mut cl)
@@ -199,6 +200,7 @@ async fn run() -> Result<()> {
                     .context("Failed to toggle pause")
                     .unwrap_or_else(die);
                 tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
             }
             Command::Play => {
                 if selected < queue.len() {
@@ -208,6 +210,7 @@ async fn run() -> Result<()> {
                         .unwrap_or_else(die);
                 }
                 tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
             }
             Command::Reselect => {
                 selected = status.song.map_or(0, |song| song.pos);

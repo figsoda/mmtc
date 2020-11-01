@@ -29,8 +29,8 @@ Config(
             ),
         ])),
         Fixed(1, Columns([
-            Min(0, Textbox(If(Playing, Parts([
-                Text("["),
+            Min(0, Textbox(If(Not(Stopped), Parts([
+                If(Playing, Text("[playing: "), Text("[paused: ")),
                 CurrentElapsed,
                 Text("/"),
                 CurrentDuration,
@@ -50,12 +50,11 @@ Config(
                     CurrentFile,
                 )
             ])))),
-            Fixed(3, TextboxR(Parts([
-                If(Repeat,
-                    If(Single, Text("🔂"), Text("🔁")),
-                ),
-                If(Random, Text("🔀")),
-                If(Consume, Text("🔥")),
+            Fixed(12, TextboxR(Parts([
+                If(Repeat, Text("[@]")),
+                If(Random, Text("[#]")),
+                If(Single, Text("[^]"), If(Oneshot, Text("[!]"))),
+                If(Consume, Text("[*]")),
             ]))),
         ])),
     ]),

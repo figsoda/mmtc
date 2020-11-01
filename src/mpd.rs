@@ -17,6 +17,7 @@ pub struct Status {
     pub random: bool,
     pub single: Option<bool>, // None: oneshot
     pub consume: bool,
+    pub state: Option<bool>, // Some(true): play, Some(false): pause, None: stop
     pub song: Option<Song>,
 }
 
@@ -139,6 +140,7 @@ pub async fn status(cl: &mut Client) -> Result<Status> {
     let mut random = None;
     let mut single = None;
     let mut consume = None;
+    let mut state = None;
     let mut pos = None;
     let mut elapsed = None;
 
@@ -157,6 +159,8 @@ pub async fn status(cl: &mut Client) -> Result<Status> {
             b"single: oneshot" => single = Some(None),
             b"consume: 0" => consume = Some(false),
             b"consume: 1" => consume = Some(true),
+            b"state: play" => state = Some(true),
+            b"state: pause" => state = Some(false),
             expand!([@b"song: ", xs @ ..]) => {
                 pos = Some(String::from_utf8_lossy(xs).parse()?);
             }
@@ -175,6 +179,7 @@ pub async fn status(cl: &mut Client) -> Result<Status> {
             random,
             single,
             consume,
+            state,
             song: if let (Some(pos), Some(elapsed)) = (pos, elapsed) {
                 Some(Song { pos, elapsed })
             } else {

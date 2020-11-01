@@ -88,12 +88,14 @@ pub enum AddStyle {
 
 #[derive(Deserialize)]
 pub enum Condition {
-    Playing,
     Repeat,
     Random,
     Single,
     Oneshot,
     Consume,
+    Playing,
+    Paused,
+    Stopped,
     TitleExist,
     ArtistExist,
     AlbumExist,

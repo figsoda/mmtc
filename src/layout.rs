@@ -445,12 +445,14 @@ fn eval_cond(
     selected: bool,
 ) -> bool {
     match cond {
-        Condition::Playing => current_track.is_some(),
         Condition::Repeat => status.repeat,
         Condition::Random => status.random,
         Condition::Single => status.single == Some(true),
         Condition::Oneshot => status.single == None,
         Condition::Consume => status.consume,
+        Condition::Playing => status.state == Some(true),
+        Condition::Paused => status.state == Some(false),
+        Condition::Stopped => status.state == None,
         Condition::TitleExist => matches!(current_track, Some(Track { title: Some(_), .. })),
         Condition::ArtistExist => matches!(
             current_track,

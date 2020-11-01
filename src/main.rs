@@ -195,7 +195,7 @@ async fn run() -> Result<()> {
                     .unwrap_or_else(die);
             }
             Command::TogglePause => {
-                mpd::toggle_pause(&mut cl)
+                mpd::command(&mut cl, b"pause\n")
                     .await
                     .context("Failed to toggle pause")
                     .unwrap_or_else(die);

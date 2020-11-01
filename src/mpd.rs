@@ -197,13 +197,15 @@ pub async fn status(cl: &mut Client) -> Result<Status> {
     }
 }
 
-pub async fn toggle_pause(cl: &mut Client) -> Result<()> {
-    cl.write_all(b"pause\n").await?;
+pub async fn play(cl: &mut Client, pos: usize) -> Result<()> {
+    cl.write_all(b"play ").await?;
+    cl.write_all(pos.to_string().as_bytes()).await?;
+    cl.write_u8(b'\n').await?;
     let mut lines = cl.lines();
 
     while let Some(line) = lines.next_line().await? {
         match line.as_bytes() {
-            b"OK" => break,
+            b"OK" | expand!([@b"ACK ", ..]) => break,
             _ => continue,
         }
     }
@@ -211,10 +213,8 @@ pub async fn toggle_pause(cl: &mut Client) -> Result<()> {
     Ok(())
 }
 
-pub async fn play(cl: &mut Client, pos: usize) -> Result<()> {
-    cl.write_all(b"play ").await?;
-    cl.write_all(pos.to_string().as_bytes()).await?;
-    cl.write_u8(b'\n').await?;
+pub async fn command(cl: &mut Client, cmd: &'static [u8]) -> Result<()> {
+    cl.write_all(cmd).await?;
     let mut lines = cl.lines();
 
     while let Some(line) = lines.next_line().await? {

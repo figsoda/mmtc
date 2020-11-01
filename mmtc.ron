@@ -28,26 +28,35 @@ Config(
                 selected_style: [Fg(Black), Bg(Indexed(177)), Bold],
             ),
         ])),
-        Fixed(1, Textbox(If(Playing, Parts([
-            Text("["),
-            CurrentElapsed,
-            Text("/"),
-            CurrentDuration,
-            Text("] "),
-            If(TitleExist,
-                Parts([
-                    CurrentTitle,
-                    If(ArtistExist, Parts([
-                        Text(" - "),
-                        CurrentArtist,
-                        If(AlbumExist, Parts([
+        Fixed(1, Columns([
+            Min(0, Textbox(If(Playing, Parts([
+                Text("["),
+                CurrentElapsed,
+                Text("/"),
+                CurrentDuration,
+                Text("] "),
+                If(TitleExist,
+                    Parts([
+                        CurrentTitle,
+                        If(ArtistExist, Parts([
                             Text(" - "),
-                            CurrentAlbum,
+                            CurrentArtist,
+                            If(AlbumExist, Parts([
+                                Text(" - "),
+                                CurrentAlbum,
+                            ])),
                         ])),
-                    ])),
-                ]),
-                CurrentFile,
-            )
-        ])))),
+                    ]),
+                    CurrentFile,
+                )
+            ])))),
+            Fixed(3, TextboxR(Parts([
+                If(Repeat,
+                    If(Single, Text("🔂"), Text("🔁")),
+                ),
+                If(Random, Text("🔀")),
+                If(Consume, Text("🔥")),
+            ]))),
+        ])),
     ]),
 )

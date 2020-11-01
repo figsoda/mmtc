@@ -29,7 +29,10 @@ fn ups_default() -> f64 {
 pub enum Widget {
     Rows(Vec<Constrained<Widget>>),
     Columns(Vec<Constrained<Widget>>),
+    #[serde(alias = "TextboxL")]
     Textbox(Texts),
+    TextboxC(Texts),
+    TextboxR(Texts),
     Queue(Vec<Column>),
 }
 

@@ -1,6 +1,6 @@
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
     text::{Span, Spans},
     widgets::{List, ListItem, ListState, Paragraph},
@@ -108,6 +108,46 @@ pub fn render(
                 Style::default(),
             );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
+        }
+        Widget::TextboxC(xss) => {
+            let mut spans = Vec::new();
+            flatten(
+                &mut spans,
+                &xss,
+                status,
+                if let Some(Song { pos, .. }) = status.song {
+                    queue.get(pos)
+                } else {
+                    None
+                },
+                None,
+                false,
+                Style::default(),
+            );
+            frame.render_widget(
+                Paragraph::new(Spans::from(spans)).alignment(Alignment::Center),
+                size,
+            );
+        }
+        Widget::TextboxR(xss) => {
+            let mut spans = Vec::new();
+            flatten(
+                &mut spans,
+                &xss,
+                status,
+                if let Some(Song { pos, .. }) = status.song {
+                    queue.get(pos)
+                } else {
+                    None
+                },
+                None,
+                false,
+                Style::default(),
+            );
+            frame.render_widget(
+                Paragraph::new(Spans::from(spans)).alignment(Alignment::Right),
+                size,
+            );
         }
         Widget::Queue(xs) => {
             let len = xs.capacity();

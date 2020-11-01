@@ -198,6 +198,7 @@ async fn run() -> Result<()> {
                     .await
                     .context("Failed to toggle pause")
                     .unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await?;
             }
             Command::Play => {
                 if selected < queue.len() {

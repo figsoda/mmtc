@@ -8,7 +8,7 @@ mod mpd;
 
 use anyhow::{Context, Error, Result};
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, MouseEvent},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -149,7 +149,15 @@ async fn run() -> Result<()> {
                     }
                     _ => (),
                 },
-                Event::Resize(..) => tx.send(Command::UpdateFrame).await.unwrap_or_else(die),
+                Event::Mouse(MouseEvent::ScrollDown(..)) => {
+                    tx.send(Command::Down).await.unwrap_or_else(die);
+                }
+                Event::Mouse(MouseEvent::ScrollUp(..)) => {
+                    tx.send(Command::Up).await.unwrap_or_else(die);
+                }
+                Event::Resize(..) => {
+                    tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
+                }
                 _ => (),
             }
         }

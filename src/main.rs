@@ -24,10 +24,7 @@ use std::{
     process::exit,
 };
 
-use crate::{
-    config::Config,
-    mpd::{Status, Track},
-};
+use crate::{config::Config, mpd::Track};
 
 fn cleanup() -> Result<()> {
     disable_raw_mode().context("Failed to clean up terminal")?;
@@ -46,7 +43,7 @@ enum Command {
     Quit,
     UpdateFrame,
     UpdateQueue(Vec<Track>),
-    UpdateStatus(Status),
+    UpdateStatus,
     Down,
     Up,
 }
@@ -66,10 +63,10 @@ async fn run() -> Result<()> {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6600);
 
     let mut idle_cl = mpd::init(addr).await?;
-    let mut status_cl = mpd::init(addr).await?;
+    let mut cl = mpd::init(addr).await?;
 
     let mut queue = mpd::queue(&mut idle_cl).await?;
-    let mut status = mpd::status(&mut status_cl).await?;
+    let mut status = mpd::status(&mut cl).await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
@@ -103,14 +100,7 @@ async fn run() -> Result<()> {
         let tx = tx2;
         loop {
             let deadline = Instant::now() + update_interval;
-            tx.send(Command::UpdateStatus(
-                mpd::status(&mut status_cl)
-                    .await
-                    .context("Failed to query status")
-                    .unwrap_or_else(die),
-            ))
-            .await
-            .unwrap_or_else(die);
+            tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
             sleep_until(deadline).await;
         }
     });
@@ -167,8 +157,11 @@ async fn run() -> Result<()> {
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
             }
-            Command::UpdateStatus(new_status) => {
-                status = new_status;
+            Command::UpdateStatus => {
+                status = mpd::status(&mut cl)
+                    .await
+                    .context("Failed to query status")
+                    .unwrap_or_else(die);
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Down => {

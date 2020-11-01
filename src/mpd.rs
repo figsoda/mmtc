@@ -199,3 +199,19 @@ pub async fn toggle_pause(cl: &mut Client) -> Result<()> {
 
     Ok(())
 }
+
+pub async fn play(cl: &mut Client, pos: usize) -> Result<()> {
+    cl.write_all(b"play ").await?;
+    cl.write_all(pos.to_string().as_bytes()).await?;
+    cl.write_u8(b'\n').await?;
+    let mut lines = cl.lines();
+
+    while let Some(line) = lines.next_line().await? {
+        match line.as_bytes() {
+            b"OK" | expand!([@b"ACK ", ..]) => break,
+            _ => continue,
+        }
+    }
+
+    Ok(())
+}

@@ -45,6 +45,7 @@ enum Command {
     UpdateQueue(Vec<Track>),
     UpdateStatus,
     TogglePause,
+    Play,
     Down,
     Up,
 }
@@ -124,6 +125,9 @@ async fn run() -> Result<()> {
                     KeyCode::Char('p') => {
                         tx.send(Command::TogglePause).await.unwrap_or_else(die);
                     }
+                    KeyCode::Enter => {
+                        tx.send(Command::Play).await.unwrap_or_else(die);
+                    }
                     KeyCode::Char('j') | KeyCode::Down => {
                         tx.send(Command::Down).await.unwrap_or_else(die);
                     }
@@ -173,6 +177,14 @@ async fn run() -> Result<()> {
                     .await
                     .context("Failed to toggle pause")
                     .unwrap_or_else(die);
+            }
+            Command::Play => {
+                if selected < queue.len() {
+                    mpd::play(&mut cl, selected)
+                        .await
+                        .context("Failed to play the selected song")
+                        .unwrap_or_else(die);
+                }
             }
             Command::Down => {
                 let len = queue.len();

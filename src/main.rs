@@ -44,6 +44,7 @@ enum Command {
     UpdateFrame,
     UpdateQueue(Vec<Track>),
     UpdateStatus,
+    TogglePause,
     Down,
     Up,
 }
@@ -120,6 +121,9 @@ async fn run() -> Result<()> {
                     KeyCode::Char('q') | KeyCode::Esc => {
                         tx.send(Command::Quit).await.unwrap_or_else(die);
                     }
+                    KeyCode::Char('p') => {
+                        tx.send(Command::TogglePause).await.unwrap_or_else(die);
+                    }
                     KeyCode::Char('j') | KeyCode::Down => {
                         tx.send(Command::Down).await.unwrap_or_else(die);
                     }
@@ -163,6 +167,12 @@ async fn run() -> Result<()> {
                     .context("Failed to query status")
                     .unwrap_or_else(die);
                 tx.send(Command::UpdateFrame).await?;
+            }
+            Command::TogglePause => {
+                mpd::toggle_pause(&mut cl)
+                    .await
+                    .context("Failed to toggle pause")
+                    .unwrap_or_else(die);
             }
             Command::Down => {
                 let len = queue.len();

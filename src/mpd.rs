@@ -185,3 +185,17 @@ pub async fn status(cl: &mut Client) -> Result<Status> {
         bail!("incomplete status response");
     }
 }
+
+pub async fn toggle_pause(cl: &mut Client) -> Result<()> {
+    cl.write_all(b"pause\n").await?;
+    let mut lines = cl.lines();
+
+    while let Some(line) = lines.next_line().await? {
+        match line.as_bytes() {
+            b"OK" => break,
+            _ => continue,
+        }
+    }
+
+    Ok(())
+}

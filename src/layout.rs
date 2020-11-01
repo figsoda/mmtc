@@ -1,7 +1,7 @@
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
-    style::Style,
+    style::{Modifier, Style},
     text::{Span, Spans},
     widgets::{List, ListItem, ListState, Paragraph},
     Frame,
@@ -277,6 +277,60 @@ fn flatten(
                     }
                     AddStyle::Bg(color) => {
                         style.bg = Some(*color);
+                    }
+                    AddStyle::Bold => {
+                        style = style.add_modifier(Modifier::BOLD);
+                    }
+                    AddStyle::NoBold => {
+                        style = style.remove_modifier(Modifier::BOLD);
+                    }
+                    AddStyle::Dim => {
+                        style = style.add_modifier(Modifier::DIM);
+                    }
+                    AddStyle::NoDim => {
+                        style = style.remove_modifier(Modifier::DIM);
+                    }
+                    AddStyle::Italic => {
+                        style = style.add_modifier(Modifier::ITALIC);
+                    }
+                    AddStyle::NoItalic => {
+                        style = style.remove_modifier(Modifier::ITALIC);
+                    }
+                    AddStyle::Underlined => {
+                        style = style.add_modifier(Modifier::UNDERLINED);
+                    }
+                    AddStyle::NoUnderlined => {
+                        style = style.remove_modifier(Modifier::UNDERLINED);
+                    }
+                    AddStyle::SlowBlink => {
+                        style = style.add_modifier(Modifier::SLOW_BLINK);
+                    }
+                    AddStyle::NoSlowBlink => {
+                        style = style.remove_modifier(Modifier::SLOW_BLINK);
+                    }
+                    AddStyle::RapidBlink => {
+                        style = style.add_modifier(Modifier::RAPID_BLINK);
+                    }
+                    AddStyle::NoRapidBlink => {
+                        style = style.remove_modifier(Modifier::RAPID_BLINK);
+                    }
+                    AddStyle::Reversed => {
+                        style = style.add_modifier(Modifier::REVERSED);
+                    }
+                    AddStyle::NoReversed => {
+                        style = style.remove_modifier(Modifier::REVERSED);
+                    }
+                    AddStyle::Hidden => {
+                        style = style.add_modifier(Modifier::HIDDEN);
+                    }
+                    AddStyle::NoHidden => {
+                        style = style.remove_modifier(Modifier::HIDDEN);
+                    }
+                    AddStyle::CrossedOut => {
+                        style = style.add_modifier(Modifier::CROSSED_OUT);
+                    }
+                    AddStyle::NoCrossedOut => {
+                        style = style.remove_modifier(Modifier::CROSSED_OUT);
                     }
                 }
             }

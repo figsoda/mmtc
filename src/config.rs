@@ -63,6 +63,24 @@ pub enum Texts {
 pub enum AddStyle {
     Fg(Color),
     Bg(Color),
+    Bold,
+    NoBold,
+    Dim,
+    NoDim,
+    Italic,
+    NoItalic,
+    Underlined,
+    NoUnderlined,
+    SlowBlink,
+    NoSlowBlink,
+    RapidBlink,
+    NoRapidBlink,
+    Reversed,
+    NoReversed,
+    Hidden,
+    NoHidden,
+    CrossedOut,
+    NoCrossedOut,
 }
 
 #[derive(Deserialize)]

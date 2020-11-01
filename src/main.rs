@@ -47,6 +47,7 @@ enum Command {
     UpdateStatus,
     TogglePause,
     Play,
+    Reselect,
     Down,
     Up,
     JumpDown,
@@ -131,6 +132,9 @@ async fn run() -> Result<()> {
                     KeyCode::Enter => {
                         tx.send(Command::Play).await.unwrap_or_else(die);
                     }
+                    KeyCode::Char(' ') => {
+                        tx.send(Command::Reselect).await.unwrap_or_else(die);
+                    }
                     KeyCode::Char('j') | KeyCode::Down => {
                         tx.send(Command::Down).await.unwrap_or_else(die);
                     }
@@ -195,6 +199,11 @@ async fn run() -> Result<()> {
                         .unwrap_or_else(die);
                 }
                 tx.send(Command::UpdateStatus).await?;
+            }
+            Command::Reselect => {
+                selected = status.song.map_or(0, |song| song.pos);
+                liststate.select(Some(selected));
+                tx.send(Command::UpdateFrame).await?;
             }
             Command::Down => {
                 let len = queue.len();

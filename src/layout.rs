@@ -92,11 +92,11 @@ pub fn render(
                 render(frame, chunk, w, queue, status, selected, liststate);
             }
         }
-        Widget::Textbox(xss) => {
+        Widget::Textbox(xs) => {
             let mut spans = Vec::new();
             flatten(
                 &mut spans,
-                &xss,
+                &xs,
                 status,
                 if let Some(Song { pos, .. }) = status.song {
                     queue.get(pos)
@@ -109,11 +109,11 @@ pub fn render(
             );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
-        Widget::TextboxC(xss) => {
+        Widget::TextboxC(xs) => {
             let mut spans = Vec::new();
             flatten(
                 &mut spans,
-                &xss,
+                &xs,
                 status,
                 if let Some(Song { pos, .. }) = status.song {
                     queue.get(pos)
@@ -129,11 +129,11 @@ pub fn render(
                 size,
             );
         }
-        Widget::TextboxR(xss) => {
+        Widget::TextboxR(xs) => {
             let mut spans = Vec::new();
             flatten(
                 &mut spans,
-                &xss,
+                &xs,
                 status,
                 if let Some(Song { pos, .. }) = status.song {
                     queue.get(pos)

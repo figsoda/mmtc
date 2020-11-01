@@ -8,7 +8,7 @@ use tui::{
 };
 
 use crate::{
-    config::{AddStyle, Condition, Constrained, Texts, Widget},
+    config::{AddStyle, Column, Condition, Constrained, Texts, Widget},
     mpd::{Song, Status, Track},
 };
 
@@ -109,13 +109,13 @@ pub fn render(
             );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
-        Widget::Queue { columns } => {
-            let len = columns.capacity();
+        Widget::Queue(xs) => {
+            let len = xs.capacity();
             let mut ws = Vec::with_capacity(len);
             let mut cs = Vec::with_capacity(len);
 
-            let denom = columns.iter().fold(0, |n, x| {
-                if let Constrained::Ratio(m, _) = x {
+            let denom = xs.iter().fold(0, |n, Column { item, .. }| {
+                if let Constrained::Ratio(m, _) = item {
                     n + m
                 } else {
                     n
@@ -128,17 +128,17 @@ pub fn render(
                 None
             };
 
-            for column in columns {
+            for column in xs {
                 let len = queue.len();
                 if len == 0 {
                     continue;
                 }
 
-                let (xs, constraint) = match column {
-                    Constrained::Fixed(n, w) => (w, Constraint::Length(*n)),
-                    Constrained::Max(n, w) => (w, Constraint::Max(*n)),
-                    Constrained::Min(n, w) => (w, Constraint::Min(*n)),
-                    Constrained::Ratio(n, xs) => (xs, Constraint::Ratio(*n, denom)),
+                let (txts, constraint) = match &column.item {
+                    Constrained::Fixed(n, txts) => (txts, Constraint::Length(*n)),
+                    Constrained::Max(n, txts) => (txts, Constraint::Max(*n)),
+                    Constrained::Min(n, txts) => (txts, Constraint::Min(*n)),
+                    Constrained::Ratio(n, txts) => (txts, Constraint::Ratio(*n, denom)),
                 };
 
                 let mut items = Vec::with_capacity(len);
@@ -146,7 +146,7 @@ pub fn render(
                     let mut spans = Vec::new();
                     flatten(
                         &mut spans,
-                        xs,
+                        txts,
                         status,
                         current_track,
                         Some(&queue[i]),
@@ -155,7 +155,11 @@ pub fn render(
                     );
                     items.push(ListItem::new(Spans::from(spans)));
                 }
-                ws.push(List::new(items));
+                ws.push(
+                    List::new(items)
+                        .style(patch_style(Style::default(), &column.style))
+                        .highlight_style(patch_style(Style::default(), &column.selected_style)),
+                );
                 cs.push(constraint);
             }
 
@@ -272,71 +276,6 @@ fn flatten(
             }
         }
         Texts::Styled(styles, box xs) => {
-            let mut style = style;
-            for add_style in styles {
-                match add_style {
-                    AddStyle::Fg(color) => {
-                        style.fg = Some(*color);
-                    }
-                    AddStyle::Bg(color) => {
-                        style.bg = Some(*color);
-                    }
-                    AddStyle::Bold => {
-                        style = style.add_modifier(Modifier::BOLD);
-                    }
-                    AddStyle::NoBold => {
-                        style = style.remove_modifier(Modifier::BOLD);
-                    }
-                    AddStyle::Dim => {
-                        style = style.add_modifier(Modifier::DIM);
-                    }
-                    AddStyle::NoDim => {
-                        style = style.remove_modifier(Modifier::DIM);
-                    }
-                    AddStyle::Italic => {
-                        style = style.add_modifier(Modifier::ITALIC);
-                    }
-                    AddStyle::NoItalic => {
-                        style = style.remove_modifier(Modifier::ITALIC);
-                    }
-                    AddStyle::Underlined => {
-                        style = style.add_modifier(Modifier::UNDERLINED);
-                    }
-                    AddStyle::NoUnderlined => {
-                        style = style.remove_modifier(Modifier::UNDERLINED);
-                    }
-                    AddStyle::SlowBlink => {
-                        style = style.add_modifier(Modifier::SLOW_BLINK);
-                    }
-                    AddStyle::NoSlowBlink => {
-                        style = style.remove_modifier(Modifier::SLOW_BLINK);
-                    }
-                    AddStyle::RapidBlink => {
-                        style = style.add_modifier(Modifier::RAPID_BLINK);
-                    }
-                    AddStyle::NoRapidBlink => {
-                        style = style.remove_modifier(Modifier::RAPID_BLINK);
-                    }
-                    AddStyle::Reversed => {
-                        style = style.add_modifier(Modifier::REVERSED);
-                    }
-                    AddStyle::NoReversed => {
-                        style = style.remove_modifier(Modifier::REVERSED);
-                    }
-                    AddStyle::Hidden => {
-                        style = style.add_modifier(Modifier::HIDDEN);
-                    }
-                    AddStyle::NoHidden => {
-                        style = style.remove_modifier(Modifier::HIDDEN);
-                    }
-                    AddStyle::CrossedOut => {
-                        style = style.add_modifier(Modifier::CROSSED_OUT);
-                    }
-                    AddStyle::NoCrossedOut => {
-                        style = style.remove_modifier(Modifier::CROSSED_OUT);
-                    }
-                }
-            }
             flatten(
                 spans,
                 xs,
@@ -344,7 +283,7 @@ fn flatten(
                 current_track,
                 queue_track,
                 selected,
-                style,
+                patch_style(style, styles),
             );
         }
         Texts::Parts(xss) => {
@@ -389,6 +328,74 @@ fn flatten(
             }
         }
     }
+}
+fn patch_style(style: Style, styles: &Vec<AddStyle>) -> Style {
+    let mut style = style;
+    for add_style in styles {
+        match add_style {
+            AddStyle::Fg(color) => {
+                style.fg = Some(*color);
+            }
+            AddStyle::Bg(color) => {
+                style.bg = Some(*color);
+            }
+            AddStyle::Bold => {
+                style = style.add_modifier(Modifier::BOLD);
+            }
+            AddStyle::NoBold => {
+                style = style.remove_modifier(Modifier::BOLD);
+            }
+            AddStyle::Dim => {
+                style = style.add_modifier(Modifier::DIM);
+            }
+            AddStyle::NoDim => {
+                style = style.remove_modifier(Modifier::DIM);
+            }
+            AddStyle::Italic => {
+                style = style.add_modifier(Modifier::ITALIC);
+            }
+            AddStyle::NoItalic => {
+                style = style.remove_modifier(Modifier::ITALIC);
+            }
+            AddStyle::Underlined => {
+                style = style.add_modifier(Modifier::UNDERLINED);
+            }
+            AddStyle::NoUnderlined => {
+                style = style.remove_modifier(Modifier::UNDERLINED);
+            }
+            AddStyle::SlowBlink => {
+                style = style.add_modifier(Modifier::SLOW_BLINK);
+            }
+            AddStyle::NoSlowBlink => {
+                style = style.remove_modifier(Modifier::SLOW_BLINK);
+            }
+            AddStyle::RapidBlink => {
+                style = style.add_modifier(Modifier::RAPID_BLINK);
+            }
+            AddStyle::NoRapidBlink => {
+                style = style.remove_modifier(Modifier::RAPID_BLINK);
+            }
+            AddStyle::Reversed => {
+                style = style.add_modifier(Modifier::REVERSED);
+            }
+            AddStyle::NoReversed => {
+                style = style.remove_modifier(Modifier::REVERSED);
+            }
+            AddStyle::Hidden => {
+                style = style.add_modifier(Modifier::HIDDEN);
+            }
+            AddStyle::NoHidden => {
+                style = style.remove_modifier(Modifier::HIDDEN);
+            }
+            AddStyle::CrossedOut => {
+                style = style.add_modifier(Modifier::CROSSED_OUT);
+            }
+            AddStyle::NoCrossedOut => {
+                style = style.remove_modifier(Modifier::CROSSED_OUT);
+            }
+        }
+    }
+    style
 }
 
 fn eval_cond(

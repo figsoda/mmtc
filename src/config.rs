@@ -30,7 +30,7 @@ pub enum Widget {
     Rows(Vec<Constrained<Widget>>),
     Columns(Vec<Constrained<Widget>>),
     Textbox(Texts),
-    Queue { columns: Vec<Constrained<Texts>> },
+    Queue(Vec<Column>),
 }
 
 #[derive(Deserialize)]
@@ -99,6 +99,15 @@ pub enum Condition {
     And(Box<Condition>, Box<Condition>),
     Or(Box<Condition>, Box<Condition>),
     Xor(Box<Condition>, Box<Condition>),
+}
+
+#[derive(Deserialize)]
+pub struct Column {
+    pub item: Constrained<Texts>,
+    #[serde(default)]
+    pub style: Vec<AddStyle>,
+    #[serde(default)]
+    pub selected_style: Vec<AddStyle>,
 }
 
 impl<'de> Deserialize<'de> for Texts {

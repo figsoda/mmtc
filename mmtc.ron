@@ -6,26 +6,28 @@ Config(
             Ratio(10, Textbox(Text("Album"))),
             Ratio(1, Textbox(Text("Time"))),
         ])),
-        Min(0, Queue(
-            columns: [
-                Ratio(12, If(Selected,
-                    Styled([Fg(Black), Bg(Indexed(117)), Bold], QueueTitle),
-                    Styled([Fg(Indexed(117))], QueueTitle),
-                )),
-                Ratio(10, If(Selected,
-                    Styled([Fg(Black), Bg(Indexed(111)), Bold], QueueArtist),
-                    Styled([Fg(Indexed(111))], QueueArtist),
-                )),
-                Ratio(10, If(Selected,
-                    Styled([Fg(Black), Bg(Indexed(105)), Bold], QueueAlbum),
-                    Styled([Fg(Indexed(105))], QueueAlbum),
-                )),
-                Ratio(1, If(Selected,
-                    Styled([Fg(Black), Bg(Indexed(177)), Bold], QueueDuration),
-                    Styled([Fg(Indexed(177))], QueueDuration),
-                )),
-            ],
-        )),
+        Min(0, Queue([
+            Column(
+                item: Ratio(12, QueueTitle),
+                style: [Fg(Indexed(117))],
+                selected_style: [Fg(Black), Bg(Indexed(117)), Bold],
+            ),
+            Column(
+                item: Ratio(10, QueueArtist),
+                style: [Fg(Indexed(111))],
+                selected_style: [Fg(Black), Bg(Indexed(111)), Bold],
+            ),
+            Column(
+                item: Ratio(10, QueueAlbum),
+                style: [Fg(Indexed(105))],
+                selected_style: [Fg(Black), Bg(Indexed(105)), Bold],
+            ),
+            Column(
+                item: Ratio(1, QueueDuration),
+                style: [Fg(Indexed(177))],
+                selected_style: [Fg(Black), Bg(Indexed(177)), Bold],
+            ),
+        ])),
         Fixed(1, Textbox(If(Playing, Parts([
             Text("["),
             CurrentElapsed,

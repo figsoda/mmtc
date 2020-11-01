@@ -19,7 +19,7 @@ pub fn render(
     queue: &Vec<Track>,
     status: &Status,
     selected: usize,
-    liststate: &ListState,
+    liststate: &mut ListState,
 ) {
     match widget {
         Widget::Rows(xs) => {
@@ -166,8 +166,11 @@ pub fn render(
             let mut chunks = layout.split(size).into_iter();
             let mut ws = ws.into_iter();
 
-            while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                frame.render_stateful_widget(w, chunk, &mut liststate.clone());
+            if let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
+                frame.render_stateful_widget(w, chunk, liststate);
+                while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
+                    frame.render_stateful_widget(w, chunk, &mut liststate.clone());
+                }
             }
         }
     }

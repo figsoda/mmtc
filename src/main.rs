@@ -163,7 +163,7 @@ async fn run() -> Result<()> {
                         &queue,
                         &status,
                         selected,
-                        &liststate,
+                        &mut liststate,
                     );
                 })
                 .context("Failed to draw to terminal")?,

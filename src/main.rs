@@ -194,6 +194,7 @@ async fn run() -> Result<()> {
                         .context("Failed to play the selected song")
                         .unwrap_or_else(die);
                 }
+                tx.send(Command::UpdateStatus).await?;
             }
             Command::Down => {
                 let len = queue.len();

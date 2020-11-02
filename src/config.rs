@@ -6,38 +6,25 @@ use tui::style::Color;
 
 use std::{
     fmt::{self, Formatter},
-    net::{IpAddr, Ipv4Addr, SocketAddr},
+    net::SocketAddr,
 };
+
+use crate::defaults;
 
 #[derive(Deserialize)]
 pub struct Config {
-    #[serde(default = "address_default")]
+    #[serde(default = "defaults::address")]
     pub address: SocketAddr,
     #[serde(default)]
     pub cycle: bool,
-    #[serde(default = "jump_lines_default")]
+    #[serde(default = "defaults::jump_lines")]
     pub jump_lines: usize,
-    #[serde(default = "seek_secs_default")]
+    #[serde(default = "defaults::seek_secs")]
     pub seek_secs: f64,
-    #[serde(default = "ups_default")]
+    #[serde(default = "defaults::ups")]
     pub ups: f64,
+    #[serde(default = "defaults::layout")]
     pub layout: Widget,
-}
-
-fn address_default() -> SocketAddr {
-    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6600)
-}
-
-fn jump_lines_default() -> usize {
-    24
-}
-
-fn seek_secs_default() -> f64 {
-    5.0
-}
-
-fn ups_default() -> f64 {
-    1.0
 }
 
 #[derive(Deserialize)]

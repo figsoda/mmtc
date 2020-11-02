@@ -2,11 +2,12 @@
 #![forbid(unsafe_code)]
 
 mod config;
+mod defaults;
 mod fail;
 mod layout;
 mod mpd;
 
-use anyhow::{bail, Context, Error, Result};
+use anyhow::{Context, Error, Result};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, MouseEvent},
     execute,
@@ -118,10 +119,15 @@ async fn run() -> Result<()> {
         let mut xs = xs;
         xs.push("mmtc");
         xs.push("mmtc.ron");
-        ron::from_str(&fs::read_to_string(&xs).with_context(fail::read(xs.display()))?)
-            .with_context(fail::parse_cfg(xs.display()))?
+
+        if xs.is_file() {
+            ron::from_str(&fs::read_to_string(&xs).with_context(fail::read(xs.display()))?)
+                .with_context(fail::parse_cfg(xs.display()))?
+        } else {
+            defaults::config()
+        }
     } else {
-        bail!("Failed to find the config directory, please specify a config file");
+        defaults::config()
     };
 
     let addr = if let Some(addr) = opts.address {

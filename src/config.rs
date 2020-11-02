@@ -4,10 +4,15 @@ use serde::{
 };
 use tui::style::Color;
 
-use std::fmt::{self, Formatter};
+use std::{
+    fmt::{self, Formatter},
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+};
 
 #[derive(Deserialize)]
 pub struct Config {
+    #[serde(default = "address_default")]
+    pub address: SocketAddr,
     #[serde(default)]
     pub cycle: bool,
     #[serde(default = "jump_lines_default")]
@@ -17,6 +22,10 @@ pub struct Config {
     #[serde(default = "ups_default")]
     pub ups: f64,
     pub layout: Widget,
+}
+
+fn address_default() -> SocketAddr {
+    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6600)
 }
 
 fn jump_lines_default() -> usize {

@@ -21,7 +21,6 @@ use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 use std::{
     cmp::{max, min},
     io::{stdout, Write},
-    net::{IpAddr, Ipv4Addr, SocketAddr},
     process::exit,
 };
 
@@ -75,10 +74,9 @@ async fn main() {
 
 async fn run() -> Result<()> {
     let cfg: Config = ron::from_str(&std::fs::read_to_string("mmtc.ron").unwrap()).unwrap();
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6600);
 
-    let mut idle_cl = mpd::init(addr).await?;
-    let mut cl = mpd::init(addr).await?;
+    let mut idle_cl = mpd::init(cfg.address).await?;
+    let mut cl = mpd::init(cfg.address).await?;
 
     let mut queue = mpd::queue(&mut idle_cl).await?;
     let mut status = mpd::status(&mut cl).await?;

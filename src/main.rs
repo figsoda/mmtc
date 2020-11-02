@@ -26,18 +26,6 @@ use std::{
 
 use crate::config::Config;
 
-fn cleanup() -> Result<()> {
-    disable_raw_mode().context("Failed to clean up terminal")?;
-    execute!(stdout(), LeaveAlternateScreen, DisableMouseCapture)
-        .context("Failed to clean up terminal")?;
-    Ok(())
-}
-
-fn die<T>(e: impl Into<Error>) -> T {
-    eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e.into()));
-    exit(1);
-}
-
 #[derive(Debug)]
 enum Command {
     Quit,
@@ -60,6 +48,18 @@ enum Command {
     Up,
     JumpDown,
     JumpUp,
+}
+
+fn cleanup() -> Result<()> {
+    disable_raw_mode().context("Failed to clean up terminal")?;
+    execute!(stdout(), LeaveAlternateScreen, DisableMouseCapture)
+        .context("Failed to clean up terminal")?;
+    Ok(())
+}
+
+fn die<T>(e: impl Into<Error>) -> T {
+    eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e.into()));
+    exit(1);
 }
 
 #[tokio::main]

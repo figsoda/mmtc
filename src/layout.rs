@@ -16,7 +16,7 @@ pub fn render(
     frame: &mut Frame<impl Backend>,
     size: Rect,
     widget: &Widget,
-    queue: &Vec<Track>,
+    queue: &[Track],
     status: &Status,
     selected: usize,
     liststate: &mut ListState,
@@ -370,7 +370,7 @@ fn flatten(
     }
 }
 
-fn patch_style(style: Style, styles: &Vec<AddStyle>) -> Style {
+fn patch_style(style: Style, styles: &[AddStyle]) -> Style {
     let mut style = style;
     for add_style in styles {
         match add_style {

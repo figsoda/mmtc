@@ -92,18 +92,16 @@ pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {
             expand!([@b"file: ", xs @ ..]) => {
                 if first {
                     first = false;
+                } else if let (Some(file), Some(time)) = (file, time) {
+                    tracks.push(Track {
+                        file,
+                        artist,
+                        album,
+                        title,
+                        time,
+                    });
                 } else {
-                    if let (Some(file), Some(time)) = (file, time) {
-                        tracks.push(Track {
-                            file,
-                            artist,
-                            album,
-                            title,
-                            time,
-                        });
-                    } else {
-                        bail!("incomplete playlist response");
-                    }
+                    bail!("incomplete playlist response");
                 }
 
                 file = Some(String::from_utf8_lossy(xs).into());

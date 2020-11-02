@@ -31,11 +31,35 @@ use crate::config::Config;
 
 /// Minimal mpd terminal client https://github.com/figsoda/mmtc
 #[derive(StructOpt)]
-#[structopt(name = "mmtc", global_setting = AppSettings::ColoredHelp)]
+#[structopt(
+    name = "mmtc",
+    rename_all = "kebab-case",
+    global_setting = AppSettings::ColoredHelp,
+)]
 struct Opts {
     /// Specify the config file
     #[structopt(short, long)]
     config: Option<String>,
+
+    /// Specify the address of the mpd server
+    #[structopt(short, long)]
+    address: Option<String>,
+
+    /// Cycle through the queue
+    #[structopt(short, long)]
+    cycle: Option<bool>,
+
+    /// The number of lines to jump
+    #[structopt(short, long)]
+    jump_lines: Option<usize>,
+
+    /// The time in seconds to seek
+    #[structopt(short, long)]
+    seek_secs: Option<f64>,
+
+    /// The amount of status updates per second
+    #[structopt(short, long)]
+    ups: Option<f64>,
 }
 
 #[derive(Debug)]
@@ -100,8 +124,17 @@ async fn run() -> Result<()> {
         bail!("Failed to find the config directory, please specify a config file");
     };
 
-    let mut idle_cl = mpd::init(cfg.address).await?;
-    let mut cl = mpd::init(cfg.address).await?;
+    let addr = if let Some(addr) = opts.address {
+        addr.parse().with_context(fail::parse_addr(addr))?
+    } else {
+        cfg.address
+    };
+    let cycle = opts.cycle.unwrap_or(cfg.cycle);
+    let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
+    let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
+
+    let mut idle_cl = mpd::init(addr).await?;
+    let mut cl = mpd::init(addr).await?;
 
     let mut queue = mpd::queue(&mut idle_cl).await?;
     let mut status = mpd::status(&mut cl).await?;
@@ -109,11 +142,11 @@ async fn run() -> Result<()> {
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
 
-    let seek_backwards = format!("seekcur -{}\n", cfg.seek_secs);
+    let seek_backwards = format!("seekcur -{}\n", seek_secs);
     let seek_backwards = seek_backwards.as_bytes();
-    let seek_forwards = format!("seekcur +{}\n", cfg.seek_secs);
+    let seek_forwards = format!("seekcur +{}\n", seek_secs);
     let seek_forwards = seek_forwards.as_bytes();
-    let update_interval = Duration::from_secs_f64(1.0 / cfg.ups);
+    let update_interval = Duration::from_secs_f64(1.0 / opts.ups.unwrap_or(cfg.ups));
 
     let (tx, mut rx) = mpsc::channel(32);
     let tx1 = tx.clone();
@@ -392,7 +425,7 @@ async fn run() -> Result<()> {
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else if selected == len - 1 {
-                    if cfg.cycle {
+                    if cycle {
                         selected = 0;
                     }
                 } else {
@@ -406,7 +439,7 @@ async fn run() -> Result<()> {
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else if selected == 0 {
-                    if cfg.cycle {
+                    if cycle {
                         selected = len - 1;
                     }
                 } else {
@@ -420,10 +453,10 @@ async fn run() -> Result<()> {
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else {
-                    selected = if cfg.cycle {
-                        (selected + cfg.jump_lines) % len
+                    selected = if cycle {
+                        (selected + jump_lines) % len
                     } else {
-                        min(selected + cfg.jump_lines, len - 1)
+                        min(selected + jump_lines, len - 1)
                     }
                 }
                 liststate.select(Some(selected));
@@ -434,10 +467,10 @@ async fn run() -> Result<()> {
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else {
-                    selected = if cfg.cycle {
-                        (selected as isize - cfg.jump_lines as isize) % len as isize
+                    selected = if cycle {
+                        (selected as isize - jump_lines as isize) % len as isize
                     } else {
-                        max(selected as isize - cfg.jump_lines as isize, 0)
+                        max(selected as isize - jump_lines as isize, 0)
                     } as usize
                 }
                 liststate.select(Some(selected));

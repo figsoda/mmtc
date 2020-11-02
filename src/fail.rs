@@ -7,5 +7,6 @@ macro_rules! fail {
 }
 
 fail!(connect addr = "Failed to connect to {}");
+fail!(parse_addr addr = "Faield to parse {} as an address");
 fail!(parse_cfg path = "Failed to parse configuration file {}");
 fail!(read path = "Failed to read file {}");

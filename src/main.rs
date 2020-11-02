@@ -46,6 +46,8 @@ enum Command {
     UpdateQueue,
     UpdateStatus,
     TogglePause,
+    Previous,
+    Next,
     Play,
     Reselect,
     Down,
@@ -129,6 +131,12 @@ async fn run() -> Result<()> {
                     KeyCode::Char('p') => {
                         tx.send(Command::TogglePause).await.unwrap_or_else(die);
                     }
+                    KeyCode::Char('H') => {
+                        tx.send(Command::Previous).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char('L') => {
+                        tx.send(Command::Next).await.unwrap_or_else(die);
+                    }
                     KeyCode::Enter => {
                         tx.send(Command::Play).await.unwrap_or_else(die);
                     }
@@ -199,6 +207,18 @@ async fn run() -> Result<()> {
                     .await
                     .context("Failed to toggle pause")
                     .unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::Previous => {
+                mpd::command(&mut cl, b"previous\n")
+                    .await.context("Failed to play previous song").unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::Next => {
+                mpd::command(&mut cl, b"next\n")
+                    .await.context("Failed to play previous song").unwrap_or_else(die);
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }

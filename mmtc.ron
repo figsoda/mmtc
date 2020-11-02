@@ -1,16 +1,16 @@
 Config(
     layout: Rows([
         Fixed(1, Columns([
-            Ratio(12, Textbox(Text("Title"))),
-            Ratio(10, Textbox(Text("Artist"))),
-            Ratio(10, Textbox(Text("Album"))),
-            Ratio(1, Textbox(Text("Time"))),
+            Ratio(12, Textbox(Styled([Fg(Indexed(122)), Bold], Text("Title")))),
+            Ratio(10, Textbox(Styled([Fg(Indexed(158)), Bold], Text("Artist")))),
+            Ratio(10, Textbox(Styled([Fg(Indexed(194)), Bold], Text("Album")))),
+            Ratio(1, Textbox(Styled([Fg(Indexed(230)), Bold], Text("Time")))),
         ])),
         Min(0, Queue([
             Column(
                 item: Ratio(12, QueueTitle),
-                style: [Fg(Indexed(117))],
-                selected_style: [Fg(Black), Bg(Indexed(117)), Bold],
+                style: [Fg(Indexed(75))],
+                selected_style: [Fg(Black), Bg(Indexed(75)), Bold],
             ),
             Column(
                 item: Ratio(10, QueueArtist),
@@ -19,43 +19,47 @@ Config(
             ),
             Column(
                 item: Ratio(10, QueueAlbum),
-                style: [Fg(Indexed(105))],
-                selected_style: [Fg(Black), Bg(Indexed(105)), Bold],
+                style: [Fg(Indexed(147))],
+                selected_style: [Fg(Black), Bg(Indexed(147)), Bold],
             ),
             Column(
                 item: Ratio(1, QueueDuration),
-                style: [Fg(Indexed(177))],
-                selected_style: [Fg(Black), Bg(Indexed(177)), Bold],
+                style: [Fg(Indexed(183))],
+                selected_style: [Fg(Black), Bg(Indexed(183)), Bold],
             ),
         ])),
         Fixed(1, Columns([
-            Min(0, Textbox(If(Not(Stopped), Parts([
-                If(Playing, Text("[playing: "), Text("[paused: ")),
-                CurrentElapsed,
-                Text("/"),
-                CurrentDuration,
-                Text("] "),
+            Min(0, Textbox(If(Not(Stopped), Styled([Bold], Parts([
+                Styled([Fg(Indexed(113))], Parts([
+                    If(Playing, Text("[playing: "), Text("[paused:  ")),
+                    CurrentElapsed,
+                    Text("/"),
+                    CurrentDuration,
+                    Text("] "),
+                ])),
                 If(TitleExist,
                     Parts([
-                        CurrentTitle,
+                        Styled([Fg(Indexed(149))], CurrentTitle),
                         If(ArtistExist, Parts([
-                            Text(" - "),
-                            CurrentArtist,
+                            Styled([Fg(Indexed(216))], Text(" ◆ ")),
+                            Styled([Fg(Indexed(185))], CurrentArtist),
                             If(AlbumExist, Parts([
-                                Text(" - "),
-                                CurrentAlbum,
+                                Styled([Fg(Indexed(216))], Text(" ◆ ")),
+                                Styled([Fg(Indexed(221))], CurrentAlbum),
                             ])),
                         ])),
                     ]),
-                    CurrentFile,
-                )
+                    Styled([Fg(Indexed(185))], CurrentFile),
+                ),
+            ]))))),
+            Fixed(12, TextboxR(Styled([Fg(Indexed(81))], Parts([
+                Text("["),
+                If(Repeat, Text("@")),
+                If(Random, Text("#")),
+                If(Single, Text("^"), If(Oneshot, Text("!"))),
+                If(Consume, Text("*")),
+                Text("]"),
             ])))),
-            Fixed(12, TextboxR(Parts([
-                If(Repeat, Text("[@]")),
-                If(Random, Text("[#]")),
-                If(Single, Text("[^]"), If(Oneshot, Text("[!]"))),
-                If(Consume, Text("[*]")),
-            ]))),
         ])),
     ]),
 )

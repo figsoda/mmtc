@@ -102,7 +102,7 @@ fn die<T>(e: impl Into<Error>) -> T {
 #[tokio::main]
 async fn main() {
     let res = run().await;
-    if let Err(e) = cleanup().and_then(|_| res) {
+    if let Err(e) = cleanup().and(res) {
         eprintln!("{:?}", e);
         exit(1);
     }

@@ -182,14 +182,14 @@ pub fn render(
                 };
 
                 let mut items = Vec::with_capacity(len);
-                for i in 0 .. len {
+                for (i, track) in queue.iter().enumerate() {
                     let mut spans = Vec::new();
                     flatten(
                         &mut spans,
                         txts,
                         status,
                         current_track,
-                        Some(&queue[i]),
+                        Some(track),
                         i == selected,
                         Style::default(),
                     );

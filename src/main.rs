@@ -6,12 +6,14 @@ mod fail;
 mod layout;
 mod mpd;
 
-use anyhow::{Context, Error, Result};
+use anyhow::{bail, Context, Error, Result};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, MouseEvent},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use dirs::config_dir;
+use structopt::{clap::AppSettings, StructOpt};
 use tokio::{
     sync::mpsc,
     time::{sleep_until, Duration, Instant},
@@ -20,11 +22,21 @@ use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
     cmp::{max, min},
+    fs,
     io::{stdout, Write},
     process::exit,
 };
 
 use crate::config::Config;
+
+/// Minimal mpd terminal client https://github.com/figsoda/mmtc
+#[derive(StructOpt)]
+#[structopt(name = "mmtc", global_setting = AppSettings::ColoredHelp)]
+struct Opts {
+    /// Specify the config file
+    #[structopt(short, long)]
+    config: Option<String>,
+}
 
 #[derive(Debug)]
 enum Command {
@@ -73,7 +85,20 @@ async fn main() {
 }
 
 async fn run() -> Result<()> {
-    let cfg: Config = ron::from_str(&std::fs::read_to_string("mmtc.ron").unwrap()).unwrap();
+    let opts = Opts::from_args();
+
+    let cfg: Config = if let Some(cfg_file) = opts.config {
+        ron::from_str(&fs::read_to_string(&cfg_file).with_context(fail::read(&cfg_file))?)
+            .with_context(fail::parse_cfg(&cfg_file))?
+    } else if let Some(xs) = config_dir() {
+        let mut xs = xs;
+        xs.push("mmtc");
+        xs.push("mmtc.ron");
+        ron::from_str(&fs::read_to_string(&xs).with_context(fail::read(xs.display()))?)
+            .with_context(fail::parse_cfg(xs.display()))?
+    } else {
+        bail!("Failed to find the config directory, please specify a config file");
+    };
 
     let mut idle_cl = mpd::init(cfg.address).await?;
     let mut cl = mpd::init(cfg.address).await?;

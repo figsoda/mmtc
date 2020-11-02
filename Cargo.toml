@@ -14,9 +14,11 @@ readme = "README.md"
 [dependencies]
 anyhow = "1.0.33"
 crossterm = "0.18.2"
+dirs = "3.0.1"
 expand = "0.1.2"
 ron = "0.6.2"
 serde = { version = "1.0.117", features = ["derive"] }
+structopt = "0.3.20"
 
 [dependencies.tokio]
 version = "0.3.2"

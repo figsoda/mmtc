@@ -12,6 +12,8 @@ pub struct Config {
     pub cycle: bool,
     #[serde(default = "jump_lines_default")]
     pub jump_lines: usize,
+    #[serde(default = "seek_secs_default")]
+    pub seek_secs: f64,
     #[serde(default = "ups_default")]
     pub ups: f64,
     pub layout: Widget,
@@ -19,6 +21,10 @@ pub struct Config {
 
 fn jump_lines_default() -> usize {
     24
+}
+
+fn seek_secs_default() -> f64 {
+    5.0
 }
 
 fn ups_default() -> f64 {

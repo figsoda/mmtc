@@ -213,7 +213,7 @@ pub async fn play(cl: &mut Client, pos: usize) -> Result<()> {
     Ok(())
 }
 
-pub async fn command(cl: &mut Client, cmd: &'static [u8]) -> Result<()> {
+pub async fn command(cl: &mut Client, cmd: &[u8]) -> Result<()> {
     cl.write_all(cmd).await?;
     let mut lines = cl.lines();
 

@@ -51,6 +51,8 @@ enum Command {
     ToggleConsume,
     ToggleOneshot,
     TogglePause,
+    SeekBackwards,
+    SeekForwards,
     Previous,
     Next,
     Play,
@@ -84,6 +86,10 @@ async fn run() -> Result<()> {
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
 
+    let seek_backwards = format!("seekcur -{}\n", cfg.seek_secs);
+    let seek_backwards = seek_backwards.as_bytes();
+    let seek_forwards = format!("seekcur +{}\n", cfg.seek_secs);
+    let seek_forwards = seek_forwards.as_bytes();
     let update_interval = Duration::from_secs_f64(1.0 / cfg.ups);
 
     let (tx, mut rx) = mpsc::channel(32);
@@ -150,6 +156,12 @@ async fn run() -> Result<()> {
                     }
                     KeyCode::Char('p') => {
                         tx.send(Command::TogglePause).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char('h') | KeyCode::Left => {
+                        tx.send(Command::SeekBackwards).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char('l') | KeyCode::Right => {
+                        tx.send(Command::SeekForwards).await.unwrap_or_else(die);
                     }
                     KeyCode::Char('H') => {
                         tx.send(Command::Previous).await.unwrap_or_else(die);
@@ -294,6 +306,22 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle consume")
                 .unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::SeekBackwards => {
+                mpd::command(&mut cl, seek_backwards)
+                    .await
+                    .context("Failed to seek backwards")
+                    .unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::SeekForwards => {
+                mpd::command(&mut cl, seek_forwards)
+                    .await
+                    .context("Failed to seek forwards")
+                    .unwrap_or_else(die);
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }

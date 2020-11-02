@@ -6,8 +6,8 @@ use crate::config::{AddStyle, Column, Condition, Config, Constrained, Texts, Wid
 
 pub fn config() -> Config {
     Config {
-        cycle: false,
         address: address(),
+        cycle: false,
         jump_lines: jump_lines(),
         seek_secs: seek_secs(),
         ups: ups(),

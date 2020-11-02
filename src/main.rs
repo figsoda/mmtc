@@ -43,23 +43,23 @@ struct Opts {
     config: Option<String>,
 
     /// Specify the address of the mpd server
-    #[structopt(short, long)]
+    #[structopt(long)]
     address: Option<String>,
 
     /// Cycle through the queue
-    #[structopt(short, long)]
+    #[structopt(long)]
     cycle: Option<bool>,
 
     /// The number of lines to jump
-    #[structopt(short, long)]
+    #[structopt(long)]
     jump_lines: Option<usize>,
 
     /// The time in seconds to seek
-    #[structopt(short, long)]
+    #[structopt(long)]
     seek_secs: Option<f64>,
 
     /// The amount of status updates per second
-    #[structopt(short, long)]
+    #[structopt(long)]
     ups: Option<f64>,
 }
 

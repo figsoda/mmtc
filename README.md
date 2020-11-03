@@ -1,6 +1,23 @@
 # mmtc
 
+[![release](https://img.shields.io/github/v/release/figsoda/mmtc?logo=github&style=flat-square)](https://github.com/figsoda/mmtc/releases)
+[![version](https://img.shields.io/crates/v/mmtc?logo=rust&style=flat-square)][Crate]
+[![dependencies](https://img.shields.io/librariesio/release/cargo/mmtc?style=flat-square)](https://libraries.io/cargo/mmtc)
+[![license](https://img.shields.io/badge/license-MPL--2.0-blue?style=flat-square)](https://www.mozilla.org/en-US/MPL/2.0)
+[![ci](https://img.shields.io/github/workflow/status/figsoda/mmtc/ci?label=ci&logo=github-actions&style=flat-square)](https://github.com/figsoda/mmtc/actions?query=workflow:ci)
+
 Minimal mpd terminal client
+
+
+## Installation
+
+The latest precompiled binaries are available on [github](https://github.com/figsoda/mmtc/releases/latest).
+
+Alternatively you can install mmtc from [crates.io][Crate] with cargo. This requires the nightly toolchain of Rust.
+
+```shell
+cargo +nightly install mmtc
+```
 
 
 ## Building from source
@@ -65,3 +82,6 @@ Key | Action
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md)
+
+
+[Crate]: https://crates.io/crates/mmtc

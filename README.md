@@ -32,14 +32,16 @@ cargo +nightly build --release
 ## Usage
 
 ```
-mmtc [OPTIONS]
+mmtc [FLAGS] [OPTIONS]
 ```
 
 ### FLAGS
 
 ```
--h, --help       Prints help information
--V, --version    Prints version information
+    --cycle       Cycle through the queue
+-h, --help        Prints help information
+    --no-cycle    Don't cycle through the queue
+-V, --version     Prints version information
 ```
 
 ### OPTIONS
@@ -47,7 +49,6 @@ mmtc [OPTIONS]
 ```
     --address <address>          Specify the address of the mpd server
 -c, --config <config>            Specify the config file
-    --cycle <cycle>              Cycle through the queue
     --jump-lines <jump-lines>    The number of lines to jump
     --seek-secs <seek-secs>      The time to seek in seconds
     --ups <ups>                  The amount of status updates per second

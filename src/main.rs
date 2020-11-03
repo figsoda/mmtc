@@ -49,11 +49,15 @@ struct Opts {
 
     /// Cycle through the queue
     #[structopt(long)]
-    cycle: Option<bool>,
+    cycle: bool,
 
     /// The number of lines to jump
     #[structopt(long)]
     jump_lines: Option<usize>,
+
+    /// Don't cycle through the queue
+    #[structopt(long, overrides_with("cycle"))]
+    no_cycle: bool,
 
     /// The time to seek in seconds
     #[structopt(long)]
@@ -137,7 +141,7 @@ async fn run() -> Result<()> {
     } else {
         cfg.address
     };
-    let cycle = opts.cycle.unwrap_or(cfg.cycle);
+    let cycle = opts.cycle || if opts.no_cycle { false } else { cfg.cycle };
     let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
     let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
 

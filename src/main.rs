@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments)]
 #![feature(box_patterns)]
 #![forbid(unsafe_code)]
 

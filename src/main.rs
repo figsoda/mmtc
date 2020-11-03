@@ -55,7 +55,7 @@ struct Opts {
     #[structopt(long)]
     jump_lines: Option<usize>,
 
-    /// The time in seconds to seek
+    /// The time to seek in seconds
     #[structopt(long)]
     seek_secs: Option<f64>,
 

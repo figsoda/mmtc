@@ -49,13 +49,12 @@ mmtc [OPTIONS]
 -c, --config <config>            Specify the config file
     --cycle <cycle>              Cycle through the queue
     --jump-lines <jump-lines>    The number of lines to jump
-    --seek-secs <seek-secs>      The time in seconds to seek
+    --seek-secs <seek-secs>      The time to seek in seconds
     --ups <ups>                  The amount of status updates per second
 ```
 
 
 ## Key bindings
-
 
 Key | Action
 -|-

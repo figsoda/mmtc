@@ -101,6 +101,7 @@ pub enum Condition {
     TitleExist,
     ArtistExist,
     AlbumExist,
+    QueueCurrent,
     Selected,
     Not(Box<Condition>),
     And(Box<Condition>, Box<Condition>),

@@ -105,6 +105,7 @@ pub fn render(
                 },
                 None,
                 false,
+                false,
                 Style::default(),
             );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
@@ -121,6 +122,7 @@ pub fn render(
                     None
                 },
                 None,
+                false,
                 false,
                 Style::default(),
             );
@@ -142,6 +144,7 @@ pub fn render(
                 },
                 None,
                 false,
+                false,
                 Style::default(),
             );
             frame.render_widget(
@@ -162,10 +165,10 @@ pub fn render(
                 }
             });
 
-            let current_track = if let Some(Song { pos, .. }) = status.song {
-                queue.get(pos)
+            let (pos, current_track) = if let Some(Song { pos, .. }) = status.song {
+                (Some(pos), queue.get(pos))
             } else {
-                None
+                (None, None)
             };
 
             for column in xs {
@@ -190,6 +193,7 @@ pub fn render(
                         status,
                         current_track,
                         Some(track),
+                        pos == Some(i),
                         i == selected,
                         Style::default(),
                     );
@@ -226,6 +230,7 @@ fn flatten(
     status: &Status,
     current_track: Option<&Track>,
     queue_track: Option<&Track>,
+    queue_current: bool,
     selected: bool,
     style: Style,
 ) {
@@ -322,6 +327,7 @@ fn flatten(
                 status,
                 current_track,
                 queue_track,
+                queue_current,
                 selected,
                 patch_style(style, styles),
             );
@@ -334,6 +340,7 @@ fn flatten(
                     status,
                     current_track,
                     queue_track,
+                    queue_current,
                     selected,
                     style,
                 );
@@ -342,7 +349,7 @@ fn flatten(
         Texts::If(cond, box yes, Some(box no)) => {
             flatten(
                 spans,
-                if eval_cond(cond, status, current_track, selected) {
+                if eval_cond(cond, status, current_track, queue_current, selected) {
                     yes
                 } else {
                     no
@@ -350,18 +357,20 @@ fn flatten(
                 status,
                 current_track,
                 queue_track,
+                queue_current,
                 selected,
                 style,
             );
         }
         Texts::If(cond, box xs, None) => {
-            if eval_cond(cond, status, current_track, selected) {
+            if eval_cond(cond, status, current_track, queue_current, selected) {
                 flatten(
                     spans,
                     xs,
                     status,
                     current_track,
                     queue_track,
+                    queue_current,
                     selected,
                     style,
                 );
@@ -443,6 +452,7 @@ fn eval_cond(
     cond: &Condition,
     status: &Status,
     current_track: Option<&Track>,
+    queue_current: bool,
     selected: bool,
 ) -> bool {
     match cond {
@@ -462,19 +472,20 @@ fn eval_cond(
             }),
         ),
         Condition::AlbumExist => matches!(current_track, Some(Track { album: Some(_), .. })),
+        Condition::QueueCurrent => queue_current,
         Condition::Selected => selected,
-        Condition::Not(box x) => !eval_cond(x, status, current_track, selected),
+        Condition::Not(box x) => !eval_cond(x, status, current_track, queue_current, selected),
         Condition::And(box x, box y) => {
-            eval_cond(x, status, current_track, selected)
-                && eval_cond(y, status, current_track, selected)
+            eval_cond(x, status, current_track, queue_current, selected)
+                && eval_cond(y, status, current_track, queue_current, selected)
         }
         Condition::Or(box x, box y) => {
-            eval_cond(x, status, current_track, selected)
-                || eval_cond(y, status, current_track, selected)
+            eval_cond(x, status, current_track, queue_current, selected)
+                || eval_cond(y, status, current_track, queue_current, selected)
         }
         Condition::Xor(box x, box y) => {
-            eval_cond(x, status, current_track, selected)
-                ^ eval_cond(y, status, current_track, selected)
+            eval_cond(x, status, current_track, queue_current, selected)
+                ^ eval_cond(y, status, current_track, queue_current, selected)
         }
     }
 }

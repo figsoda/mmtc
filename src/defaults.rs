@@ -70,7 +70,17 @@ pub fn layout() -> Widget {
             0,
             Widget::Queue(vec![
                 Column {
-                    item: Constrained::Ratio(12, Texts::QueueTitle),
+                    item: Constrained::Ratio(
+                        12,
+                        Texts::If(
+                            Condition::QueueCurrent,
+                            Box::new(Texts::Styled(
+                                vec![AddStyle::Italic],
+                                Box::new(Texts::QueueTitle),
+                            )),
+                            Some(Box::new(Texts::QueueTitle)),
+                        ),
+                    ),
                     style: vec![AddStyle::Fg(Color::Indexed(75))],
                     selected_style: vec![
                         AddStyle::Fg(Color::Black),
@@ -79,7 +89,17 @@ pub fn layout() -> Widget {
                     ],
                 },
                 Column {
-                    item: Constrained::Ratio(10, Texts::QueueArtist),
+                    item: Constrained::Ratio(
+                        10,
+                        Texts::If(
+                            Condition::QueueCurrent,
+                            Box::new(Texts::Styled(
+                                vec![AddStyle::Italic],
+                                Box::new(Texts::QueueArtist),
+                            )),
+                            Some(Box::new(Texts::QueueArtist)),
+                        ),
+                    ),
                     style: vec![AddStyle::Fg(Color::Indexed(111))],
                     selected_style: vec![
                         AddStyle::Fg(Color::Black),
@@ -88,7 +108,17 @@ pub fn layout() -> Widget {
                     ],
                 },
                 Column {
-                    item: Constrained::Ratio(10, Texts::QueueAlbum),
+                    item: Constrained::Ratio(
+                        10,
+                        Texts::If(
+                            Condition::QueueCurrent,
+                            Box::new(Texts::Styled(
+                                vec![AddStyle::Italic],
+                                Box::new(Texts::QueueAlbum),
+                            )),
+                            Some(Box::new(Texts::QueueAlbum)),
+                        ),
+                    ),
                     style: vec![AddStyle::Fg(Color::Indexed(147))],
                     selected_style: vec![
                         AddStyle::Fg(Color::Black),
@@ -97,7 +127,17 @@ pub fn layout() -> Widget {
                     ],
                 },
                 Column {
-                    item: Constrained::Ratio(1, Texts::QueueDuration),
+                    item: Constrained::Ratio(
+                        1,
+                        Texts::If(
+                            Condition::QueueCurrent,
+                            Box::new(Texts::Styled(
+                                vec![AddStyle::Italic],
+                                Box::new(Texts::QueueDuration),
+                            )),
+                            Some(Box::new(Texts::QueueDuration)),
+                        ),
+                    ),
                     style: vec![AddStyle::Fg(Color::Indexed(183))],
                     selected_style: vec![
                         AddStyle::Fg(Color::Black),

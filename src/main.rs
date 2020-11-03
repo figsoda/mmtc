@@ -285,7 +285,6 @@ async fn run() -> Result<()> {
                         &cfg.layout,
                         &queue,
                         &status,
-                        selected,
                         &mut liststate,
                     );
                 })

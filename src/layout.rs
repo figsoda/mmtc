@@ -18,7 +18,6 @@ pub fn render(
     widget: &Widget,
     queue: &[Track],
     status: &Status,
-    selected: usize,
     liststate: &mut ListState,
 ) {
     match widget {
@@ -54,7 +53,7 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(frame, chunk, w, queue, status, selected, liststate);
+                render(frame, chunk, w, queue, status, liststate);
             }
         }
         Widget::Columns(xs) => {
@@ -89,7 +88,7 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(frame, chunk, w, queue, status, selected, liststate);
+                render(frame, chunk, w, queue, status, liststate);
             }
         }
         Widget::Textbox(xs) => {
@@ -194,7 +193,7 @@ pub fn render(
                         current_track,
                         Some(track),
                         pos == Some(i),
-                        i == selected,
+                        liststate.selected() == Some(i),
                         Style::default(),
                     );
                     items.push(ListItem::new(Spans::from(spans)));

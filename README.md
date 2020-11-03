@@ -78,6 +78,11 @@ Key | Action
 `K`, `PageUp` | jump up in the queue
 
 
+## Configuration
+
+See [Configuration.md](https://github.com/figsoda/mmtc/blob/main/Configuration.md)
+
+
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md)

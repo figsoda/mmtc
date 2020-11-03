@@ -10,6 +10,8 @@ description = "Minimal mpd terminal client"
 homepage = "https://github.com/figsoda/mmtc"
 repository = "https://github.com/figsoda/mmtc"
 readme = "README.md"
+keywords = ["mpd", "music", "tui"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.33"

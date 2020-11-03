@@ -22,7 +22,7 @@ The whole file should be a [`Config` struct](#Config), or like a table if you ar
 Type: struct
 
 field | type | description | default
-- | - | - | -
+-|-|-|-
 `address` | string | the address of the mpd server | `"127.0.0.1:6600"`
 `cycle` | boolean |  cycle through the queue | `false`
 `jump_lines` | non-negative integer | the number of lines to jump | `24`
@@ -35,7 +35,7 @@ field | type | description | default
 Type: enum
 
 variant | struct, tuple or unit | fields | description
-- | - | - | -
+-|-|-|-
 `Rows(rows)` | tuple | list of [`Constrained`](#Constrained) [`Widget`s](#Widget) | split into rows
 `Columns(columns)` | tuple | list of [`Constrained`](#Constrained) [`Widget`s](#Widget) | split into columns
 `Textbox(texts)` or `TextboxL` | tuple | `Texts` enum | text with left alignment
@@ -48,7 +48,7 @@ variant | struct, tuple or unit | fields | description
 Type: enum
 
 variant | struct, tuple or unit | fields (separated by comma) | description
-- | - | - | -
+-|-|-|-
 `Max(n, item)` | tuple | non-negative integer, \<Type> | `item` with a maximum length of `n`
 `Min(n, item)` | tuple | non-negative integer, \<Type> | `item` with a minimum length of `n`
 `Fixed(n, item)` | tuple | non-negative integer, \<Type> | `item` with a fixed length of `n`
@@ -59,7 +59,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 Type: enum
 
 variant | struct, tuple or unit | fields (separated by comma) | description
-- | - | - | -
+-|-|-|-
 `Text(str)` | tuple | string | plain text
 `CurrentElapsed` | unit | | time elapsed of the current song
 `CurrentDuration` | unit | | total duration of the current song
@@ -81,7 +81,7 @@ Type: enum
 Note: some styles may not work depending on your terminal emulator
 
 variant | struct, tuple or unit | fields | description
-- | - | - | -
+-|-|-|-
 `Fg(color)` | tuple | [`Color`](#Color) | change foreground color
 `Bg(color)` | tuple | [`Color`](#Color) | change background color
 `Bold` | unit | | bold
@@ -108,7 +108,7 @@ variant | struct, tuple or unit | fields | description
 Type: enum
 
 variant | struct, tuple or unit | fields (separated by comma) | description
-- | - | - | -
+-|-|-|-
 `Reset` | unit | | reset to default color
 `Black` | unit | | black
 `Red` | unit | | red
@@ -134,7 +134,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 Type: enum, evaluates to a boolean
 
 variant | struct, tuple or unit | fields (separated by comma) | description
-- | - | - | -
+-|-|-|-
 `Repeat` | unit | | whether mpd is in repeat mode
 `Random` | unit | | whether mpd is in random mode
 `Single` | unit | | whether mpd is in single mode
@@ -157,7 +157,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 Type: struct
 
 field | type | description | default
-- | - | - | -
+-|-|-|-
 `item` | [`Constrained`](#Constrained) [`Texts`](#Texts) | `Queue` [`Widget`](#Widget) creates an `item` for each track in your queue for each column | mandatory, no default value
 `style` | list of [`Style`s](Style) | style of the item when not selected | `[]`
 `selected_style` | list of [`Style`s](Style) | style of the item when selected | `[]`

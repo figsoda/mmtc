@@ -38,9 +38,9 @@ variant | struct, tuple or unit | fields | description
 -|-|-|-
 `Rows(rows)` | tuple | list of [`Constrained`](#Constrained) [`Widget`s](#Widget) | split into rows
 `Columns(columns)` | tuple | list of [`Constrained`](#Constrained) [`Widget`s](#Widget) | split into columns
-`Textbox(texts)` or `TextboxL` | tuple | `Texts` enum | text with left alignment
-`TextboxC(texts)` | tuple | `Texts` enum | text with center alignment
-`TextboxR(texts)` | tuple | `Texts` enum | text with right alignment
+`Textbox(texts)` or `TextboxL` | tuple | `Texts` | text with left alignment
+`TextboxC(texts)` | tuple | `Texts` | text with center alignment
+`TextboxR(texts)` | tuple | `Texts` | text with right alignment
 `Queue(columns)` | tuple | list of [`Column`](#Column) | displays the queue
 
 ### Constrained
@@ -72,7 +72,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 `QueueAlbum` | unit | | album of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
 `Styled(styles, texts)` | tuple | list of [`Style`](#Style), [`Texts`](#Texts) | styled text
 `Parts(parts)` | tuple | list of [`Texts`](#Texts) | concatenate multiple parts of texts
-`If(condition, lhs, rhs)` | tuple | [`Condition`](#Condition), [`Texts`](#Texts), optional [`Texts`](#Texts) | if `condition` then `lhs` (else `rhs`)
+`If(condition, lhs, rhs)` or `If(condition, lhs)` | tuple | [`Condition`](#Condition), [`Texts`](#Texts), optional [`Texts`](#Texts) | if `condition` then `lhs` (else `rhs`)
 
 ### Style
 

@@ -37,6 +37,31 @@ mmtc [OPTIONS]
 ```
 
 
+## Key bindings
+
+
+Key | Action
+-|-
+`q` | quit mmtc
+`r` | toggle repeat
+`R` | toggle random
+`s` | toggle single
+`S` | toggle oneshot
+`c` | toggle consume
+`p` | toggle pause
+`;` | stop
+`h`, `Left` | seek backwards
+`l`, `Right` | seek forwards
+`H` | previous song
+`L` | next song
+`Enter` | play selected song
+`Space` | select current song or the first song in the queue
+`j`, `Down`, `ScrollDown` | go down in the queue
+`k`, `Up`, `ScrollUp` | go up in the queue
+`J`, `PageDown` | jump down in the queue
+`K`, `PageUp` | jump up in the queue
+
+
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md)

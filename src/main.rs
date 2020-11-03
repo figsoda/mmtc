@@ -75,6 +75,7 @@ enum Command {
     ToggleConsume,
     ToggleOneshot,
     TogglePause,
+    Stop,
     SeekBackwards,
     SeekForwards,
     Previous,
@@ -218,6 +219,9 @@ async fn run() -> Result<()> {
                     }
                     KeyCode::Char('p') => {
                         tx.send(Command::TogglePause).await.unwrap_or_else(die);
+                    }
+                    KeyCode::Char(';') => {
+                        tx.send(Command::Stop).await.unwrap_or_else(die);
                     }
                     KeyCode::Char('h') | KeyCode::Left => {
                         tx.send(Command::SeekBackwards).await.unwrap_or_else(die);
@@ -368,6 +372,14 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle consume")
                 .unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await?;
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::Stop => {
+                mpd::command(&mut cl, b"stop\n")
+                    .await
+                    .context("Faield to stop playing")
+                    .unwrap_or_else(die);
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }

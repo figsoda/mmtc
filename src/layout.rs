@@ -234,17 +234,17 @@ fn flatten(
         Texts::CurrentElapsed => {
             if let Some(Song { elapsed, .. }) = status.song {
                 spans.push(Span::styled(
-                    format!("{:02}:{:02}", elapsed / 60, elapsed % 60),
+                    format!("{}:{:02}", elapsed / 60, elapsed % 60),
                     style,
-                ))
+                ));
             }
         }
         Texts::CurrentDuration => {
             if let Some(Track { time, .. }) = current_track {
                 spans.push(Span::styled(
-                    format!("{:02}:{:02}", time / 60, time % 60),
+                    format!("{}:{:02}", time / 60, time % 60),
                     style,
-                ))
+                ));
             }
         }
         Texts::CurrentFile => {
@@ -280,9 +280,9 @@ fn flatten(
         Texts::QueueDuration => {
             if let Some(Track { time, .. }) = queue_track {
                 spans.push(Span::styled(
-                    format!("{:02}:{:02}", time / 60, time % 60),
+                    format!("{}:{:02}", time / 60, time % 60),
                     style,
-                ))
+                ));
             }
         }
         Texts::QueueFile => {

@@ -4,7 +4,7 @@
 ## Configuration file
 
 By default, mmtc looks for configuration file at `<your config directory>/mmtc/mmtc.ron`. 
-Your config directory might differ depending on the operating system, so mmtc uses [dirs-rs](https://docs.rs/dirs/*/dirs/fn.config_dir.html) to find your config directory.
+Your config directory may differ depending on the operating system, so mmtc tries to find your config directory with [dirs-rs](https://docs.rs/dirs/*/dirs/fn.config_dir.html).
 
 This setting can be overwritten by the command line argument `-c` or `--config`.
 
@@ -14,8 +14,8 @@ If no config file was given from the command line and mmtc failed to find your c
 ## Structures
 
 The configuration file is written in [ron](https://github.com/ron-rs/ron), an expressive object notation.
-Check out its [specification wiki](https://github.com/ron-rs/ron/wiki/Specification) if you are having trouble figuring out the syntax.
-The whole file should be a [`Config` struct](#Config), or like a table if you are more familiar with that.
+Check out its [specification wiki](https://github.com/ron-rs/ron/wiki/Specification) if you are having trouble figuring out its syntax.
+The whole file should be a [`Config` struct](#Config).
 
 ### Config
 

@@ -46,29 +46,35 @@ Config(
             ),
         ])),
         Fixed(1, Columns([
-            Min(0, Textbox(If(Not(Stopped), Styled([Bold], Parts([
-                Styled([Fg(Indexed(113))], Parts([
-                    If(Playing, Text("[playing: "), Text("[paused:  ")),
-                    CurrentElapsed,
-                    Text("/"),
-                    CurrentDuration,
-                    Text("] "),
-                ])),
-                If(TitleExist,
-                    Parts([
-                        Styled([Fg(Indexed(149))], CurrentTitle),
-                        If(ArtistExist, Parts([
-                            Styled([Fg(Indexed(216))], Text(" ◆ ")),
-                            Styled([Fg(Indexed(185))], CurrentArtist),
-                            If(AlbumExist, Parts([
+            Min(0, Textbox(Styled([Bold], If(Searching,
+                Parts([
+                    Styled([Fg(Indexed(113))], Text("Searching: ")),
+                    Styled([Fg(Indexed(185))], Query),
+                ]),
+                If(Not(Stopped), Parts([
+                    Styled([Fg(Indexed(113))], Parts([
+                        If(Playing, Text("[playing: "), Text("[paused:  ")),
+                        CurrentElapsed,
+                        Text("/"),
+                        CurrentDuration,
+                        Text("] "),
+                    ])),
+                    If(TitleExist,
+                        Parts([
+                            Styled([Fg(Indexed(149))], CurrentTitle),
+                            If(ArtistExist, Parts([
                                 Styled([Fg(Indexed(216))], Text(" ◆ ")),
-                                Styled([Fg(Indexed(221))], CurrentAlbum),
+                                Styled([Fg(Indexed(185))], CurrentArtist),
+                                If(AlbumExist, Parts([
+                                    Styled([Fg(Indexed(216))], Text(" ◆ ")),
+                                    Styled([Fg(Indexed(221))], CurrentAlbum),
+                                ])),
                             ])),
-                        ])),
-                    ]),
-                    Styled([Fg(Indexed(185))], CurrentFile),
-                ),
-            ]))))),
+                        ]),
+                        Styled([Fg(Indexed(185))], CurrentFile),
+                    ),
+                ])),
+            )))),
             Fixed(12, TextboxR(Styled([Fg(Indexed(81))], Parts([
                 Text("["),
                 If(Repeat, Text("@")),

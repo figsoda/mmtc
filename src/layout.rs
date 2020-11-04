@@ -17,6 +17,9 @@ pub fn render(
     size: Rect,
     widget: &Widget,
     queue: &[Track],
+    searching: bool,
+    query: &str,
+    filtered: &Option<Vec<usize>>,
     status: &Status,
     liststate: &mut ListState,
 ) {
@@ -53,7 +56,9 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(frame, chunk, w, queue, status, liststate);
+                render(
+                    frame, chunk, w, queue, searching, query, filtered, status, liststate,
+                );
             }
         }
         Widget::Columns(xs) => {
@@ -88,7 +93,9 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(frame, chunk, w, queue, status, liststate);
+                render(
+                    frame, chunk, w, queue, searching, query, filtered, status, liststate,
+                );
             }
         }
         Widget::Textbox(xs) => {
@@ -105,6 +112,8 @@ pub fn render(
                 None,
                 false,
                 false,
+                searching,
+                query,
                 Style::default(),
             );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
@@ -123,6 +132,8 @@ pub fn render(
                 None,
                 false,
                 false,
+                searching,
+                query,
                 Style::default(),
             );
             frame.render_widget(
@@ -144,6 +155,8 @@ pub fn render(
                 None,
                 false,
                 false,
+                searching,
+                query,
                 Style::default(),
             );
             frame.render_widget(
@@ -184,19 +197,40 @@ pub fn render(
                 };
 
                 let mut items = Vec::with_capacity(len);
-                for (i, track) in queue.iter().enumerate() {
-                    let mut spans = Vec::new();
-                    flatten(
-                        &mut spans,
-                        txts,
-                        status,
-                        current_track,
-                        Some(track),
-                        pos == Some(i),
-                        liststate.selected() == Some(i),
-                        Style::default(),
-                    );
-                    items.push(ListItem::new(Spans::from(spans)));
+                if let Some(filtered) = filtered {
+                    for &i in filtered {
+                        let mut spans = Vec::new();
+                        flatten(
+                            &mut spans,
+                            txts,
+                            status,
+                            current_track,
+                            Some(&queue[i]),
+                            pos == Some(i),
+                            liststate.selected() == Some(i),
+                            searching,
+                            query,
+                            Style::default(),
+                        );
+                        items.push(ListItem::new(Spans::from(spans)));
+                    }
+                } else {
+                    for (i, track) in queue.iter().enumerate() {
+                        let mut spans = Vec::new();
+                        flatten(
+                            &mut spans,
+                            txts,
+                            status,
+                            current_track,
+                            Some(track),
+                            pos == Some(i),
+                            liststate.selected() == Some(i),
+                            searching,
+                            query,
+                            Style::default(),
+                        );
+                        items.push(ListItem::new(Spans::from(spans)));
+                    }
                 }
                 ws.push(
                     List::new(items)
@@ -231,6 +265,8 @@ fn flatten(
     queue_track: Option<&Track>,
     queue_current: bool,
     selected: bool,
+    searching: bool,
+    query: &str,
     style: Style,
 ) {
     match xs {
@@ -319,6 +355,9 @@ fn flatten(
                 spans.push(Span::styled(album.clone(), style));
             }
         }
+        Texts::Query => {
+            spans.push(Span::styled(String::from(query), style));
+        }
         Texts::Styled(styles, box xs) => {
             flatten(
                 spans,
@@ -328,6 +367,8 @@ fn flatten(
                 queue_track,
                 queue_current,
                 selected,
+                searching,
+                query,
                 patch_style(style, styles),
             );
         }
@@ -341,6 +382,8 @@ fn flatten(
                     queue_track,
                     queue_current,
                     selected,
+                    searching,
+                    query,
                     style,
                 );
             }
@@ -348,7 +391,15 @@ fn flatten(
         Texts::If(cond, box yes, Some(box no)) => {
             flatten(
                 spans,
-                if eval_cond(cond, status, current_track, queue_current, selected) {
+                if eval_cond(
+                    cond,
+                    status,
+                    current_track,
+                    queue_current,
+                    selected,
+                    searching,
+                    query,
+                ) {
                     yes
                 } else {
                     no
@@ -358,11 +409,21 @@ fn flatten(
                 queue_track,
                 queue_current,
                 selected,
+                searching,
+                query,
                 style,
             );
         }
         Texts::If(cond, box xs, None) => {
-            if eval_cond(cond, status, current_track, queue_current, selected) {
+            if eval_cond(
+                cond,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            ) {
                 flatten(
                     spans,
                     xs,
@@ -371,6 +432,8 @@ fn flatten(
                     queue_track,
                     queue_current,
                     selected,
+                    searching,
+                    query,
                     style,
                 );
             }
@@ -453,6 +516,8 @@ fn eval_cond(
     current_track: Option<&Track>,
     queue_current: bool,
     selected: bool,
+    searching: bool,
+    query: &str,
 ) -> bool {
     match cond {
         Condition::Repeat => status.repeat,
@@ -473,18 +538,72 @@ fn eval_cond(
         Condition::AlbumExist => matches!(current_track, Some(Track { album: Some(_), .. })),
         Condition::QueueCurrent => queue_current,
         Condition::Selected => selected,
-        Condition::Not(box x) => !eval_cond(x, status, current_track, queue_current, selected),
+        Condition::Searching => searching,
+        Condition::Not(box x) => !eval_cond(
+            x,
+            status,
+            current_track,
+            queue_current,
+            selected,
+            searching,
+            query,
+        ),
         Condition::And(box x, box y) => {
-            eval_cond(x, status, current_track, queue_current, selected)
-                && eval_cond(y, status, current_track, queue_current, selected)
+            eval_cond(
+                x,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            ) && eval_cond(
+                y,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            )
         }
         Condition::Or(box x, box y) => {
-            eval_cond(x, status, current_track, queue_current, selected)
-                || eval_cond(y, status, current_track, queue_current, selected)
+            eval_cond(
+                x,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            ) || eval_cond(
+                y,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            )
         }
         Condition::Xor(box x, box y) => {
-            eval_cond(x, status, current_track, queue_current, selected)
-                ^ eval_cond(y, status, current_track, queue_current, selected)
+            eval_cond(
+                x,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            ) ^ eval_cond(
+                y,
+                status,
+                current_track,
+                queue_current,
+                selected,
+                searching,
+                query,
+            )
         }
     }
 }

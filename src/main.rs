@@ -27,6 +27,10 @@ use std::{
     fs,
     io::{stdout, Write},
     process::exit,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use crate::config::Config;
@@ -91,6 +95,10 @@ enum Command {
     Up,
     JumpDown,
     JumpUp,
+    InputSearch(char),
+    BackspaceSearch,
+    UpdateSearch,
+    QuitSearch,
 }
 
 fn cleanup() -> Result<()> {
@@ -148,11 +156,15 @@ async fn run() -> Result<()> {
     let mut idle_cl = mpd::init(addr).await?;
     let mut cl = mpd::init(addr).await?;
 
-    let mut queue = mpd::queue(&mut idle_cl).await?;
+    let (mut queue, mut queue_strings) = mpd::queue(&mut idle_cl).await?;
     let mut status = mpd::status(&mut cl).await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
+    let searching = Arc::new(AtomicBool::new(false));
+    let searching1 = Arc::clone(&searching);
+    let mut query = String::with_capacity(32);
+    let mut filtered = None;
 
     let seek_backwards = format!("seekcur -{}\n", seek_secs);
     let seek_backwards = seek_backwards.as_bytes();
@@ -200,9 +212,29 @@ async fn run() -> Result<()> {
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
     tokio::spawn(async move {
+        let searching = searching1;
         let tx = tx3;
         while let Ok(ev) = event::read() {
-            if let Some(cmd) = match ev {
+            if let Event::Key(KeyEvent {
+                code: KeyCode::Esc, ..
+            }) = ev
+            {
+                tx.send(Command::QuitSearch).await.unwrap_or_else(die);
+            } else if searching.load(Ordering::Acquire) {
+                if let Event::Key(KeyEvent { code, .. }) = ev {
+                    if let Some(cmd) = match code {
+                        KeyCode::Char(c) => Some(Command::InputSearch(c)),
+                        KeyCode::Backspace => Some(Command::BackspaceSearch),
+                        KeyCode::Enter => {
+                            searching.store(false, Ordering::Release);
+                            Some(Command::UpdateFrame)
+                        }
+                        _ => None,
+                    } {
+                        tx.send(cmd).await.unwrap_or_else(die);
+                    }
+                }
+            } else if let Some(cmd) = match ev {
                 Event::Key(KeyEvent { code, .. }) => match code {
                     KeyCode::Char('q') => Some(Command::Quit),
                     KeyCode::Char('r') => Some(Command::ToggleRepeat),
@@ -222,6 +254,10 @@ async fn run() -> Result<()> {
                     KeyCode::Char('k') | KeyCode::Up => Some(Command::Up),
                     KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
                     KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
+                    KeyCode::Char('/') => {
+                        searching.store(true, Ordering::Release);
+                        Some(Command::UpdateFrame)
+                    }
                     _ => None,
                 },
                 Event::Mouse(MouseEvent::ScrollDown(..)) => Some(Command::Down),
@@ -244,16 +280,24 @@ async fn run() -> Result<()> {
                         frame.size(),
                         &cfg.layout,
                         &queue,
+                        searching.load(Ordering::Acquire),
+                        &query,
+                        &filtered,
                         &status,
                         &mut liststate,
                     );
                 })
                 .context("Failed to draw to terminal")?,
             Command::UpdateQueue => {
-                queue = mpd::queue(&mut cl).await.context("Failed to query queue")?;
+                let res = mpd::queue(&mut cl).await.context("Failed to query queue")?;
+                queue = res.0;
+                queue_strings = res.1;
                 selected = status.song.map_or(0, |song| song.pos);
                 liststate = ListState::default();
                 liststate.select(Some(selected));
+                if searching.load(Ordering::Acquire) {
+                    tx.send(Command::UpdateSearch).await?;
+                }
             }
             Command::UpdateStatus => {
                 status = mpd::status(&mut cl)
@@ -373,11 +417,17 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Play => {
-                if selected < queue.len() {
+                if let Some(filtered) = &filtered {
+                    if selected < filtered.len() {
+                        mpd::play(&mut cl, filtered[selected])
+                            .await
+                            .context("Failed to play the selected song")?;
+                    }
+                } else if selected < queue.len() {
                     mpd::play(&mut cl, selected)
                         .await
                         .context("Failed to play the selected song")?;
-                }
+                };
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -387,7 +437,11 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Down => {
-                let len = queue.len();
+                let len = if let Some(filtered) = &filtered {
+                    filtered.len()
+                } else {
+                    query.len()
+                };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else if selected == len - 1 {
@@ -401,7 +455,11 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Up => {
-                let len = queue.len();
+                let len = if let Some(filtered) = &filtered {
+                    filtered.len()
+                } else {
+                    query.len()
+                };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else if selected == 0 {
@@ -415,7 +473,11 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::JumpDown => {
-                let len = queue.len();
+                let len = if let Some(filtered) = &filtered {
+                    filtered.len()
+                } else {
+                    query.len()
+                };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else {
@@ -429,7 +491,11 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::JumpUp => {
-                let len = queue.len();
+                let len = if let Some(filtered) = &filtered {
+                    filtered.len()
+                } else {
+                    query.len()
+                };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
                 } else {
@@ -440,6 +506,33 @@ async fn run() -> Result<()> {
                     } as usize
                 }
                 liststate.select(Some(selected));
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::InputSearch(c) => {
+                query.push(c);
+                tx.send(Command::UpdateSearch).await?;
+            }
+            Command::BackspaceSearch => {
+                query.pop();
+                tx.send(Command::UpdateSearch).await?;
+            }
+            Command::UpdateSearch => {
+                let query = query.to_lowercase();
+                let mut xs = Vec::new();
+                for (i, track) in queue_strings.iter().enumerate() {
+                    if track.contains(&query) {
+                        xs.push(i);
+                    }
+                }
+                filtered = Some(xs);
+                selected = 0;
+                liststate.select(Some(selected));
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::QuitSearch => {
+                searching.store(false, Ordering::Release);
+                filtered = None;
+                query.clear();
                 tx.send(Command::UpdateFrame).await?;
             }
         }

@@ -73,14 +73,15 @@ pub async fn idle(cl: &mut Client) -> Result<(bool, bool)> {
     Ok((queue, status))
 }
 
-pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {
+pub async fn queue(cl: &mut Client) -> Result<(Vec<Track>, Vec<String>)> {
     let mut first = true;
     let mut tracks = Vec::new();
+    let mut track_strings = Vec::new();
 
-    let mut file = None;
-    let mut artist = None;
-    let mut album = None;
-    let mut title = None;
+    let mut file: Option<String> = None;
+    let mut artist: Option<String> = None;
+    let mut album: Option<String> = None;
+    let mut title: Option<String> = None;
     let mut time = None;
 
     cl.write_all(b"playlistinfo\n").await?;
@@ -93,6 +94,20 @@ pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {
                 if first {
                     first = false;
                 } else if let (Some(file), Some(time)) = (file, time) {
+                    let mut track_string = String::from(file.to_lowercase());
+                    if let Some(artist) = &artist {
+                        track_string.push('\n');
+                        track_string.push_str(&artist.to_lowercase());
+                    }
+                    if let Some(album) = &album {
+                        track_string.push('\n');
+                        track_string.push_str(&album.to_lowercase());
+                    }
+                    if let Some(title) = &title {
+                        track_string.push('\n');
+                        track_string.push_str(&title.to_lowercase());
+                    }
+                    track_strings.push(track_string);
                     tracks.push(Track {
                         file,
                         artist,
@@ -127,6 +142,20 @@ pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {
     }
 
     if let (Some(file), Some(time)) = (file, time) {
+        let mut track_string = String::from(file.to_lowercase());
+        if let Some(artist) = &artist {
+            track_string.push('\n');
+            track_string.push_str(&artist.to_lowercase());
+        }
+        if let Some(album) = &album {
+            track_string.push('\n');
+            track_string.push_str(&album.to_lowercase());
+        }
+        if let Some(title) = &title {
+            track_string.push('\n');
+            track_string.push_str(&title.to_lowercase());
+        }
+        track_strings.push(track_string);
         tracks.push(Track {
             file,
             artist,
@@ -136,7 +165,7 @@ pub async fn queue(cl: &mut Client) -> Result<Vec<Track>> {
         });
     }
 
-    Ok(tracks)
+    Ok((tracks, track_strings))
 }
 
 pub async fn status(cl: &mut Client) -> Result<Status> {

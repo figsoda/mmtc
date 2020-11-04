@@ -539,6 +539,7 @@ fn eval_cond(
         Condition::QueueCurrent => queue_current,
         Condition::Selected => selected,
         Condition::Searching => searching,
+        Condition::Filtered => !query.is_empty(),
         Condition::Not(box x) => !eval_cond(
             x,
             status,

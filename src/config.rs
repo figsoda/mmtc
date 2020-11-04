@@ -105,6 +105,7 @@ pub enum Condition {
     QueueCurrent,
     Selected,
     Searching,
+    Filtered,
     Not(Box<Condition>),
     And(Box<Condition>, Box<Condition>),
     Or(Box<Condition>, Box<Condition>),

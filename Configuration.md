@@ -149,6 +149,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 `QueueCurrent` | unit | | whether the song in queue is the current song (only works inside a `Queue` [`Widget`](#Widget))
 `Selected` | unit | | whether the song in queue is selected (only works inside a `Queue` [`Widget`](#Widget))
 `Searching` | unit | | whether mmtc is in searching mode
+`Filtered` | unit | | whether the queue is filtered by a query
 `Not(condition)` | tuple | [`Condition`](#Condition) | logical not
 `And(lhs, rhs)` | tuple | [`Condition`](#Condition), [`Condition`](#Condition) | logical and
 `Or(lhs, rhs)` | tuple | [`Condition`](#Condition), [`Condition`](#Condition) | logical or

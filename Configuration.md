@@ -70,6 +70,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 `QueueFile` | unit | | file name of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
 `QueueArtist` | unit | | artist of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
 `QueueAlbum` | unit | | album of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
+`Query` | unit | | current query
 `Styled(styles, texts)` | tuple | list of [`Style`](#Style), [`Texts`](#Texts) | styled text
 `Parts(parts)` | tuple | list of [`Texts`](#Texts) | concatenate multiple parts of texts
 `If(condition, lhs, rhs)` or `If(condition, lhs)` | tuple | [`Condition`](#Condition), [`Texts`](#Texts), optional [`Texts`](#Texts) | if `condition` then `lhs` (else `rhs`)
@@ -147,6 +148,7 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 `ArtistExist` | unit | | whether the current song has an artist
 `QueueCurrent` | unit | | whether the song in queue is the current song (only works inside a `Queue` [`Widget`](#Widget))
 `Selected` | unit | | whether the song in queue is selected (only works inside a `Queue` [`Widget`](#Widget))
+`Searching` | unit | | whether mmtc is in searching mode
 `Not(condition)` | tuple | [`Condition`](#Condition) | logical not
 `And(lhs, rhs)` | tuple | [`Condition`](#Condition), [`Condition`](#Condition) | logical and
 `Or(lhs, rhs)` | tuple | [`Condition`](#Condition), [`Condition`](#Condition) | logical or

@@ -440,7 +440,7 @@ async fn run() -> Result<()> {
                 let len = if let Some(filtered) = &filtered {
                     filtered.len()
                 } else {
-                    query.len()
+                    queue.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -458,7 +458,7 @@ async fn run() -> Result<()> {
                 let len = if let Some(filtered) = &filtered {
                     filtered.len()
                 } else {
-                    query.len()
+                    queue.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -476,7 +476,7 @@ async fn run() -> Result<()> {
                 let len = if let Some(filtered) = &filtered {
                     filtered.len()
                 } else {
-                    query.len()
+                    queue.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -494,7 +494,7 @@ async fn run() -> Result<()> {
                 let len = if let Some(filtered) = &filtered {
                     filtered.len()
                 } else {
-                    query.len()
+                    queue.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);

@@ -250,10 +250,7 @@ async fn run() -> Result<()> {
                 })
                 .context("Failed to draw to terminal")?,
             Command::UpdateQueue => {
-                queue = mpd::queue(&mut cl)
-                    .await
-                    .context("Failed to query queue")
-                    .unwrap_or_else(die);
+                queue = mpd::queue(&mut cl).await.context("Failed to query queue")?;
                 selected = status.song.map_or(0, |song| song.pos);
                 liststate = ListState::default();
                 liststate.select(Some(selected));
@@ -261,8 +258,7 @@ async fn run() -> Result<()> {
             Command::UpdateStatus => {
                 status = mpd::status(&mut cl)
                     .await
-                    .context("Failed to query status")
-                    .unwrap_or_else(die);
+                    .context("Failed to query status")?;
             }
             Command::ToggleRepeat => {
                 mpd::command(
@@ -274,8 +270,7 @@ async fn run() -> Result<()> {
                     },
                 )
                 .await
-                .context("Failed to toggle repeat")
-                .unwrap_or_else(die);
+                .context("Failed to toggle repeat")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -289,8 +284,7 @@ async fn run() -> Result<()> {
                     },
                 )
                 .await
-                .context("Failed to toggle random")
-                .unwrap_or_else(die);
+                .context("Failed to toggle random")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -304,8 +298,7 @@ async fn run() -> Result<()> {
                     },
                 )
                 .await
-                .context("Failed to toggle single")
-                .unwrap_or_else(die);
+                .context("Failed to toggle single")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -319,8 +312,7 @@ async fn run() -> Result<()> {
                     },
                 )
                 .await
-                .context("Failed to toggle oneshot")
-                .unwrap_or_else(die);
+                .context("Failed to toggle oneshot")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -334,56 +326,49 @@ async fn run() -> Result<()> {
                     },
                 )
                 .await
-                .context("Failed to toggle consume")
-                .unwrap_or_else(die);
+                .context("Failed to toggle consume")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Stop => {
                 mpd::command(&mut cl, b"stop\n")
                     .await
-                    .context("Faield to stop playing")
-                    .unwrap_or_else(die);
+                    .context("Faield to stop playing")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::SeekBackwards => {
                 mpd::command(&mut cl, seek_backwards)
                     .await
-                    .context("Failed to seek backwards")
-                    .unwrap_or_else(die);
+                    .context("Failed to seek backwards")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::SeekForwards => {
                 mpd::command(&mut cl, seek_forwards)
                     .await
-                    .context("Failed to seek forwards")
-                    .unwrap_or_else(die);
+                    .context("Failed to seek forwards")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::TogglePause => {
                 mpd::command(&mut cl, b"pause\n")
                     .await
-                    .context("Failed to toggle pause")
-                    .unwrap_or_else(die);
+                    .context("Failed to toggle pause")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Previous => {
                 mpd::command(&mut cl, b"previous\n")
                     .await
-                    .context("Failed to play previous song")
-                    .unwrap_or_else(die);
+                    .context("Failed to play previous song")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Next => {
                 mpd::command(&mut cl, b"next\n")
                     .await
-                    .context("Failed to play previous song")
-                    .unwrap_or_else(die);
+                    .context("Failed to play previous song")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -391,8 +376,7 @@ async fn run() -> Result<()> {
                 if selected < queue.len() {
                     mpd::play(&mut cl, selected)
                         .await
-                        .context("Failed to play the selected song")
-                        .unwrap_or_else(die);
+                        .context("Failed to play the selected song")?;
                 }
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;

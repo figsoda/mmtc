@@ -35,7 +35,9 @@ use std::{
 
 use crate::config::Config;
 
-/// Minimal mpd terminal client https://github.com/figsoda/mmtc
+/// Minimal mpd terminal client that aims to be simple yet highly configurable
+///
+/// Homepage: https://github.com/figsoda/mmtc
 #[derive(StructOpt)]
 #[structopt(
     name = "mmtc",

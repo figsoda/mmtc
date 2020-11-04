@@ -6,7 +6,7 @@
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue?style=flat-square)](https://www.mozilla.org/en-US/MPL/2.0)
 [![ci](https://img.shields.io/github/workflow/status/figsoda/mmtc/ci?label=ci&logo=github-actions&style=flat-square)](https://github.com/figsoda/mmtc/actions?query=workflow:ci)
 
-Minimal mpd terminal client
+Minimal mpd terminal client that aims to be simple yet highly configurable
 
 
 ## Installation

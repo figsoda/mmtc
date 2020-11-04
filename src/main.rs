@@ -295,7 +295,7 @@ async fn run() -> Result<()> {
                 selected = status.song.map_or(0, |song| song.pos);
                 liststate = ListState::default();
                 liststate.select(Some(selected));
-                if searching.load(Ordering::Acquire) {
+                if !query.is_empty() {
                     tx.send(Command::UpdateSearch).await?;
                 }
             }
@@ -514,7 +514,11 @@ async fn run() -> Result<()> {
             }
             Command::BackspaceSearch => {
                 query.pop();
-                tx.send(Command::UpdateSearch).await?;
+                if query.is_empty() {
+                    tx.send(Command::UpdateFrame).await?;
+                } else {
+                    tx.send(Command::UpdateSearch).await?;
+                }
             }
             Command::UpdateSearch => {
                 let query = query.to_lowercase();

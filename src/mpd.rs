@@ -94,7 +94,7 @@ pub async fn queue(cl: &mut Client) -> Result<(Vec<Track>, Vec<String>)> {
                 if first {
                     first = false;
                 } else if let (Some(file), Some(time)) = (file, time) {
-                    let mut track_string = String::from(file.to_lowercase());
+                    let mut track_string = file.to_lowercase();
                     if let Some(artist) = &artist {
                         track_string.push('\n');
                         track_string.push_str(&artist.to_lowercase());
@@ -142,7 +142,7 @@ pub async fn queue(cl: &mut Client) -> Result<(Vec<Track>, Vec<String>)> {
     }
 
     if let (Some(file), Some(time)) = (file, time) {
-        let mut track_string = String::from(file.to_lowercase());
+        let mut track_string = file.to_lowercase();
         if let Some(artist) = &artist {
             track_string.push('\n');
             track_string.push_str(&artist.to_lowercase());

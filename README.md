@@ -71,12 +71,14 @@ Key | Action
 `l`, `Right` | seek forwards
 `H` | previous song
 `L` | next song
-`Enter` | play selected song
+`Enter` | play selected song or quit searching mode if in searching mode
 `Space` | select current song or the first song in the queue
 `j`, `Down`, `ScrollDown` | go down in the queue
 `k`, `Up`, `ScrollUp` | go up in the queue
 `J`, `PageDown` | jump down in the queue
 `K`, `PageUp` | jump up in the queue
+`/` | enter searching mode
+`Escape` | quit searching mode and empty query
 
 
 ## Configuration

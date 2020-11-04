@@ -204,7 +204,7 @@ async fn run() -> Result<()> {
         while let Ok(ev) = event::read() {
             if let Some(cmd) = match ev {
                 Event::Key(KeyEvent { code, .. }) => match code {
-                    KeyCode::Char('q') | KeyCode::Esc => Some(Command::Quit),
+                    KeyCode::Char('q') => Some(Command::Quit),
                     KeyCode::Char('r') => Some(Command::ToggleRepeat),
                     KeyCode::Char('R') => Some(Command::ToggleRandom),
                     KeyCode::Char('s') => Some(Command::ToggleSingle),

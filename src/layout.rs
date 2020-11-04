@@ -19,7 +19,7 @@ pub fn render(
     queue: &[Track],
     searching: bool,
     query: &str,
-    filtered: &Option<Vec<usize>>,
+    filtered: &[usize],
     status: &Status,
     liststate: &mut ListState,
 ) {
@@ -197,15 +197,47 @@ pub fn render(
                 };
 
                 let mut items = Vec::with_capacity(len);
-                if let Some(filtered) = filtered {
-                    for &i in filtered {
+                if query.is_empty() {
+                    for (i, track) in queue.iter().enumerate() {
                         let mut spans = Vec::new();
                         flatten(
                             &mut spans,
                             txts,
                             status,
                             current_track,
-                            Some(&queue[i]),
+                            Some(track),
+                            pos == Some(i),
+                            liststate.selected() == Some(i),
+                            searching,
+                            query,
+                            Style::default(),
+                        );
+                        items.push(ListItem::new(Spans::from(spans)));
+                    }
+                    for (i, track) in queue.iter().enumerate() {
+                        let mut spans = Vec::new();
+                        flatten(
+                            &mut spans,
+                            txts,
+                            status,
+                            current_track,
+                            Some(track),
+                            pos == Some(i),
+                            liststate.selected() == Some(i),
+                            searching,
+                            query,
+                            Style::default(),
+                        );
+                        items.push(ListItem::new(Spans::from(spans)));
+                    }
+                    for (i, track) in queue.iter().enumerate() {
+                        let mut spans = Vec::new();
+                        flatten(
+                            &mut spans,
+                            txts,
+                            status,
+                            current_track,
+                            Some(track),
                             pos == Some(i),
                             liststate.selected() == Some(i),
                             searching,
@@ -215,14 +247,14 @@ pub fn render(
                         items.push(ListItem::new(Spans::from(spans)));
                     }
                 } else {
-                    for (i, track) in queue.iter().enumerate() {
+                    for &i in filtered {
                         let mut spans = Vec::new();
                         flatten(
                             &mut spans,
                             txts,
                             status,
                             current_track,
-                            Some(track),
+                            Some(&queue[i]),
                             pos == Some(i),
                             liststate.selected() == Some(i),
                             searching,

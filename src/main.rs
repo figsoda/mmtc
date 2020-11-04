@@ -164,7 +164,7 @@ async fn run() -> Result<()> {
     let searching = Arc::new(AtomicBool::new(false));
     let searching1 = Arc::clone(&searching);
     let mut query = String::with_capacity(32);
-    let mut filtered = None;
+    let mut filtered = Vec::new();
 
     let seek_backwards = format!("seekcur -{}\n", seek_secs);
     let seek_backwards = seek_backwards.as_bytes();
@@ -417,14 +417,14 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Play => {
-                if let Some(filtered) = &filtered {
-                    if selected < filtered.len() {
-                        mpd::play(&mut cl, filtered[selected])
+                if query.is_empty() {
+                    if selected < queue.len() {
+                        mpd::play(&mut cl, selected)
                             .await
                             .context("Failed to play the selected song")?;
                     }
-                } else if selected < queue.len() {
-                    mpd::play(&mut cl, selected)
+                } else if selected < filtered.len() {
+                    mpd::play(&mut cl, filtered[selected])
                         .await
                         .context("Failed to play the selected song")?;
                 };
@@ -437,10 +437,10 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Down => {
-                let len = if let Some(filtered) = &filtered {
-                    filtered.len()
-                } else {
+                let len = if query.is_empty() {
                     queue.len()
+                } else {
+                    filtered.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -455,10 +455,10 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Up => {
-                let len = if let Some(filtered) = &filtered {
-                    filtered.len()
-                } else {
+                let len = if query.is_empty() {
                     queue.len()
+                } else {
+                    filtered.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -473,10 +473,10 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::JumpDown => {
-                let len = if let Some(filtered) = &filtered {
-                    filtered.len()
-                } else {
+                let len = if query.is_empty() {
                     queue.len()
+                } else {
+                    filtered.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -491,10 +491,10 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::JumpUp => {
-                let len = if let Some(filtered) = &filtered {
-                    filtered.len()
-                } else {
+                let len = if query.is_empty() {
                     queue.len()
+                } else {
+                    filtered.len()
                 };
                 if selected >= len {
                     selected = status.song.map_or(0, |song| song.pos);
@@ -518,20 +518,18 @@ async fn run() -> Result<()> {
             }
             Command::UpdateSearch => {
                 let query = query.to_lowercase();
-                let mut xs = Vec::new();
+                filtered.clear();
                 for (i, track) in queue_strings.iter().enumerate() {
                     if track.contains(&query) {
-                        xs.push(i);
+                        filtered.push(i);
                     }
                 }
-                filtered = Some(xs);
                 selected = 0;
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::QuitSearch => {
                 searching.store(false, Ordering::Release);
-                filtered = None;
                 query.clear();
                 tx.send(Command::UpdateFrame).await?;
             }

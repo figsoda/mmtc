@@ -525,7 +525,8 @@ async fn run() -> Result<()> {
                     }
                 }
                 selected = 0;
-                liststate.select(Some(selected));
+                liststate.select(None);
+                liststate.select(Some(0));
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::QuitSearch => {

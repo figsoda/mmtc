@@ -202,74 +202,34 @@ async fn run() -> Result<()> {
     tokio::spawn(async move {
         let tx = tx3;
         while let Ok(ev) = event::read() {
-            match ev {
+            if let Some(cmd) = match ev {
                 Event::Key(KeyEvent { code, .. }) => match code {
-                    KeyCode::Char('q') | KeyCode::Esc => {
-                        tx.send(Command::Quit).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('r') => {
-                        tx.send(Command::ToggleRepeat).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('R') => {
-                        tx.send(Command::ToggleRandom).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('s') => {
-                        tx.send(Command::ToggleSingle).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('S') => {
-                        tx.send(Command::ToggleOneshot).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('c') => {
-                        tx.send(Command::ToggleConsume).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('p') => {
-                        tx.send(Command::TogglePause).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char(';') => {
-                        tx.send(Command::Stop).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('h') | KeyCode::Left => {
-                        tx.send(Command::SeekBackwards).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('l') | KeyCode::Right => {
-                        tx.send(Command::SeekForwards).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('H') => {
-                        tx.send(Command::Previous).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('L') => {
-                        tx.send(Command::Next).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Enter => {
-                        tx.send(Command::Play).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char(' ') => {
-                        tx.send(Command::Reselect).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('j') | KeyCode::Down => {
-                        tx.send(Command::Down).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('k') | KeyCode::Up => {
-                        tx.send(Command::Up).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('J') | KeyCode::PageDown => {
-                        tx.send(Command::JumpDown).await.unwrap_or_else(die);
-                    }
-                    KeyCode::Char('K') | KeyCode::PageUp => {
-                        tx.send(Command::JumpUp).await.unwrap_or_else(die);
-                    }
-                    _ => (),
+                    KeyCode::Char('q') | KeyCode::Esc => Some(Command::Quit),
+                    KeyCode::Char('r') => Some(Command::ToggleRepeat),
+                    KeyCode::Char('R') => Some(Command::ToggleRandom),
+                    KeyCode::Char('s') => Some(Command::ToggleSingle),
+                    KeyCode::Char('S') => Some(Command::ToggleOneshot),
+                    KeyCode::Char('c') => Some(Command::ToggleConsume),
+                    KeyCode::Char('p') => Some(Command::TogglePause),
+                    KeyCode::Char(';') => Some(Command::Stop),
+                    KeyCode::Char('h') | KeyCode::Left => Some(Command::SeekBackwards),
+                    KeyCode::Char('l') | KeyCode::Right => Some(Command::SeekForwards),
+                    KeyCode::Char('H') => Some(Command::Previous),
+                    KeyCode::Char('L') => Some(Command::Next),
+                    KeyCode::Enter => Some(Command::Play),
+                    KeyCode::Char(' ') => Some(Command::Reselect),
+                    KeyCode::Char('j') | KeyCode::Down => Some(Command::Down),
+                    KeyCode::Char('k') | KeyCode::Up => Some(Command::Up),
+                    KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
+                    KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
+                    _ => None,
                 },
-                Event::Mouse(MouseEvent::ScrollDown(..)) => {
-                    tx.send(Command::Down).await.unwrap_or_else(die);
-                }
-                Event::Mouse(MouseEvent::ScrollUp(..)) => {
-                    tx.send(Command::Up).await.unwrap_or_else(die);
-                }
-                Event::Resize(..) => {
-                    tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
-                }
-                _ => (),
+                Event::Mouse(MouseEvent::ScrollDown(..)) => Some(Command::Down),
+                Event::Mouse(MouseEvent::ScrollUp(..)) => Some(Command::Up),
+                Event::Resize(..) => Some(Command::UpdateFrame),
+                _ => None,
+            } {
+                tx.send(cmd).await.unwrap_or_else(die);
             }
         }
     });

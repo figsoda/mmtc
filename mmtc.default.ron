@@ -3,6 +3,12 @@ Config(
     cycle: false,
     jump_lines: 24,
     seek_secs: 5.0,
+    search_fields: SearchFields(
+        file: false,
+        title: true,
+        artist: true,
+        album: true,
+    ),
     ups: 1.0,
     layout: Rows([
         Fixed(1, Columns([

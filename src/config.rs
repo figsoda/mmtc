@@ -21,10 +21,28 @@ pub struct Config {
     pub jump_lines: usize,
     #[serde(default = "defaults::seek_secs")]
     pub seek_secs: f64,
+    #[serde(default = "defaults::search_fields")]
+    pub search_fields: SearchFields,
     #[serde(default = "defaults::ups")]
     pub ups: f64,
     #[serde(default = "defaults::layout")]
     pub layout: Widget,
+}
+
+#[derive(Deserialize)]
+pub struct SearchFields {
+    #[serde(default)]
+    pub file: bool,
+    #[serde(default = "yes")]
+    pub title: bool,
+    #[serde(default = "yes")]
+    pub artist: bool,
+    #[serde(default = "yes")]
+    pub album: bool,
+}
+
+fn yes() -> bool {
+    true
 }
 
 #[derive(Deserialize)]

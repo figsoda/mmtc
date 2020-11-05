@@ -27,8 +27,20 @@ field | type | description | default
 `cycle` | boolean |  cycle through the queue | `false`
 `jump_lines` | non-negative integer | the number of lines to jump | `24`
 `seek_secs` | non-negative number | the time to seek in seconds | `5.0`
+`search_fields` | [`SearchFields`](#SearchFields) | the fields to index from when searching | see [`SearchFields`](#SearchFields)
 `ups` | non-negative number | the amount of status updates per second | `1.0`
 `layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.default.ron](ttps://github.com/figsoda/mmtc/blob/main/mmtc.default.ron)
+
+### SearchFields
+
+Type: struct
+
+field | type | description | default
+-|-|-|-
+`file` | boolean | whether to search in file names | false
+`title` | boolean | whether to search in titles | true
+`artist` | boolean | whether to search in artists | true
+`album` | boolean | whether to search in albums | true
 
 ### Widget
 

@@ -7,7 +7,7 @@ use tokio::{
 
 use std::net::SocketAddr;
 
-use crate::fail;
+use crate::{config::SearchFields, fail};
 
 pub type Client = BufReader<TcpStream>;
 
@@ -73,7 +73,41 @@ pub async fn idle(cl: &mut Client) -> Result<(bool, bool)> {
     Ok((queue, status))
 }
 
-pub async fn queue(cl: &mut Client) -> Result<(Vec<Track>, Vec<String>)> {
+fn track_string(track: &Track, search_fields: &SearchFields) -> String {
+    let mut track_string = String::with_capacity(64);
+
+    if search_fields.file {
+        track_string.push_str(&track.file.to_lowercase());
+        track_string.push('\n');
+    }
+
+    if search_fields.title {
+        if let Some(title) = &track.title {
+            track_string.push_str(&title.to_lowercase());
+            track_string.push('\n');
+        }
+    }
+
+    if search_fields.artist {
+        if let Some(artist) = &track.artist {
+            track_string.push_str(&artist.to_lowercase());
+            track_string.push('\n');
+        }
+    }
+
+    if search_fields.album {
+        if let Some(album) = &track.album {
+            track_string.push_str(&album.to_lowercase());
+        }
+    }
+
+    track_string
+}
+
+pub async fn queue(
+    cl: &mut Client,
+    search_fields: &SearchFields,
+) -> Result<(Vec<Track>, Vec<String>)> {
     let mut first = true;
     let mut tracks = Vec::new();
     let mut track_strings = Vec::new();
@@ -94,27 +128,15 @@ pub async fn queue(cl: &mut Client) -> Result<(Vec<Track>, Vec<String>)> {
                 if first {
                     first = false;
                 } else if let (Some(file), Some(time)) = (file, time) {
-                    let mut track_string = file.to_lowercase();
-                    if let Some(artist) = &artist {
-                        track_string.push('\n');
-                        track_string.push_str(&artist.to_lowercase());
-                    }
-                    if let Some(album) = &album {
-                        track_string.push('\n');
-                        track_string.push_str(&album.to_lowercase());
-                    }
-                    if let Some(title) = &title {
-                        track_string.push('\n');
-                        track_string.push_str(&title.to_lowercase());
-                    }
-                    track_strings.push(track_string);
-                    tracks.push(Track {
+                    let track = Track {
                         file,
                         artist,
                         album,
                         title,
                         time,
-                    });
+                    };
+                    track_strings.push(track_string(&track, search_fields));
+                    tracks.push(track);
                 } else {
                     bail!("incomplete playlist response");
                 }
@@ -142,27 +164,15 @@ pub async fn queue(cl: &mut Client) -> Result<(Vec<Track>, Vec<String>)> {
     }
 
     if let (Some(file), Some(time)) = (file, time) {
-        let mut track_string = file.to_lowercase();
-        if let Some(artist) = &artist {
-            track_string.push('\n');
-            track_string.push_str(&artist.to_lowercase());
-        }
-        if let Some(album) = &album {
-            track_string.push('\n');
-            track_string.push_str(&album.to_lowercase());
-        }
-        if let Some(title) = &title {
-            track_string.push('\n');
-            track_string.push_str(&title.to_lowercase());
-        }
-        track_strings.push(track_string);
-        tracks.push(Track {
+        let track = Track {
             file,
             artist,
             album,
             title,
             time,
-        });
+        };
+        track_strings.push(track_string(&track, search_fields));
+        tracks.push(track);
     }
 
     Ok((tracks, track_strings))

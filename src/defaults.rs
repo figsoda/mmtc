@@ -2,7 +2,9 @@ use tui::style::Color;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use crate::config::{AddStyle, Column, Condition, Config, Constrained, Texts, Widget};
+use crate::config::{
+    AddStyle, Column, Condition, Config, Constrained, SearchFields, Texts, Widget,
+};
 
 pub fn config() -> Config {
     Config {
@@ -10,6 +12,7 @@ pub fn config() -> Config {
         cycle: false,
         jump_lines: jump_lines(),
         seek_secs: seek_secs(),
+        search_fields: search_fields(),
         ups: ups(),
         layout: layout(),
     }
@@ -25,6 +28,15 @@ pub fn jump_lines() -> usize {
 
 pub fn seek_secs() -> f64 {
     5.0
+}
+
+pub fn search_fields() -> SearchFields {
+    SearchFields {
+        file: false,
+        title: true,
+        artist: true,
+        album: true,
+    }
 }
 
 pub fn ups() -> f64 {

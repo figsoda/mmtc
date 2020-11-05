@@ -158,7 +158,7 @@ async fn run() -> Result<()> {
     let mut idle_cl = mpd::init(addr).await?;
     let mut cl = mpd::init(addr).await?;
 
-    let (mut queue, mut queue_strings) = mpd::queue(&mut idle_cl).await?;
+    let (mut queue, mut queue_strings) = mpd::queue(&mut idle_cl, &cfg.search_fields).await?;
     let mut status = mpd::status(&mut cl).await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
@@ -291,7 +291,9 @@ async fn run() -> Result<()> {
                 })
                 .context("Failed to draw to terminal")?,
             Command::UpdateQueue => {
-                let res = mpd::queue(&mut cl).await.context("Failed to query queue")?;
+                let res = mpd::queue(&mut cl, &cfg.search_fields)
+                    .await
+                    .context("Failed to query queue")?;
                 queue = res.0;
                 queue_strings = res.1;
                 selected = status.song.map_or(0, |song| song.pos);

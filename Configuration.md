@@ -50,9 +50,9 @@ variant | struct, tuple or unit | fields | description
 -|-|-|-
 `Rows(rows)` | tuple | list of [`Constrained`](#Constrained) [`Widget`s](#Widget) | split into rows
 `Columns(columns)` | tuple | list of [`Constrained`](#Constrained) [`Widget`s](#Widget) | split into columns
-`Textbox(texts)` or `TextboxL` | tuple | `Texts` | text with left alignment
-`TextboxC(texts)` | tuple | `Texts` | text with center alignment
-`TextboxR(texts)` | tuple | `Texts` | text with right alignment
+`Textbox(texts)` or `TextboxL(texts)` | tuple | [`Texts`](#Texts) | text with left alignment
+`TextboxC(texts)` | tuple | [`Texts`](#Texts) | text with center alignment
+`TextboxR(texts)` | tuple | [`Texts`](#Texts) | text with right alignment
 `Queue(columns)` | tuple | list of [`Column`](#Column) | displays the queue
 
 ### Constrained
@@ -77,11 +77,11 @@ variant | struct, tuple or unit | fields (separated by comma) | description
 `CurrentDuration` | unit | | total duration of the current song
 `CurrentFile` | unit | | file name of the current song
 `CurrentArtist` | unit | | artist of the current song
-`QueueAlbum` | unit | | album of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
+`QueueAlbum` | unit | | album of the song in queue (only works inside a [`Queue` `Widget`](#Widget))
 `QueueDuration` | unit | | total duration of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
-`QueueFile` | unit | | file name of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
-`QueueArtist` | unit | | artist of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
-`QueueAlbum` | unit | | album of the song in queue (only works inside a `Queue` [`Widget`](#Widget))
+`QueueFile` | unit | | file name of the song in queue (only works inside a [`Queue` `Widget`](#Widget))
+`QueueArtist` | unit | | artist of the song in queue (only works inside a [`Queue` `Widget`](#Widget))
+`QueueAlbum` | unit | | album of the song in queue (only works inside a [`Queue` `Widget`](#Widget))
 `Query` | unit | | current query
 `Styled(styles, texts)` | tuple | list of [`Style`](#Style), [`Texts`](#Texts) | styled text
 `Parts(parts)` | tuple | list of [`Texts`](#Texts) | concatenate multiple parts of texts

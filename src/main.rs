@@ -129,7 +129,7 @@ async fn run() -> Result<()> {
     let opts = Opts::from_args();
 
     let cfg: Config = if let Some(cfg_file) = opts.config {
-        ron::from_str(&fs::read_to_string(&cfg_file).with_context(fail::read(&cfg_file))?)
+        ron::de::from_bytes(&fs::read(&cfg_file).with_context(fail::read(&cfg_file))?)
             .with_context(fail::parse_cfg(&cfg_file))?
     } else if let Some(xs) = config_dir() {
         let mut xs = xs;
@@ -137,7 +137,7 @@ async fn run() -> Result<()> {
         xs.push("mmtc.ron");
 
         if xs.is_file() {
-            ron::from_str(&fs::read_to_string(&xs).with_context(fail::read(xs.display()))?)
+            ron::de::from_bytes(&fs::read(&xs).with_context(fail::read(xs.display()))?)
                 .with_context(fail::parse_cfg(xs.display()))?
         } else {
             defaults::config()

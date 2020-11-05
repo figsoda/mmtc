@@ -12,6 +12,17 @@ use crate::{
     mpd::{Song, Status, Track},
 };
 
+struct FlattenState<'a> {
+    status: &'a Status,
+    current_track: Option<&'a Track>,
+    queue_track: Option<&'a Track>,
+    queue_current: bool,
+    selected: bool,
+    searching: bool,
+    query: &'a str,
+    style: Style,
+}
+
 struct ConditionState<'a> {
     status: &'a Status,
     current_track: Option<&'a Track>,
@@ -112,18 +123,20 @@ pub fn render(
             flatten(
                 &mut spans,
                 &xs,
-                status,
-                if let Some(Song { pos, .. }) = status.song {
-                    queue.get(pos)
-                } else {
-                    None
+                &FlattenState {
+                    status,
+                    current_track: if let Some(Song { pos, .. }) = status.song {
+                        queue.get(pos)
+                    } else {
+                        None
+                    },
+                    queue_track: None,
+                    queue_current: false,
+                    selected: false,
+                    searching,
+                    query,
+                    style: Style::default(),
                 },
-                None,
-                false,
-                false,
-                searching,
-                query,
-                Style::default(),
             );
             frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
@@ -132,18 +145,20 @@ pub fn render(
             flatten(
                 &mut spans,
                 &xs,
-                status,
-                if let Some(Song { pos, .. }) = status.song {
-                    queue.get(pos)
-                } else {
-                    None
+                &FlattenState {
+                    status,
+                    current_track: if let Some(Song { pos, .. }) = status.song {
+                        queue.get(pos)
+                    } else {
+                        None
+                    },
+                    queue_track: None,
+                    queue_current: false,
+                    selected: false,
+                    searching,
+                    query,
+                    style: Style::default(),
                 },
-                None,
-                false,
-                false,
-                searching,
-                query,
-                Style::default(),
             );
             frame.render_widget(
                 Paragraph::new(Spans::from(spans)).alignment(Alignment::Center),
@@ -155,18 +170,20 @@ pub fn render(
             flatten(
                 &mut spans,
                 &xs,
-                status,
-                if let Some(Song { pos, .. }) = status.song {
-                    queue.get(pos)
-                } else {
-                    None
+                &FlattenState {
+                    status,
+                    current_track: if let Some(Song { pos, .. }) = status.song {
+                        queue.get(pos)
+                    } else {
+                        None
+                    },
+                    queue_track: None,
+                    queue_current: false,
+                    selected: false,
+                    searching,
+                    query,
+                    style: Style::default(),
                 },
-                None,
-                false,
-                false,
-                searching,
-                query,
-                Style::default(),
             );
             frame.render_widget(
                 Paragraph::new(Spans::from(spans)).alignment(Alignment::Right),
@@ -212,46 +229,16 @@ pub fn render(
                         flatten(
                             &mut spans,
                             txts,
-                            status,
-                            current_track,
-                            Some(track),
-                            pos == Some(i),
-                            liststate.selected() == Some(i),
-                            searching,
-                            query,
-                            Style::default(),
-                        );
-                        items.push(ListItem::new(Spans::from(spans)));
-                    }
-                    for (i, track) in queue.iter().enumerate() {
-                        let mut spans = Vec::new();
-                        flatten(
-                            &mut spans,
-                            txts,
-                            status,
-                            current_track,
-                            Some(track),
-                            pos == Some(i),
-                            liststate.selected() == Some(i),
-                            searching,
-                            query,
-                            Style::default(),
-                        );
-                        items.push(ListItem::new(Spans::from(spans)));
-                    }
-                    for (i, track) in queue.iter().enumerate() {
-                        let mut spans = Vec::new();
-                        flatten(
-                            &mut spans,
-                            txts,
-                            status,
-                            current_track,
-                            Some(track),
-                            pos == Some(i),
-                            liststate.selected() == Some(i),
-                            searching,
-                            query,
-                            Style::default(),
+                            &FlattenState {
+                                status,
+                                current_track,
+                                queue_track: Some(track),
+                                queue_current: pos == Some(i),
+                                selected: liststate.selected() == Some(i),
+                                searching,
+                                query,
+                                style: Style::default(),
+                            },
                         );
                         items.push(ListItem::new(Spans::from(spans)));
                     }
@@ -261,14 +248,16 @@ pub fn render(
                         flatten(
                             &mut spans,
                             txts,
-                            status,
-                            current_track,
-                            Some(&queue[i]),
-                            pos == Some(i),
-                            liststate.selected() == Some(i),
-                            searching,
-                            query,
-                            Style::default(),
+                            &FlattenState {
+                                status,
+                                current_track,
+                                queue_track: Some(&queue[i]),
+                                queue_current: pos == Some(i),
+                                selected: liststate.selected() == Some(i),
+                                searching,
+                                query,
+                                style: Style::default(),
+                            },
                         );
                         items.push(ListItem::new(Spans::from(spans)));
                     }
@@ -298,189 +287,145 @@ pub fn render(
     }
 }
 
-fn flatten(
-    spans: &mut Vec<Span>,
-    xs: &Texts,
-    status: &Status,
-    current_track: Option<&Track>,
-    queue_track: Option<&Track>,
-    queue_current: bool,
-    selected: bool,
-    searching: bool,
-    query: &str,
-    style: Style,
-) {
+fn flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
     match xs {
-        Texts::Text(x) => spans.push(Span::styled(x.clone(), style)),
+        Texts::Text(x) => spans.push(Span::styled(x.clone(), s.style)),
         Texts::CurrentElapsed => {
-            if let Some(Song { elapsed, .. }) = status.song {
+            if let Some(Song { elapsed, .. }) = s.status.song {
                 spans.push(Span::styled(
                     format!("{}:{:02}", elapsed / 60, elapsed % 60),
-                    style,
+                    s.style,
                 ));
             }
         }
         Texts::CurrentDuration => {
-            if let Some(Track { time, .. }) = current_track {
+            if let Some(Track { time, .. }) = s.current_track {
                 spans.push(Span::styled(
                     format!("{}:{:02}", time / 60, time % 60),
-                    style,
+                    s.style,
                 ));
             }
         }
         Texts::CurrentFile => {
-            if let Some(Track { file, .. }) = current_track {
-                spans.push(Span::styled(file.clone(), style));
+            if let Some(Track { file, .. }) = s.current_track {
+                spans.push(Span::styled(file.clone(), s.style));
             }
         }
         Texts::CurrentTitle => {
             if let Some(Track {
                 title: Some(title), ..
-            }) = current_track
+            }) = s.current_track
             {
-                spans.push(Span::styled(title.clone(), style));
+                spans.push(Span::styled(title.clone(), s.style));
             }
         }
         Texts::CurrentArtist => {
             if let Some(Track {
                 artist: Some(artist),
                 ..
-            }) = current_track
+            }) = s.current_track
             {
-                spans.push(Span::styled(artist.clone(), style));
+                spans.push(Span::styled(artist.clone(), s.style));
             }
         }
         Texts::CurrentAlbum => {
             if let Some(Track {
                 album: Some(album), ..
-            }) = current_track
+            }) = s.current_track
             {
-                spans.push(Span::styled(album.clone(), style));
+                spans.push(Span::styled(album.clone(), s.style));
             }
         }
         Texts::QueueDuration => {
-            if let Some(Track { time, .. }) = queue_track {
+            if let Some(Track { time, .. }) = s.queue_track {
                 spans.push(Span::styled(
                     format!("{}:{:02}", time / 60, time % 60),
-                    style,
+                    s.style,
                 ));
             }
         }
         Texts::QueueFile => {
-            if let Some(Track { file, .. }) = current_track {
-                spans.push(Span::styled(file.clone(), style));
+            if let Some(Track { file, .. }) = s.current_track {
+                spans.push(Span::styled(file.clone(), s.style));
             }
         }
         Texts::QueueTitle => {
             if let Some(Track {
                 title: Some(title), ..
-            }) = queue_track
+            }) = s.queue_track
             {
-                spans.push(Span::styled(title.clone(), style));
+                spans.push(Span::styled(title.clone(), s.style));
             }
         }
         Texts::QueueArtist => {
             if let Some(Track {
                 artist: Some(artist),
                 ..
-            }) = queue_track
+            }) = s.queue_track
             {
-                spans.push(Span::styled(artist.clone(), style));
+                spans.push(Span::styled(artist.clone(), s.style));
             }
         }
         Texts::QueueAlbum => {
             if let Some(Track {
                 album: Some(album), ..
-            }) = queue_track
+            }) = s.queue_track
             {
-                spans.push(Span::styled(album.clone(), style));
+                spans.push(Span::styled(album.clone(), s.style));
             }
         }
         Texts::Query => {
-            spans.push(Span::styled(String::from(query), style));
+            spans.push(Span::styled(String::from(s.query), s.style));
         }
         Texts::Styled(styles, box xs) => {
             flatten(
                 spans,
                 xs,
-                status,
-                current_track,
-                queue_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-                patch_style(style, styles),
+                &FlattenState {
+                    style: patch_style(s.style, styles),
+                    ..*s
+                },
             );
         }
         Texts::Parts(xss) => {
             for xs in xss {
-                flatten(
-                    spans,
-                    xs,
-                    status,
-                    current_track,
-                    queue_track,
-                    queue_current,
-                    selected,
-                    searching,
-                    query,
-                    style,
-                );
+                flatten(spans, xs, s);
             }
         }
-        Texts::If(cond, box yes, Some(box no)) => {
+        Texts::If(cond, box xs, Some(box ys)) => {
             flatten(
                 spans,
                 if eval_cond(
                     cond,
                     &ConditionState {
-                        status,
-                        current_track,
-                        queue_current,
-                        selected,
-                        searching,
-                        query,
+                        status: s.status,
+                        current_track: s.current_track,
+                        queue_current: s.queue_current,
+                        selected: s.selected,
+                        searching: s.searching,
+                        query: s.query,
                     },
                 ) {
-                    yes
+                    xs
                 } else {
-                    no
+                    ys
                 },
-                status,
-                current_track,
-                queue_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-                style,
+                s,
             );
         }
         Texts::If(cond, box xs, None) => {
             if eval_cond(
                 cond,
                 &ConditionState {
-                    status,
-                    current_track,
-                    queue_current,
-                    selected,
-                    searching,
-                    query,
+                    status: s.status,
+                    current_track: s.current_track,
+                    queue_current: s.queue_current,
+                    selected: s.selected,
+                    searching: s.searching,
+                    query: s.query,
                 },
             ) {
-                flatten(
-                    spans,
-                    xs,
-                    status,
-                    current_track,
-                    queue_track,
-                    queue_current,
-                    selected,
-                    searching,
-                    query,
-                    style,
-                );
+                flatten(spans, xs, s);
             }
         }
     }

@@ -37,10 +37,10 @@ Type: struct
 
 field | type | description | default
 -|-|-|-
-`file` | boolean | whether to search in file names | false
-`title` | boolean | whether to search in titles | true
-`artist` | boolean | whether to search in artists | true
-`album` | boolean | whether to search in albums | true
+`file` | boolean | whether to search in file names | `false`
+`title` | boolean | whether to search in titles | `true`
+`artist` | boolean | whether to search in artists | `true`
+`album` | boolean | whether to search in albums | `true`
 
 ### Widget
 

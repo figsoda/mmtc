@@ -4,7 +4,7 @@
 ## Configuration file
 
 By default, mmtc looks for configuration file at `<your config directory>/mmtc/mmtc.ron`. 
-Your config directory may differ depending on the operating system, so mmtc tries to find your config directory with [dirs-rs](https://docs.rs/dirs/*/dirs/fn.config_dir.html).
+Your config directory may differ depending on the operating system, so mmtc tries to find your config directory with [dirs crate](https://docs.rs/dirs-next/*/dirs_next/fn.config_dir.html).
 
 This setting can be overwritten by the command line argument `-c` or `--config`.
 

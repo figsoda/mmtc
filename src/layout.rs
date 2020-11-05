@@ -12,6 +12,15 @@ use crate::{
     mpd::{Song, Status, Track},
 };
 
+struct ConditionState<'a> {
+    status: &'a Status,
+    current_track: Option<&'a Track>,
+    queue_current: bool,
+    selected: bool,
+    searching: bool,
+    query: &'a str,
+}
+
 pub fn render(
     frame: &mut Frame<impl Backend>,
     size: Rect,
@@ -425,12 +434,14 @@ fn flatten(
                 spans,
                 if eval_cond(
                     cond,
-                    status,
-                    current_track,
-                    queue_current,
-                    selected,
-                    searching,
-                    query,
+                    &ConditionState {
+                        status,
+                        current_track,
+                        queue_current,
+                        selected,
+                        searching,
+                        query,
+                    },
                 ) {
                     yes
                 } else {
@@ -449,12 +460,14 @@ fn flatten(
         Texts::If(cond, box xs, None) => {
             if eval_cond(
                 cond,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
+                &ConditionState {
+                    status,
+                    current_track,
+                    queue_current,
+                    selected,
+                    searching,
+                    query,
+                },
             ) {
                 flatten(
                     spans,
@@ -542,101 +555,31 @@ fn patch_style(style: Style, styles: &[AddStyle]) -> Style {
     style
 }
 
-fn eval_cond(
-    cond: &Condition,
-    status: &Status,
-    current_track: Option<&Track>,
-    queue_current: bool,
-    selected: bool,
-    searching: bool,
-    query: &str,
-) -> bool {
+fn eval_cond(cond: &Condition, s: &ConditionState) -> bool {
     match cond {
-        Condition::Repeat => status.repeat,
-        Condition::Random => status.random,
-        Condition::Single => status.single == Some(true),
-        Condition::Oneshot => status.single == None,
-        Condition::Consume => status.consume,
-        Condition::Playing => status.state == Some(true),
-        Condition::Paused => status.state == Some(false),
-        Condition::Stopped => status.state == None,
-        Condition::TitleExist => matches!(current_track, Some(Track { title: Some(_), .. })),
+        Condition::Repeat => s.status.repeat,
+        Condition::Random => s.status.random,
+        Condition::Single => s.status.single == Some(true),
+        Condition::Oneshot => s.status.single == None,
+        Condition::Consume => s.status.consume,
+        Condition::Playing => s.status.state == Some(true),
+        Condition::Paused => s.status.state == Some(false),
+        Condition::Stopped => s.status.state == None,
+        Condition::TitleExist => matches!(s.current_track, Some(Track { title: Some(_), .. })),
         Condition::ArtistExist => matches!(
-            current_track,
+            s.current_track,
             Some(Track {
                 artist: Some(_), ..
             }),
         ),
-        Condition::AlbumExist => matches!(current_track, Some(Track { album: Some(_), .. })),
-        Condition::QueueCurrent => queue_current,
-        Condition::Selected => selected,
-        Condition::Searching => searching,
-        Condition::Filtered => !query.is_empty(),
-        Condition::Not(box x) => !eval_cond(
-            x,
-            status,
-            current_track,
-            queue_current,
-            selected,
-            searching,
-            query,
-        ),
-        Condition::And(box x, box y) => {
-            eval_cond(
-                x,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-            ) && eval_cond(
-                y,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-            )
-        }
-        Condition::Or(box x, box y) => {
-            eval_cond(
-                x,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-            ) || eval_cond(
-                y,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-            )
-        }
-        Condition::Xor(box x, box y) => {
-            eval_cond(
-                x,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-            ) ^ eval_cond(
-                y,
-                status,
-                current_track,
-                queue_current,
-                selected,
-                searching,
-                query,
-            )
-        }
+        Condition::AlbumExist => matches!(s.current_track, Some(Track { album: Some(_), .. })),
+        Condition::QueueCurrent => s.queue_current,
+        Condition::Selected => s.selected,
+        Condition::Searching => s.searching,
+        Condition::Filtered => !s.query.is_empty(),
+        Condition::Not(box x) => !eval_cond(x, s),
+        Condition::And(box x, box y) => eval_cond(x, s) && eval_cond(y, s),
+        Condition::Or(box x, box y) => eval_cond(x, s) || eval_cond(y, s),
+        Condition::Xor(box x, box y) => eval_cond(x, s) ^ eval_cond(y, s),
     }
 }

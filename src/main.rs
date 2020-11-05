@@ -14,7 +14,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use dirs::config_dir;
+use dirs_next::config_dir;
 use structopt::{clap::AppSettings, StructOpt};
 use tokio::{
     sync::mpsc,

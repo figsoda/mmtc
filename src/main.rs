@@ -353,11 +353,7 @@ async fn run() -> Result<()> {
             Command::ToggleOneshot => {
                 mpd::command(
                     &mut cl,
-                    if status.single == None {
-                        b"single 0\n"
-                    } else {
-                        b"single oneshot\n"
-                    },
+                    status.single.map_or(b"single 0\n", |_| b"single oneshot\n"),
                 )
                 .await
                 .context("Failed to toggle oneshot")?;

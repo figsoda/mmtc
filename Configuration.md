@@ -29,7 +29,7 @@ field | type | description | default
 `seek_secs` | non-negative number | the time to seek in seconds | `5.0`
 `search_fields` | [`SearchFields`](#SearchFields) | the fields to index from when searching | see [`SearchFields`](#SearchFields)
 `ups` | non-negative number | the amount of status updates per second | `1.0`
-`layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.default.ron](ttps://github.com/figsoda/mmtc/blob/main/mmtc.default.ron)
+`layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.default.ron](https://github.com/figsoda/mmtc/blob/main/mmtc.default.ron)
 
 ### SearchFields
 

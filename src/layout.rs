@@ -119,74 +119,52 @@ pub fn render(
             }
         }
         Widget::Textbox(xs) => {
-            let mut spans = Vec::new();
-            flatten(
-                &mut spans,
-                &xs,
-                &FlattenState {
+            frame.render_widget(
+                Paragraph::new(flatten(
+                    xs,
                     status,
-                    current_track: if let Some(Song { pos, .. }) = status.song {
-                        queue.get(pos)
-                    } else {
-                        None
-                    },
-                    queue_track: None,
-                    queue_current: false,
-                    selected: false,
+                    status.song.and_then(|song| queue.get(song.pos)),
+                    None,
+                    false,
+                    false,
                     searching,
                     query,
-                    style: Style::default(),
-                },
+                    Style::default(),
+                )),
+                size,
             );
-            frame.render_widget(Paragraph::new(Spans::from(spans)), size);
         }
         Widget::TextboxC(xs) => {
-            let mut spans = Vec::new();
-            flatten(
-                &mut spans,
-                &xs,
-                &FlattenState {
+            frame.render_widget(
+                Paragraph::new(flatten(
+                    xs,
                     status,
-                    current_track: if let Some(Song { pos, .. }) = status.song {
-                        queue.get(pos)
-                    } else {
-                        None
-                    },
-                    queue_track: None,
-                    queue_current: false,
-                    selected: false,
+                    status.song.and_then(|song| queue.get(song.pos)),
+                    None,
+                    false,
+                    false,
                     searching,
                     query,
-                    style: Style::default(),
-                },
-            );
-            frame.render_widget(
-                Paragraph::new(Spans::from(spans)).alignment(Alignment::Center),
+                    Style::default(),
+                ))
+                .alignment(Alignment::Center),
                 size,
             );
         }
         Widget::TextboxR(xs) => {
-            let mut spans = Vec::new();
-            flatten(
-                &mut spans,
-                &xs,
-                &FlattenState {
+            frame.render_widget(
+                Paragraph::new(flatten(
+                    xs,
                     status,
-                    current_track: if let Some(Song { pos, .. }) = status.song {
-                        queue.get(pos)
-                    } else {
-                        None
-                    },
-                    queue_track: None,
-                    queue_current: false,
-                    selected: false,
+                    status.song.and_then(|song| queue.get(song.pos)),
+                    None,
+                    false,
+                    false,
                     searching,
                     query,
-                    style: Style::default(),
-                },
-            );
-            frame.render_widget(
-                Paragraph::new(Spans::from(spans)).alignment(Alignment::Right),
+                    Style::default(),
+                ))
+                .alignment(Alignment::Right),
                 size,
             );
         }
@@ -203,11 +181,9 @@ pub fn render(
                 }
             });
 
-            let (pos, current_track) = if let Some(Song { pos, .. }) = status.song {
-                (Some(pos), queue.get(pos))
-            } else {
-                (None, None)
-            };
+            let (pos, current_track) = status
+                .song
+                .map_or((None, None), |song| (Some(song.pos), queue.get(song.pos)));
 
             for column in xs {
                 let len = queue.len();
@@ -225,41 +201,31 @@ pub fn render(
                 let mut items = Vec::with_capacity(len);
                 if query.is_empty() {
                     for (i, track) in queue.iter().enumerate() {
-                        let mut spans = Vec::new();
-                        flatten(
-                            &mut spans,
+                        items.push(ListItem::new(flatten(
                             txts,
-                            &FlattenState {
-                                status,
-                                current_track,
-                                queue_track: Some(track),
-                                queue_current: pos == Some(i),
-                                selected: liststate.selected() == Some(i),
-                                searching,
-                                query,
-                                style: Style::default(),
-                            },
-                        );
-                        items.push(ListItem::new(Spans::from(spans)));
+                            status,
+                            current_track,
+                            Some(track),
+                            pos == Some(i),
+                            liststate.selected() == Some(i),
+                            searching,
+                            query,
+                            Style::default(),
+                        )));
                     }
                 } else {
                     for &i in filtered {
-                        let mut spans = Vec::new();
-                        flatten(
-                            &mut spans,
+                        items.push(ListItem::new(flatten(
                             txts,
-                            &FlattenState {
-                                status,
-                                current_track,
-                                queue_track: Some(&queue[i]),
-                                queue_current: pos == Some(i),
-                                selected: liststate.selected() == Some(i),
-                                searching,
-                                query,
-                                style: Style::default(),
-                            },
-                        );
-                        items.push(ListItem::new(Spans::from(spans)));
+                            status,
+                            current_track,
+                            Some(&queue[i]),
+                            pos == Some(i),
+                            liststate.selected() == Some(i),
+                            searching,
+                            query,
+                            Style::default(),
+                        )));
                     }
                 }
                 ws.push(
@@ -287,7 +253,36 @@ pub fn render(
     }
 }
 
-fn flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
+fn flatten<'a>(
+    xs: &Texts,
+    status: &Status,
+    current_track: Option<&Track>,
+    queue_track: Option<&Track>,
+    queue_current: bool,
+    selected: bool,
+    searching: bool,
+    query: &str,
+    style: Style,
+) -> Spans<'a> {
+    let mut spans = Vec::new();
+    _flatten(
+        &mut spans,
+        xs,
+        &FlattenState {
+            status,
+            current_track,
+            queue_track,
+            queue_current,
+            selected,
+            searching,
+            query,
+            style,
+        },
+    );
+    spans.into()
+}
+
+fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
     match xs {
         Texts::Text(x) => spans.push(Span::styled(x.clone(), s.style)),
         Texts::CurrentElapsed => {
@@ -378,7 +373,7 @@ fn flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
             spans.push(Span::styled(String::from(s.query), s.style));
         }
         Texts::Styled(styles, box xs) => {
-            flatten(
+            _flatten(
                 spans,
                 xs,
                 &FlattenState {
@@ -389,11 +384,11 @@ fn flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
         }
         Texts::Parts(xss) => {
             for xs in xss {
-                flatten(spans, xs, s);
+                _flatten(spans, xs, s);
             }
         }
         Texts::If(cond, box xs, Some(box ys)) => {
-            flatten(
+            _flatten(
                 spans,
                 if eval_cond(
                     cond,
@@ -425,7 +420,7 @@ fn flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                     query: s.query,
                 },
             ) {
-                flatten(spans, xs, s);
+                _flatten(spans, xs, s);
             }
         }
     }

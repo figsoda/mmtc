@@ -173,6 +173,11 @@ pub fn render(
             let mut ws = Vec::with_capacity(len);
             let mut cs = Vec::with_capacity(len);
 
+            let len = queue.len();
+            if len == 0 {
+                return;
+            }
+
             let denom = xs.iter().fold(0, |n, Column { item, .. }| {
                 if let Constrained::Ratio(m, _) = item {
                     n + m
@@ -186,11 +191,6 @@ pub fn render(
                 .map_or((None, None), |song| (Some(song.pos), queue.get(song.pos)));
 
             for column in xs {
-                let len = queue.len();
-                if len == 0 {
-                    continue;
-                }
-
                 let (txts, constraint) = match &column.item {
                     Constrained::Fixed(n, txts) => (txts, Constraint::Length(*n)),
                     Constrained::Max(n, txts) => (txts, Constraint::Max(*n)),

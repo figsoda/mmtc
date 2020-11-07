@@ -478,15 +478,13 @@ async fn run() -> Result<()> {
                 } else {
                     filtered.len()
                 };
-                if selected >= len {
-                    selected = status.song.map_or(0, |song| song.pos);
+                selected = if selected >= len {
+                    status.song.map_or(0, |song| song.pos)
+                } else if cycle {
+                    (selected + jump_lines) % len
                 } else {
-                    selected = if cycle {
-                        (selected + jump_lines) % len
-                    } else {
-                        min(selected + jump_lines, len - 1)
-                    }
-                }
+                    min(selected + jump_lines, len - 1)
+                };
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -496,15 +494,13 @@ async fn run() -> Result<()> {
                 } else {
                     filtered.len()
                 };
-                if selected >= len {
-                    selected = status.song.map_or(0, |song| song.pos);
+                selected = if selected >= len {
+                    status.song.map_or(0, |song| song.pos)
+                } else if cycle {
+                    ((selected as isize - jump_lines as isize) % len as isize) as usize
                 } else {
-                    selected = if cycle {
-                        (selected as isize - jump_lines as isize) % len as isize
-                    } else {
-                        max(selected as isize - jump_lines as isize, 0)
-                    } as usize
-                }
+                    max(selected as isize - jump_lines as isize, 0) as usize
+                };
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;
             }

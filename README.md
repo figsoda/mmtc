@@ -8,6 +8,11 @@
 
 Minimal mpd terminal client that aims to be simple yet highly configurable
 
+- [Installation](#Installation)
+- [Building from source](#Building-from-source)
+- [Key bindings](#Key-bindings)
+- [Configuration.md]
+- [CHANGELOG.md]
 
 ## Installation
 
@@ -83,12 +88,14 @@ Key | Action
 
 ## Configuration
 
-See [Configuration.md](https://github.com/figsoda/mmtc/blob/main/Configuration.md)
+See [Configuration.md]
 
 
 ## Changelog
 
-See [CHANGELOG.md](https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md)
+See [CHANGELOG.md]
 
 
 [Crate]: https://crates.io/crates/mmtc
+[Configuration.md]: https://github.com/figsoda/mmtc/blob/main/Configuration.md
+[CHANGELOG.md]: https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md

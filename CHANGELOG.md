@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v0.2.1 - 2020-11-07
+
+### Changes
+- Allow scrolling with mouse when searching
+
+### Fixes
+- Correctly handle resizing when searching
+
+
 ## v0.2.0 - 2020-11-05
 
 ### Changes

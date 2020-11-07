@@ -100,7 +100,7 @@ enum Command {
     InputSearch(char),
     BackspaceSearch,
     UpdateSearch,
-    QuitSearch,
+    ClearQuery,
 }
 
 fn cleanup() -> Result<()> {
@@ -222,7 +222,10 @@ async fn run() -> Result<()> {
                 Event::Mouse(MouseEvent::ScrollUp(..)) => Some(Command::Up),
                 Event::Resize(..) => Some(Command::UpdateFrame),
                 Event::Key(KeyEvent { code, .. }) => match code {
-                    KeyCode::Esc => Some(Command::QuitSearch),
+                    KeyCode::Esc => {
+                        searching.store(false, Ordering::Release);
+                        Some(Command::ClearQuery)
+                    }
                     KeyCode::Down => Some(Command::Down),
                     KeyCode::Up => Some(Command::Up),
                     KeyCode::PageDown => Some(Command::JumpDown),
@@ -531,8 +534,7 @@ async fn run() -> Result<()> {
                 liststate.select(Some(0));
                 tx.send(Command::UpdateFrame).await?;
             }
-            Command::QuitSearch => {
-                searching.store(false, Ordering::Release);
+            Command::ClearQuery => {
                 query.clear();
                 tx.send(Command::UpdateFrame).await?;
             }

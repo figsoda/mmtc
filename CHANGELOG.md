@@ -3,7 +3,7 @@
 
 ## v0.2.1 - 2020-11-07
 
-### Changes
+### Features
 - Allow scrolling with mouse when searching
 
 ### Fixes

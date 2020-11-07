@@ -218,51 +218,55 @@ async fn run() -> Result<()> {
         let tx = tx3;
         while let Ok(ev) = event::read() {
             if let Some(cmd) = match ev {
-                Event::Key(KeyEvent {
-                    code: KeyCode::Esc, ..
-                }) => Some(Command::QuitSearch),
                 Event::Mouse(MouseEvent::ScrollDown(..)) => Some(Command::Down),
                 Event::Mouse(MouseEvent::ScrollUp(..)) => Some(Command::Up),
                 Event::Resize(..) => Some(Command::UpdateFrame),
-                Event::Key(KeyEvent { code, .. }) => {
-                    if searching.load(Ordering::Acquire) {
-                        match code {
-                            KeyCode::Char(c) => Some(Command::InputSearch(c)),
-                            KeyCode::Backspace => Some(Command::BackspaceSearch),
-                            KeyCode::Enter => {
-                                searching.store(false, Ordering::Release);
-                                Some(Command::UpdateFrame)
+                Event::Key(KeyEvent { code, .. }) => match code {
+                    KeyCode::Esc => Some(Command::QuitSearch),
+                    KeyCode::Down => Some(Command::Down),
+                    KeyCode::Up => Some(Command::Up),
+                    KeyCode::PageDown => Some(Command::JumpDown),
+                    KeyCode::PageUp => Some(Command::JumpUp),
+                    _ => {
+                        if searching.load(Ordering::Acquire) {
+                            match code {
+                                KeyCode::Char(c) => Some(Command::InputSearch(c)),
+                                KeyCode::Backspace => Some(Command::BackspaceSearch),
+                                KeyCode::Enter => {
+                                    searching.store(false, Ordering::Release);
+                                    Some(Command::UpdateFrame)
+                                }
+                                _ => None,
                             }
-                            _ => None,
-                        }
-                    } else {
-                        match code {
-                            KeyCode::Char('q') => Some(Command::Quit),
-                            KeyCode::Char('r') => Some(Command::ToggleRepeat),
-                            KeyCode::Char('R') => Some(Command::ToggleRandom),
-                            KeyCode::Char('s') => Some(Command::ToggleSingle),
-                            KeyCode::Char('S') => Some(Command::ToggleOneshot),
-                            KeyCode::Char('c') => Some(Command::ToggleConsume),
-                            KeyCode::Char('p') => Some(Command::TogglePause),
-                            KeyCode::Char(';') => Some(Command::Stop),
-                            KeyCode::Char('h') | KeyCode::Left => Some(Command::SeekBackwards),
-                            KeyCode::Char('l') | KeyCode::Right => Some(Command::SeekForwards),
-                            KeyCode::Char('H') => Some(Command::Previous),
-                            KeyCode::Char('L') => Some(Command::Next),
-                            KeyCode::Enter => Some(Command::Play),
-                            KeyCode::Char(' ') => Some(Command::Reselect),
-                            KeyCode::Char('j') | KeyCode::Down => Some(Command::Down),
-                            KeyCode::Char('k') | KeyCode::Up => Some(Command::Up),
-                            KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
-                            KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
-                            KeyCode::Char('/') => {
-                                searching.store(true, Ordering::Release);
-                                Some(Command::UpdateFrame)
+                        } else {
+                            match code {
+                                KeyCode::Char('q') => Some(Command::Quit),
+                                KeyCode::Char('r') => Some(Command::ToggleRepeat),
+                                KeyCode::Char('R') => Some(Command::ToggleRandom),
+                                KeyCode::Char('s') => Some(Command::ToggleSingle),
+                                KeyCode::Char('S') => Some(Command::ToggleOneshot),
+                                KeyCode::Char('c') => Some(Command::ToggleConsume),
+                                KeyCode::Char('p') => Some(Command::TogglePause),
+                                KeyCode::Char(';') => Some(Command::Stop),
+                                KeyCode::Char('h') | KeyCode::Left => Some(Command::SeekBackwards),
+                                KeyCode::Char('l') | KeyCode::Right => Some(Command::SeekForwards),
+                                KeyCode::Char('H') => Some(Command::Previous),
+                                KeyCode::Char('L') => Some(Command::Next),
+                                KeyCode::Enter => Some(Command::Play),
+                                KeyCode::Char(' ') => Some(Command::Reselect),
+                                KeyCode::Char('j') => Some(Command::Down),
+                                KeyCode::Char('k') | KeyCode::Up => Some(Command::Up),
+                                KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
+                                KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
+                                KeyCode::Char('/') => {
+                                    searching.store(true, Ordering::Release);
+                                    Some(Command::UpdateFrame)
+                                }
+                                _ => None,
                             }
-                            _ => None,
                         }
                     }
-                }
+                },
                 _ => None,
             } {
                 tx.send(cmd).await.unwrap_or_else(die);

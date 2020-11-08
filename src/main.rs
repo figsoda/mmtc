@@ -514,11 +514,13 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateSearch).await?;
             }
             Command::BackspaceSearch => {
-                query.pop();
-                if query.is_empty() {
-                    tx.send(Command::UpdateFrame).await?;
-                } else {
+                let c = query.pop();
+                if !query.is_empty() {
                     tx.send(Command::UpdateSearch).await?;
+                } else if c.is_some() {
+                    selected = status.song.map_or(0, |song| song.pos);
+                    liststate.select(Some(selected));
+                    tx.send(Command::UpdateFrame).await?;
                 }
             }
             Command::UpdateSearch => {

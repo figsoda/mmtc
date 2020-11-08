@@ -1,7 +1,7 @@
 # Configuration
 
 
-## Configuration file
+## File Resolution
 
 By default, mmtc looks for configuration file at `<your config directory>/mmtc/mmtc.ron`. 
 Your config directory may differ depending on the operating system, so mmtc tries to find your config directory with [dirs crate](https://docs.rs/dirs-next/*/dirs_next/fn.config_dir.html).
@@ -11,7 +11,7 @@ This setting can be overwritten by the command line argument `-c` or `--config`.
 If no config file was given from the command line and mmtc failed to find your config directory, the [default configuration](https://github.com/figsoda/mmtc/blob/main/mmtc.default.ron) would be used.
 
 
-## Structures
+## File Structure
 
 The configuration file is written in [ron](https://github.com/ron-rs/ron), an expressive object notation.
 Check out its [specification wiki](https://github.com/ron-rs/ron/wiki/Specification) if you are having trouble figuring out its syntax.

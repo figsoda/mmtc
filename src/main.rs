@@ -223,7 +223,7 @@ async fn run() -> Result<()> {
                 Event::Resize(..) => Some(Command::UpdateFrame),
                 Event::Key(KeyEvent { code, .. }) => match code {
                     KeyCode::Esc => {
-                        searching.store(false, Ordering::Release);
+                        searching.store(false, Ordering::Relaxed);
                         Some(Command::ClearQuery)
                     }
                     KeyCode::Down => Some(Command::Down),
@@ -231,12 +231,12 @@ async fn run() -> Result<()> {
                     KeyCode::PageDown => Some(Command::JumpDown),
                     KeyCode::PageUp => Some(Command::JumpUp),
                     _ => {
-                        if searching.load(Ordering::Acquire) {
+                        if searching.load(Ordering::Relaxed) {
                             match code {
                                 KeyCode::Char(c) => Some(Command::InputSearch(c)),
                                 KeyCode::Backspace => Some(Command::BackspaceSearch),
                                 KeyCode::Enter => {
-                                    searching.store(false, Ordering::Release);
+                                    searching.store(false, Ordering::Relaxed);
                                     Some(Command::UpdateFrame)
                                 }
                                 _ => None,
@@ -262,7 +262,7 @@ async fn run() -> Result<()> {
                                 KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
                                 KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
                                 KeyCode::Char('/') => {
-                                    searching.store(true, Ordering::Release);
+                                    searching.store(true, Ordering::Relaxed);
                                     Some(Command::UpdateFrame)
                                 }
                                 _ => None,
@@ -287,7 +287,7 @@ async fn run() -> Result<()> {
                         frame.size(),
                         &cfg.layout,
                         &queue,
-                        searching.load(Ordering::Acquire),
+                        searching.load(Ordering::Relaxed),
                         &query,
                         &filtered,
                         &status,

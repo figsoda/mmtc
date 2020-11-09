@@ -128,9 +128,9 @@ async fn main() {
 async fn run() -> Result<()> {
     let opts = Opts::from_args();
 
-    let cfg: Config = if let Some(cfg_file) = opts.config {
-        ron::de::from_bytes(&fs::read(&cfg_file).with_context(fail::read(&cfg_file))?)
-            .with_context(fail::parse_cfg(&cfg_file))?
+    let cfg: Config = if let Some(ref cfg_file) = opts.config {
+        ron::de::from_bytes(&fs::read(cfg_file).with_context(fail::read(cfg_file))?)
+            .with_context(fail::parse_cfg(cfg_file))?
     } else if let Some(xs) = config_dir() {
         let mut xs = xs;
         xs.push("mmtc");
@@ -146,7 +146,7 @@ async fn run() -> Result<()> {
         defaults::config()
     };
 
-    let addr = if let Some(addr) = opts.address {
+    let addr = &if let Some(addr) = opts.address {
         addr.parse().with_context(fail::parse_addr(addr))?
     } else {
         cfg.address
@@ -156,10 +156,10 @@ async fn run() -> Result<()> {
     let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
 
     let mut idle_cl = mpd::init(addr).await?;
-    let mut cl = mpd::init(addr).await?;
+    let cl = &mut mpd::init(addr).await?;
 
     let (mut queue, mut queue_strings) = mpd::queue(&mut idle_cl, &cfg.search_fields).await?;
-    let mut status = mpd::status(&mut cl).await?;
+    let mut status = mpd::status(cl).await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
@@ -296,7 +296,7 @@ async fn run() -> Result<()> {
                 })
                 .context("Failed to draw to terminal")?,
             Command::UpdateQueue => {
-                let res = mpd::queue(&mut cl, &cfg.search_fields)
+                let res = mpd::queue(cl, &cfg.search_fields)
                     .await
                     .context("Failed to query queue")?;
                 queue = res.0;
@@ -309,13 +309,11 @@ async fn run() -> Result<()> {
                 }
             }
             Command::UpdateStatus => {
-                status = mpd::status(&mut cl)
-                    .await
-                    .context("Failed to query status")?;
+                status = mpd::status(cl).await.context("Failed to query status")?;
             }
             Command::ToggleRepeat => {
                 mpd::command(
-                    &mut cl,
+                    cl,
                     if status.repeat {
                         b"repeat 0\n"
                     } else {
@@ -329,7 +327,7 @@ async fn run() -> Result<()> {
             }
             Command::ToggleRandom => {
                 mpd::command(
-                    &mut cl,
+                    cl,
                     if status.random {
                         b"random 0\n"
                     } else {
@@ -343,7 +341,7 @@ async fn run() -> Result<()> {
             }
             Command::ToggleSingle => {
                 mpd::command(
-                    &mut cl,
+                    cl,
                     if status.single == Some(true) {
                         b"single 0\n"
                     } else {
@@ -357,7 +355,7 @@ async fn run() -> Result<()> {
             }
             Command::ToggleOneshot => {
                 mpd::command(
-                    &mut cl,
+                    cl,
                     status.single.map_or(b"single 0\n", |_| b"single oneshot\n"),
                 )
                 .await
@@ -367,7 +365,7 @@ async fn run() -> Result<()> {
             }
             Command::ToggleConsume => {
                 mpd::command(
-                    &mut cl,
+                    cl,
                     if status.consume {
                         b"consume 0\n"
                     } else {
@@ -380,42 +378,42 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Stop => {
-                mpd::command(&mut cl, b"stop\n")
+                mpd::command(cl, b"stop\n")
                     .await
                     .context("Faield to stop playing")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::SeekBackwards => {
-                mpd::command(&mut cl, seek_backwards)
+                mpd::command(cl, seek_backwards)
                     .await
                     .context("Failed to seek backwards")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::SeekForwards => {
-                mpd::command(&mut cl, seek_forwards)
+                mpd::command(cl, seek_forwards)
                     .await
                     .context("Failed to seek forwards")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::TogglePause => {
-                mpd::command(&mut cl, b"pause\n")
+                mpd::command(cl, b"pause\n")
                     .await
                     .context("Failed to toggle pause")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Previous => {
-                mpd::command(&mut cl, b"previous\n")
+                mpd::command(cl, b"previous\n")
                     .await
                     .context("Failed to play previous song")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Next => {
-                mpd::command(&mut cl, b"next\n")
+                mpd::command(cl, b"next\n")
                     .await
                     .context("Failed to play previous song")?;
                 tx.send(Command::UpdateStatus).await?;
@@ -424,12 +422,12 @@ async fn run() -> Result<()> {
             Command::Play => {
                 if query.is_empty() {
                     if selected < queue.len() {
-                        mpd::play(&mut cl, selected)
+                        mpd::play(cl, selected)
                             .await
                             .context("Failed to play the selected song")?;
                     }
                 } else if selected < filtered.len() {
-                    mpd::play(&mut cl, filtered[selected])
+                    mpd::play(cl, filtered[selected])
                         .await
                         .context("Failed to play the selected song")?;
                 };

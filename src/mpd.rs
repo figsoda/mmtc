@@ -36,16 +36,16 @@ pub struct Track {
     pub time: u16,
 }
 
-pub async fn init(addr: SocketAddr) -> Result<Client> {
+pub async fn init(addr: &SocketAddr) -> Result<Client> {
     let mut cl = BufReader::new(
-        TcpStream::connect(&addr)
+        TcpStream::connect(addr)
             .await
             .with_context(fail::connect(addr))?,
     );
 
-    let mut buf = [0; 7];
-    cl.read(&mut buf).await?;
-    if &buf != b"OK MPD " {
+    let buf = &mut [0; 7];
+    cl.read(buf).await?;
+    if buf != b"OK MPD " {
         bail!("server did not greet with a success");
     }
     cl.read_line(&mut String::new()).await?;

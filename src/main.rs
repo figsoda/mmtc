@@ -46,11 +46,11 @@ use crate::config::Config;
 )]
 struct Opts {
     /// Specify the config file
-    #[structopt(short, long)]
+    #[structopt(short, long, value_name = "FILE")]
     config: Option<String>,
 
     /// Specify the address of the mpd server
-    #[structopt(long)]
+    #[structopt(long, value_name = "ADDRESS")]
     address: Option<String>,
 
     /// Cycle through the queue
@@ -58,7 +58,7 @@ struct Opts {
     cycle: bool,
 
     /// The number of lines to jump
-    #[structopt(long)]
+    #[structopt(long, value_name = "NUMBER")]
     jump_lines: Option<usize>,
 
     /// Don't cycle through the queue
@@ -66,11 +66,11 @@ struct Opts {
     no_cycle: bool,
 
     /// The time to seek in seconds
-    #[structopt(long)]
+    #[structopt(long, value_name = "NUMBER")]
     seek_secs: Option<f64>,
 
     /// The amount of status updates per second
-    #[structopt(long)]
+    #[structopt(long, value_name = "NUMBER")]
     ups: Option<f64>,
 }
 

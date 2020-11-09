@@ -52,11 +52,11 @@ mmtc [FLAGS] [OPTIONS]
 ### OPTIONS
 
 ```
-    --address <address>          Specify the address of the mpd server
--c, --config <config>            Specify the config file
-    --jump-lines <jump-lines>    The number of lines to jump
-    --seek-secs <seek-secs>      The time to seek in seconds
-    --ups <ups>                  The amount of status updates per second
+    --address <ADDRESS>      Specify the address of the mpd server
+-c, --config <FILE>          Specify the config file
+    --jump-lines <NUMBER>    The number of lines to jump
+    --seek-secs <NUMBER>     The time to seek in seconds
+    --ups <NUMBER>           The amount of status updates per second
 ```
 
 

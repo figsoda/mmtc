@@ -53,6 +53,10 @@ struct Opts {
     #[structopt(long, value_name = "address")]
     address: Option<String>,
 
+    /// Clear query on play
+    #[structopt(long)]
+    clear_query_on_play: bool,
+
     /// Cycle through the queue
     #[structopt(long)]
     cycle: bool,
@@ -60,6 +64,10 @@ struct Opts {
     /// The number of lines to jump
     #[structopt(long, value_name = "number")]
     jump_lines: Option<usize>,
+
+    /// Don't clear query on play
+    #[structopt(long, overrides_with("clear_query_on_play"))]
+    no_clear_query_on_play: bool,
 
     /// Don't cycle through the queue
     #[structopt(long, overrides_with("cycle"))]
@@ -151,6 +159,12 @@ async fn run() -> Result<()> {
     } else {
         cfg.address
     };
+    let clear_query_on_play = opts.clear_query_on_play
+        || if opts.no_clear_query_on_play {
+            false
+        } else {
+            cfg.clear_query_on_play
+        };
     let cycle = opts.cycle || if opts.no_cycle { false } else { cfg.cycle };
     let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
     let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
@@ -432,7 +446,7 @@ async fn run() -> Result<()> {
                         .context("Failed to play the selected song")?;
                 };
                 tx.send(Command::UpdateStatus).await?;
-                if cfg.clear_query_on_play {
+                if clear_query_on_play {
                     tx.send(Command::ClearQuery).await?;
                 }
                 tx.send(Command::UpdateFrame).await?;

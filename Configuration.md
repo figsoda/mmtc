@@ -24,6 +24,7 @@ Type: struct
 field | type | description | default
 -|-|-|-
 `address` | string | the address of the mpd server | `"127.0.0.1:6600"`
+`clear_query_on_play` | boolean | clear query on play | `false`
 `cycle` | boolean |  cycle through the queue | `false`
 `jump_lines` | non-negative integer | the number of lines to jump | `24`
 `seek_secs` | non-negative number | the time to seek in seconds | `5.0`

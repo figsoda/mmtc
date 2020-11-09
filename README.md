@@ -49,11 +49,11 @@ flag | description
 
 option | description
 -|-
---address \<ADDRESS> | Specify the address of the mpd server
--c, --config \<FILE> | Specify the config file
---jump-lines \<NUMBER> | The number of lines to jump
---seek-secs \<NUMBER> | The time to seek in seconds
---ups \<NUMBER> | The amount of status updates per second
+--address \<address> | Specify the address of the mpd server
+-c, --config \<file> | Specify the config file
+--jump-lines \<number> | The number of lines to jump
+--seek-secs \<number> | The time to seek in seconds
+--ups \<number> | The amount of status updates per second
 
 
 ## Key bindings

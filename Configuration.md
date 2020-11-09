@@ -61,10 +61,10 @@ Type: enum
 
 variant | struct, tuple or unit | fields (separated by comma) | description
 -|-|-|-
-`Max(n, item)` | tuple | non-negative integer, \<Type> | `item` with a maximum length of `n`
-`Min(n, item)` | tuple | non-negative integer, \<Type> | `item` with a minimum length of `n`
-`Fixed(n, item)` | tuple | non-negative integer, \<Type> | `item` with a fixed length of `n`
-`Ratio(n, item)` | tuple | non-negative integer, \<Type> | divide the total length in to ratios, mixing with other constraints would cut off the rightmost item
+`Max(n, item)` | tuple | non-negative integer, \<type> | `item` with a maximum length of `n`
+`Min(n, item)` | tuple | non-negative integer, \<type> | `item` with a minimum length of `n`
+`Fixed(n, item)` | tuple | non-negative integer, \<type> | `item` with a fixed length of `n`
+`Ratio(n, item)` | tuple | non-negative integer, \<type> | divide the total length in to ratios, mixing with other constraints would cut off the rightmost item
 
 ### Texts
 

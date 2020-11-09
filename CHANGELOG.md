@@ -1,7 +1,7 @@
 # Changelog
 
 
-## v0.2.2 - 2020-11-08
+## v0.2.2 - 2020-11-09
 
 ### Changes
 - The current song would now be selected after quitting searching mode or emptying query

@@ -40,24 +40,20 @@ cargo +nightly build --release
 mmtc [FLAGS] [OPTIONS]
 ```
 
-### FLAGS
+flag | description
+-|-
+--cycle | Cycle through the queue
+-h, --help | Prints help information
+--no-cycle | Don't cycle through the queue
+-V, --version | Prints version information
 
-```
-    --cycle       Cycle through the queue
--h, --help        Prints help information
-    --no-cycle    Don't cycle through the queue
--V, --version     Prints version information
-```
-
-### OPTIONS
-
-```
-    --address <ADDRESS>      Specify the address of the mpd server
--c, --config <FILE>          Specify the config file
-    --jump-lines <NUMBER>    The number of lines to jump
-    --seek-secs <NUMBER>     The time to seek in seconds
-    --ups <NUMBER>           The amount of status updates per second
-```
+option | description
+-|-
+--address \<ADDRESS> | Specify the address of the mpd server
+-c, --config \<FILE> | Specify the config file
+--jump-lines \<NUMBER> | The number of lines to jump
+--seek-secs \<NUMBER> | The time to seek in seconds
+--ups \<NUMBER> | The amount of status updates per second
 
 
 ## Key bindings

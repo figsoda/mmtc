@@ -9,6 +9,7 @@ use crate::config::{
 pub fn config() -> Config {
     Config {
         address: address(),
+        clear_query_on_play: false,
         cycle: false,
         jump_lines: jump_lines(),
         seek_secs: seek_secs(),

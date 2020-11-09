@@ -16,6 +16,8 @@ pub struct Config {
     #[serde(default = "defaults::address")]
     pub address: SocketAddr,
     #[serde(default)]
+    pub clear_query_on_play: bool,
+    #[serde(default)]
     pub cycle: bool,
     #[serde(default = "defaults::jump_lines")]
     pub jump_lines: usize,

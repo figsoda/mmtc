@@ -1,5 +1,6 @@
 Config(
     address: "127.0.0.1:6600",
+    clear_query_on_play: false,
     cycle: false,
     jump_lines: 24,
     seek_secs: 5.0,

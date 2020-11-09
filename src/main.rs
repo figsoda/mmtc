@@ -432,6 +432,9 @@ async fn run() -> Result<()> {
                         .context("Failed to play the selected song")?;
                 };
                 tx.send(Command::UpdateStatus).await?;
+                if cfg.clear_query_on_play {
+                    tx.send(Command::ClearQuery).await?;
+                }
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Reselect => {

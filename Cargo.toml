@@ -2,7 +2,7 @@ cargo-features = ["strip"]
 
 [package]
 name = "mmtc"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["figsoda <figsoda@pm.me>"]
 edition = "2018"
 license = "MPL-2.0"

@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v0.2.2 - 2020-11-08
+
+### Changes
+- The current song would now be selected after quitting searching mode or emptying query
+
+### Features
+- Allow navigating with down, up, page down and page up keys when searching
+- New command line flags - `--clear-query-on-play` and `--no-clear-query-on-play`
+- New config - `clear_query_on_play`
+
+
 ## v0.2.1 - 2020-11-07
 
 ### Features

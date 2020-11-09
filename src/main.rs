@@ -535,10 +535,12 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::ClearQuery => {
-                query.clear();
-                selected = status.song.map_or(0, |song| song.pos);
-                liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
+                if !query.is_empty() {
+                    query.clear();
+                    selected = status.song.map_or(0, |song| song.pos);
+                    liststate.select(Some(selected));
+                    tx.send(Command::UpdateFrame).await?;
+                }
             }
         }
     }

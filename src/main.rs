@@ -556,8 +556,8 @@ async fn run() -> Result<()> {
                     query.clear();
                     selected = status.song.map_or(0, |song| song.pos);
                     liststate.select(Some(selected));
-                    tx.send(Command::UpdateFrame).await?;
                 }
+                tx.send(Command::UpdateFrame).await?;
             }
         }
     }

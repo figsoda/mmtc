@@ -43,8 +43,8 @@ mmtc [FLAGS] [OPTIONS]
 
 flag | description
 -|-
---cycle | Cycle through the queue
 --clear-query-on-play | Clear query on play
+--cycle | Cycle through the queue
 -h, --help | Prints help information
 --no-clear-query-on-play | Don't clear query on play
 --no-cycle | Don't cycle through the queue

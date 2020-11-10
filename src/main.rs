@@ -45,14 +45,6 @@ use crate::config::Config;
     global_setting = AppSettings::ColoredHelp,
 )]
 struct Opts {
-    /// Specify the config file
-    #[structopt(short, long, value_name = "file")]
-    config: Option<String>,
-
-    /// Specify the address of the mpd server
-    #[structopt(long, value_name = "address")]
-    address: Option<String>,
-
     /// Clear query on play
     #[structopt(long)]
     clear_query_on_play: bool,
@@ -61,10 +53,6 @@ struct Opts {
     #[structopt(long)]
     cycle: bool,
 
-    /// The number of lines to jump
-    #[structopt(long, value_name = "number")]
-    jump_lines: Option<usize>,
-
     /// Don't clear query on play
     #[structopt(long, overrides_with("clear_query_on_play"))]
     no_clear_query_on_play: bool,
@@ -72,6 +60,18 @@ struct Opts {
     /// Don't cycle through the queue
     #[structopt(long, overrides_with("cycle"))]
     no_cycle: bool,
+
+    /// Specify the address of the mpd server
+    #[structopt(long, value_name = "address")]
+    address: Option<String>,
+
+    /// Specify the config file
+    #[structopt(short, long, value_name = "file")]
+    config: Option<String>,
+
+    /// The number of lines to jump
+    #[structopt(long, value_name = "number")]
+    jump_lines: Option<usize>,
 
     /// The time to seek in seconds
     #[structopt(long, value_name = "number")]

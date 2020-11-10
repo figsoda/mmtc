@@ -413,7 +413,7 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::TogglePause => {
-                mpd::command(cl, b"pause\n")
+                mpd::command(cl, status.state.map_or(b"play\n", |_| b"pause\n"))
                     .await
                     .context("Failed to toggle pause")?;
                 tx.send(Command::UpdateStatus).await?;

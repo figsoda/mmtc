@@ -18,7 +18,8 @@ Minimal mpd terminal client that aims to be simple yet highly configurable
 
 The latest precompiled binaries are available on [github](https://github.com/figsoda/mmtc/releases/latest).
 
-Alternatively you can install mmtc from [crates.io][Crate] with cargo. This requires the nightly toolchain of Rust.
+Alternatively you can install mmtc from [crates.io][Crate] with cargo.
+This requires the nightly toolchain of [Rust](https://www.rust-lang.org/tools/install).
 
 ```shell
 cargo +nightly install mmtc
@@ -27,7 +28,7 @@ cargo +nightly install mmtc
 
 ## Building from source
 
-This requires the nightly toolchain of Rust.
+This requires the nightly toolchain of [Rust](https://www.rust-lang.org/tools/install).
 
 ```shell
 cargo +nightly build --release

@@ -5,11 +5,11 @@ name = "mmtc"
 version = "0.2.2"
 authors = ["figsoda <figsoda@pm.me>"]
 edition = "2018"
-license = "MPL-2.0"
 description = "Minimal mpd terminal client that aims to be simple yet highly configurable"
+readme = "README.md"
 homepage = "https://github.com/figsoda/mmtc"
 repository = "https://github.com/figsoda/mmtc"
-readme = "README.md"
+license = "MPL-2.0"
 keywords = ["cli", "mpd", "music", "terminal", "tui"]
 categories = ["command-line-utilities"]
 

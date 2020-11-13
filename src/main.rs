@@ -27,10 +27,6 @@ use std::{
     fs,
     io::{stdout, Write},
     process::exit,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
 };
 
 use crate::config::Config;
@@ -109,6 +105,7 @@ enum Command {
     BackspaceSearch,
     UpdateSearch,
     ClearQuery,
+    Searching(bool),
 }
 
 fn cleanup() -> Result<()> {
@@ -177,8 +174,7 @@ async fn run() -> Result<()> {
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
-    let searching = Arc::new(AtomicBool::new(false));
-    let searching1 = Arc::clone(&searching);
+    let mut searching = false;
     let mut query = String::with_capacity(32);
     let mut filtered = Vec::new();
 
@@ -228,7 +224,7 @@ async fn run() -> Result<()> {
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
     tokio::spawn(async move {
-        let searching = searching1;
+        let mut searching = false;
         let tx = tx3;
         while let Ok(ev) = event::read() {
             if let Some(cmd) = match ev {
@@ -237,7 +233,7 @@ async fn run() -> Result<()> {
                 Event::Resize(..) => Some(Command::UpdateFrame),
                 Event::Key(KeyEvent { code, .. }) => match code {
                     KeyCode::Esc => {
-                        searching.store(false, Ordering::Relaxed);
+                        searching = false;
                         Some(Command::ClearQuery)
                     }
                     KeyCode::Down => Some(Command::Down),
@@ -245,13 +241,13 @@ async fn run() -> Result<()> {
                     KeyCode::PageDown => Some(Command::JumpDown),
                     KeyCode::PageUp => Some(Command::JumpUp),
                     _ => {
-                        if searching.load(Ordering::Relaxed) {
+                        if searching {
                             match code {
                                 KeyCode::Char(c) => Some(Command::InputSearch(c)),
                                 KeyCode::Backspace => Some(Command::BackspaceSearch),
                                 KeyCode::Enter => {
-                                    searching.store(false, Ordering::Relaxed);
-                                    Some(Command::UpdateFrame)
+                                    searching = false;
+                                    Some(Command::Searching(false))
                                 }
                                 _ => None,
                             }
@@ -276,8 +272,8 @@ async fn run() -> Result<()> {
                                 KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
                                 KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
                                 KeyCode::Char('/') => {
-                                    searching.store(true, Ordering::Relaxed);
-                                    Some(Command::UpdateFrame)
+                                    searching = true;
+                                    Some(Command::Searching(true))
                                 }
                                 _ => None,
                             }
@@ -301,7 +297,7 @@ async fn run() -> Result<()> {
                         frame.size(),
                         &cfg.layout,
                         &queue,
-                        searching.load(Ordering::Relaxed),
+                        searching,
                         &query,
                         &filtered,
                         &status,
@@ -552,11 +548,16 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::ClearQuery => {
+                searching = false;
                 if !query.is_empty() {
                     query.clear();
                     selected = status.song.map_or(0, |song| song.pos);
                     liststate.select(Some(selected));
                 }
+                tx.send(Command::UpdateFrame).await?;
+            }
+            Command::Searching(x) => {
+                searching = x;
                 tx.send(Command::UpdateFrame).await?;
             }
         }

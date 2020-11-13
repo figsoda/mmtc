@@ -252,7 +252,7 @@ pub fn layout() -> Widget {
                     )),
                 ),
                 Constrained::Fixed(
-                    12,
+                    7,
                     Widget::TextboxR(Texts::Styled(
                         vec![AddStyle::Fg(Color::Indexed(81))],
                         Box::new(Texts::Parts(vec![

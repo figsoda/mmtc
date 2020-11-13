@@ -82,7 +82,7 @@ Config(
                     ),
                 ])),
             )))),
-            Fixed(12, TextboxR(Styled([Fg(Indexed(81))], Parts([
+            Fixed(7, TextboxR(Styled([Fg(Indexed(81))], Parts([
                 Text("["),
                 If(Repeat, Text("@")),
                 If(Random, Text("#")),

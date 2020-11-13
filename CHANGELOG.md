@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v0.2.3 - 2020-11-13
+
+### Changes
+- On toggle pause, play a song if none is playing
+- Reduce default size of player state textbox from 12 to 7
+
+### Fixes
+- Fixed delay after quitting search with an empty query
+
+
 ## v0.2.2 - 2020-11-09
 
 ### Changes

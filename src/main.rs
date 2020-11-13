@@ -224,7 +224,6 @@ async fn run() -> Result<()> {
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
     tokio::spawn(async move {
-        let mut searching = false;
         let tx = tx3;
         while let Ok(ev) = event::read() {
             if let Some(cmd) = match ev {

@@ -109,7 +109,7 @@ enum Command {
 }
 
 fn cleanup() -> Result<()> {
-    disable_raw_mode().context("Failed to clean up terminal")?;
+    disable_raw_mode().context("Failed to disable raw mode")?;
     execute!(stdout(), LeaveAlternateScreen, DisableMouseCapture)
         .context("Failed to clean up terminal")?;
     Ok(())

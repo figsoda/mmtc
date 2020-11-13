@@ -14,12 +14,13 @@ Minimal [mpd](https://github.com/musicplayerdaemon/mpd) terminal client that aim
 - [Configuration.md]
 - [CHANGELOG.md]
 
+
 ## Installation
 
 The latest precompiled binaries are available on [github](https://github.com/figsoda/mmtc/releases/latest).
 
 Alternatively you can install mmtc from [crates.io][Crate] with cargo.
-This requires the nightly toolchain of [Rust](https://www.rust-lang.org/tools/install).
+This requires the nightly toolchain of [Rust].
 
 ```shell
 cargo +nightly install mmtc
@@ -28,7 +29,7 @@ cargo +nightly install mmtc
 
 ## Building from source
 
-This requires the nightly toolchain of [Rust](https://www.rust-lang.org/tools/install).
+This requires the nightly toolchain of [Rust].
 
 ```shell
 cargo +nightly build --release
@@ -98,3 +99,4 @@ See [CHANGELOG.md]
 [Crate]: https://crates.io/crates/mmtc
 [Configuration.md]: https://github.com/figsoda/mmtc/blob/main/Configuration.md
 [CHANGELOG.md]: https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md
+[Rust]: https://www.rust-lang.org/tools/install

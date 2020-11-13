@@ -104,7 +104,7 @@ enum Command {
     InputSearch(char),
     BackspaceSearch,
     UpdateSearch,
-    ClearQuery,
+    QuitSearch,
     Searching(bool),
 }
 
@@ -234,7 +234,7 @@ async fn run() -> Result<()> {
                 Event::Key(KeyEvent { code, .. }) => match code {
                     KeyCode::Esc => {
                         searching = false;
-                        Some(Command::ClearQuery)
+                        Some(Command::QuitSearch)
                     }
                     KeyCode::Down => Some(Command::Down),
                     KeyCode::Up => Some(Command::Up),
@@ -443,7 +443,7 @@ async fn run() -> Result<()> {
                 };
                 tx.send(Command::UpdateStatus).await?;
                 if clear_query_on_play {
-                    tx.send(Command::ClearQuery).await?;
+                    tx.send(Command::QuitSearch).await?;
                 }
                 tx.send(Command::UpdateFrame).await?;
             }
@@ -547,7 +547,7 @@ async fn run() -> Result<()> {
                 liststate.select(Some(0));
                 tx.send(Command::UpdateFrame).await?;
             }
-            Command::ClearQuery => {
+            Command::QuitSearch => {
                 searching = false;
                 if !query.is_empty() {
                     query.clear();

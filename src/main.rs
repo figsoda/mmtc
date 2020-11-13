@@ -521,8 +521,21 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::InputSearch(c) => {
-                query.push(c);
-                tx.send(Command::UpdateSearch).await?;
+                if query.is_empty() {
+                    query.push(c);
+                    tx.send(Command::UpdateSearch).await?;
+                } else {
+                    query.push(c);
+                    let mut count = 0;
+                    for i in filtered.clone() {
+                        if queue_strings[i].contains(&query) {
+                            filtered[count] = i;
+                            count += 1;
+                        }
+                    }
+                    filtered.truncate(count);
+                    tx.send(Command::UpdateFrame).await?;
+                }
             }
             Command::BackspaceSearch => {
                 let c = query.pop();

@@ -10,7 +10,10 @@ mod mpd;
 
 use anyhow::{Context, Error, Result};
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, MouseEvent},
+    event::{
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyModifiers,
+        MouseEvent,
+    },
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
@@ -239,7 +242,10 @@ async fn run() -> Result<()> {
                 Event::Mouse(MouseEvent::ScrollDown(..)) => Some(Command::Down),
                 Event::Mouse(MouseEvent::ScrollUp(..)) => Some(Command::Up),
                 Event::Resize(..) => Some(Command::UpdateFrame),
-                Event::Key(KeyEvent { code, .. }) => match code {
+                Event::Key(KeyEvent { code, modifiers }) => match code {
+                    KeyCode::Char('q') if modifiers.contains(KeyModifiers::CONTROL) => {
+                        Some(Command::Quit)
+                    }
                     KeyCode::Esc => {
                         searching = false;
                         Some(Command::QuitSearch)

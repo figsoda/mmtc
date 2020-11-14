@@ -64,7 +64,7 @@ option | description
 
 Key | Action
 -|-
-`q` | quit mmtc
+`q`, `Ctrl + q` | quit mmtc
 `r` | toggle repeat
 `R` | toggle random
 `s` | toggle single

@@ -11,8 +11,8 @@ mod mpd;
 use anyhow::{Context, Error, Result};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, MouseEvent},
-    execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
 use dirs_next::config_dir;
 use structopt::{clap::AppSettings, StructOpt};
@@ -25,7 +25,7 @@ use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 use std::{
     cmp::{max, min},
     fs,
-    io::{stdout, Write},
+    io::stdout,
     process::exit,
 };
 
@@ -109,9 +109,14 @@ enum Command {
 }
 
 fn cleanup() -> Result<()> {
+    let mut stdout = stdout();
+    stdout
+        .execute(LeaveAlternateScreen)
+        .context("Failed to leave alternate screen")?;
+    stdout
+        .execute(DisableMouseCapture)
+        .context("Failed to disable mouse capture")?;
     disable_raw_mode().context("Failed to disable raw mode")?;
-    execute!(stdout(), LeaveAlternateScreen, DisableMouseCapture)
-        .context("Failed to clean up terminal")?;
     Ok(())
 }
 
@@ -216,10 +221,14 @@ async fn run() -> Result<()> {
         }
     });
 
+    enable_raw_mode().context("Failed to enable raw mode")?;
     let mut stdout = stdout();
-    enable_raw_mode().context("Failed to initialize terminal")?;
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)
-        .context("Failed to initialize terminal")?;
+    stdout
+        .execute(EnableMouseCapture)
+        .context("Failed to enable mouse capture")?;
+    stdout
+        .execute(EnterAlternateScreen)
+        .context("Failed to enter alternate screen")?;
     let mut term =
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 

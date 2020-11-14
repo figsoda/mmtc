@@ -27,7 +27,7 @@ version = "0.3.3"
 features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"]
 
 [dependencies.tui]
-version = "0.12.0"
+version = "0.13.0"
 default-features = false
 features = ["crossterm", "serde"]
 

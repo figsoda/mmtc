@@ -541,7 +541,8 @@ async fn run() -> Result<()> {
                 } else {
                     query.push(c);
                     let mut count = 0;
-                    for i in filtered.clone() {
+                    for i in 0 .. filtered.len() {
+                        let i = filtered[i];
                         if queue_strings[i].contains(&query) {
                             filtered[count] = i;
                             count += 1;

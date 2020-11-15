@@ -25,7 +25,7 @@ use tokio::{
 };
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
-use std::{cmp::min, fs, io::stdout, process::exit};
+use std::{cmp::min, fs, io::stdout, net::SocketAddr, process::exit};
 
 use crate::{config::Config, mpd::Client};
 
@@ -57,7 +57,7 @@ struct Opts {
 
     /// Specify the address of the mpd server
     #[structopt(long, value_name = "address")]
-    address: Option<String>,
+    address: Option<SocketAddr>,
 
     /// Specify the config file
     #[structopt(short, long, value_name = "file")]
@@ -154,11 +154,7 @@ async fn run() -> Result<()> {
         defaults::config()
     };
 
-    let addr = &if let Some(addr) = opts.address {
-        addr.parse().with_context(fail::parse_addr(addr))?
-    } else {
-        cfg.address
-    };
+    let addr = &opts.address.unwrap_or(cfg.address);
     let mut idle_cl = Client::init(addr).await?;
     let mut cl = Client::init(addr).await?;
 

@@ -25,12 +25,7 @@ use tokio::{
 };
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
-use std::{
-    cmp::{max, min},
-    fs,
-    io::stdout,
-    process::exit,
-};
+use std::{cmp::min, fs, io::stdout, process::exit};
 
 use crate::{config::Config, mpd::Client};
 
@@ -530,8 +525,10 @@ async fn run() -> Result<()> {
                     status.song.map_or(0, |song| song.pos)
                 } else if cycle {
                     ((selected as isize - jump_lines as isize) % len as isize) as usize
+                } else if selected < jump_lines {
+                    0
                 } else {
-                    max(selected as isize - jump_lines as isize, 0) as usize
+                    selected - jump_lines
                 };
                 liststate.select(Some(selected));
                 tx.send(Command::UpdateFrame).await?;

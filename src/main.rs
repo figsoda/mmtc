@@ -164,16 +164,6 @@ async fn run() -> Result<()> {
     } else {
         cfg.address
     };
-    let clear_query_on_play = opts.clear_query_on_play
-        || if opts.no_clear_query_on_play {
-            false
-        } else {
-            cfg.clear_query_on_play
-        };
-    let cycle = opts.cycle || if opts.no_cycle { false } else { cfg.cycle };
-    let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
-    let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
-
     let mut idle_cl = mpd::init(addr).await?;
     let cl = &mut mpd::init(addr).await?;
 
@@ -185,6 +175,42 @@ async fn run() -> Result<()> {
     let mut searching = false;
     let mut query = String::with_capacity(32);
     let mut filtered = Vec::new();
+
+    enable_raw_mode().context("Failed to enable raw mode")?;
+    let mut stdout = stdout();
+    stdout
+        .execute(EnableMouseCapture)
+        .context("Failed to enable mouse capture")?;
+    stdout
+        .execute(EnterAlternateScreen)
+        .context("Failed to enter alternate screen")?;
+    let mut term =
+        Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
+
+    term.draw(|frame| {
+        layout::render(
+            frame,
+            frame.size(),
+            &cfg.layout,
+            &queue,
+            false,
+            &query,
+            &filtered,
+            &status,
+            &mut liststate,
+        );
+    })
+    .context("Failed to draw to terminal")?;
+
+    let clear_query_on_play = opts.clear_query_on_play
+        || if opts.no_clear_query_on_play {
+            false
+        } else {
+            cfg.clear_query_on_play
+        };
+    let cycle = opts.cycle || if opts.no_cycle { false } else { cfg.cycle };
+    let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
+    let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
 
     let seek_backwards = format!("seekcur -{}\n", seek_secs);
     let seek_backwards = seek_backwards.as_bytes();
@@ -223,17 +249,6 @@ async fn run() -> Result<()> {
             sleep_until(deadline).await;
         }
     });
-
-    enable_raw_mode().context("Failed to enable raw mode")?;
-    let mut stdout = stdout();
-    stdout
-        .execute(EnableMouseCapture)
-        .context("Failed to enable mouse capture")?;
-    stdout
-        .execute(EnterAlternateScreen)
-        .context("Failed to enter alternate screen")?;
-    let mut term =
-        Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
     tokio::spawn(async move {
         let tx = tx3;

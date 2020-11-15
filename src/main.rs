@@ -25,7 +25,7 @@ use tokio::{
 };
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
-use std::{cmp::min, fs, io::stdout, net::SocketAddr, process::exit};
+use std::{cmp::min, fs, io::stdout, net::SocketAddr, path::PathBuf, process::exit};
 
 use crate::{config::Config, mpd::Client};
 
@@ -61,7 +61,7 @@ struct Opts {
 
     /// Specify the config file
     #[structopt(short, long, value_name = "file")]
-    config: Option<String>,
+    config: Option<PathBuf>,
 
     /// The number of lines to jump
     #[structopt(long, value_name = "number")]
@@ -136,9 +136,9 @@ async fn main() {
 async fn run() -> Result<()> {
     let opts = Opts::from_args();
 
-    let cfg: Config = if let Some(ref cfg_file) = opts.config {
-        ron::de::from_bytes(&fs::read(cfg_file).with_context(fail::read(cfg_file))?)
-            .with_context(fail::parse_cfg(cfg_file))?
+    let cfg: Config = if let Some(file) = opts.config {
+        ron::de::from_bytes(&fs::read(&file).with_context(fail::read(file.display()))?)
+            .with_context(fail::parse_cfg(file.display()))?
     } else if let Some(xs) = config_dir() {
         let mut xs = xs;
         xs.push("mmtc");

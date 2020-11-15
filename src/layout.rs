@@ -12,7 +12,7 @@ use crate::{
     mpd::{Song, Status, Track},
 };
 
-struct FlattenState<'a> {
+struct FlattenState<'a, 'b> {
     status: &'a Status,
     current_track: Option<&'a Track>,
     queue_track: Option<&'a Track>,
@@ -20,7 +20,7 @@ struct FlattenState<'a> {
     selected: bool,
     searching: bool,
     query: &'a str,
-    style: Style,
+    style: &'b Style,
 }
 
 struct ConditionState<'a> {
@@ -129,7 +129,6 @@ pub fn render(
                     false,
                     searching,
                     query,
-                    Style::default(),
                 )),
                 size,
             );
@@ -145,7 +144,6 @@ pub fn render(
                     false,
                     searching,
                     query,
-                    Style::default(),
                 ))
                 .alignment(Alignment::Center),
                 size,
@@ -162,7 +160,6 @@ pub fn render(
                     false,
                     searching,
                     query,
-                    Style::default(),
                 ))
                 .alignment(Alignment::Right),
                 size,
@@ -210,7 +207,6 @@ pub fn render(
                             liststate.selected() == Some(i),
                             searching,
                             query,
-                            Style::default(),
                         )));
                     }
                 } else {
@@ -224,7 +220,6 @@ pub fn render(
                             liststate.selected() == Some(i),
                             searching,
                             query,
-                            Style::default(),
                         )));
                     }
                 }
@@ -262,7 +257,6 @@ fn flatten<'a>(
     selected: bool,
     searching: bool,
     query: &'a str,
-    style: Style,
 ) -> Spans<'a> {
     let mut spans = Vec::new();
     _flatten(
@@ -276,20 +270,20 @@ fn flatten<'a>(
             selected,
             searching,
             query,
-            style,
+            style: &Style::default(),
         },
     );
     spans.into()
 }
 
-fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) {
+fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '_>) {
     match xs {
-        Texts::Text(x) => spans.push(Span::styled(x, s.style)),
+        Texts::Text(x) => spans.push(Span::styled(x, *s.style)),
         Texts::CurrentElapsed => {
             if let Some(Song { elapsed, .. }) = s.status.song {
                 spans.push(Span::styled(
                     format!("{}:{:02}", elapsed / 60, elapsed % 60),
-                    s.style,
+                    *s.style,
                 ));
             }
         }
@@ -297,13 +291,13 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
             if let Some(Track { time, .. }) = s.current_track {
                 spans.push(Span::styled(
                     format!("{}:{:02}", time / 60, time % 60),
-                    s.style,
+                    *s.style,
                 ));
             }
         }
         Texts::CurrentFile => {
             if let Some(Track { file, .. }) = s.current_track {
-                spans.push(Span::styled(file, s.style));
+                spans.push(Span::styled(file, *s.style));
             }
         }
         Texts::CurrentTitle => {
@@ -311,7 +305,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
                 title: Some(title), ..
             }) = s.current_track
             {
-                spans.push(Span::styled(title, s.style));
+                spans.push(Span::styled(title, *s.style));
             }
         }
         Texts::CurrentArtist => {
@@ -320,7 +314,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
                 ..
             }) = s.current_track
             {
-                spans.push(Span::styled(artist, s.style));
+                spans.push(Span::styled(artist, *s.style));
             }
         }
         Texts::CurrentAlbum => {
@@ -328,20 +322,20 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
                 album: Some(album), ..
             }) = s.current_track
             {
-                spans.push(Span::styled(album, s.style));
+                spans.push(Span::styled(album, *s.style));
             }
         }
         Texts::QueueDuration => {
             if let Some(Track { time, .. }) = s.queue_track {
                 spans.push(Span::styled(
                     format!("{}:{:02}", time / 60, time % 60),
-                    s.style,
+                    *s.style,
                 ));
             }
         }
         Texts::QueueFile => {
             if let Some(Track { file, .. }) = s.current_track {
-                spans.push(Span::styled(file, s.style));
+                spans.push(Span::styled(file, *s.style));
             }
         }
         Texts::QueueTitle => {
@@ -349,7 +343,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
                 title: Some(title), ..
             }) = s.queue_track
             {
-                spans.push(Span::styled(title, s.style));
+                spans.push(Span::styled(title, *s.style));
             }
         }
         Texts::QueueArtist => {
@@ -358,7 +352,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
                 ..
             }) = s.queue_track
             {
-                spans.push(Span::styled(artist, s.style));
+                spans.push(Span::styled(artist, *s.style));
             }
         }
         Texts::QueueAlbum => {
@@ -366,18 +360,18 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) 
                 album: Some(album), ..
             }) = s.queue_track
             {
-                spans.push(Span::styled(album, s.style));
+                spans.push(Span::styled(album, *s.style));
             }
         }
         Texts::Query => {
-            spans.push(Span::styled(String::from(s.query), s.style));
+            spans.push(Span::styled(String::from(s.query), *s.style));
         }
         Texts::Styled(styles, box xs) => {
             _flatten(
                 spans,
                 xs,
                 &FlattenState {
-                    style: patch_style(s.style, styles),
+                    style: &patch_style(*s.style, styles),
                     ..*s
                 },
             );

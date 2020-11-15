@@ -254,14 +254,14 @@ pub fn render(
 }
 
 fn flatten<'a>(
-    xs: &Texts,
-    status: &Status,
-    current_track: Option<&Track>,
-    queue_track: Option<&Track>,
+    xs: &'a Texts,
+    status: &'a Status,
+    current_track: Option<&'a Track>,
+    queue_track: Option<&'a Track>,
     queue_current: bool,
     selected: bool,
     searching: bool,
-    query: &str,
+    query: &'a str,
     style: Style,
 ) -> Spans<'a> {
     let mut spans = Vec::new();
@@ -282,9 +282,9 @@ fn flatten<'a>(
     spans.into()
 }
 
-fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
+fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a>) {
     match xs {
-        Texts::Text(x) => spans.push(Span::styled(x.clone(), s.style)),
+        Texts::Text(x) => spans.push(Span::styled(x, s.style)),
         Texts::CurrentElapsed => {
             if let Some(Song { elapsed, .. }) = s.status.song {
                 spans.push(Span::styled(
@@ -303,7 +303,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
         }
         Texts::CurrentFile => {
             if let Some(Track { file, .. }) = s.current_track {
-                spans.push(Span::styled(file.clone(), s.style));
+                spans.push(Span::styled(file, s.style));
             }
         }
         Texts::CurrentTitle => {
@@ -311,7 +311,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                 title: Some(title), ..
             }) = s.current_track
             {
-                spans.push(Span::styled(title.clone(), s.style));
+                spans.push(Span::styled(title, s.style));
             }
         }
         Texts::CurrentArtist => {
@@ -320,7 +320,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                 ..
             }) = s.current_track
             {
-                spans.push(Span::styled(artist.clone(), s.style));
+                spans.push(Span::styled(artist, s.style));
             }
         }
         Texts::CurrentAlbum => {
@@ -328,7 +328,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                 album: Some(album), ..
             }) = s.current_track
             {
-                spans.push(Span::styled(album.clone(), s.style));
+                spans.push(Span::styled(album, s.style));
             }
         }
         Texts::QueueDuration => {
@@ -341,7 +341,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
         }
         Texts::QueueFile => {
             if let Some(Track { file, .. }) = s.current_track {
-                spans.push(Span::styled(file.clone(), s.style));
+                spans.push(Span::styled(file, s.style));
             }
         }
         Texts::QueueTitle => {
@@ -349,7 +349,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                 title: Some(title), ..
             }) = s.queue_track
             {
-                spans.push(Span::styled(title.clone(), s.style));
+                spans.push(Span::styled(title, s.style));
             }
         }
         Texts::QueueArtist => {
@@ -358,7 +358,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                 ..
             }) = s.queue_track
             {
-                spans.push(Span::styled(artist.clone(), s.style));
+                spans.push(Span::styled(artist, s.style));
             }
         }
         Texts::QueueAlbum => {
@@ -366,7 +366,7 @@ fn _flatten(spans: &mut Vec<Span>, xs: &Texts, s: &FlattenState) {
                 album: Some(album), ..
             }) = s.queue_track
             {
-                spans.push(Span::styled(album.clone(), s.style));
+                spans.push(Span::styled(album, s.style));
             }
         }
         Texts::Query => {

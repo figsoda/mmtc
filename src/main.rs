@@ -437,22 +437,26 @@ async fn run() -> Result<()> {
                 tx.send(Command::UpdateFrame).await?;
             }
             Command::Play => {
-                if query.is_empty() {
+                cl.play(if query.is_empty() {
                     if selected < queue.len() {
-                        cl.play(selected)
-                            .await
-                            .context("Failed to play the selected song")?;
+                        selected
+                    } else {
+                        continue;
                     }
                 } else if selected < filtered.len() {
-                    cl.play(filtered[selected])
-                        .await
-                        .context("Failed to play the selected song")?;
-                };
+                    filtered[selected]
+                } else {
+                    continue;
+                })
+                .await
+                .context("Failed to play the selected song")?;
                 tx.send(Command::UpdateStatus).await?;
-                if clear_query_on_play {
-                    tx.send(Command::QuitSearch).await?;
-                }
-                tx.send(Command::UpdateFrame).await?;
+                tx.send(if clear_query_on_play {
+                    Command::QuitSearch
+                } else {
+                    Command::UpdateFrame
+                })
+                .await?;
             }
             Command::Reselect => {
                 selected = status.song.map_or(0, |song| song.pos);

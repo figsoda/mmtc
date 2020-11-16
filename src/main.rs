@@ -432,7 +432,7 @@ async fn run() -> Result<()> {
             Command::Next => {
                 cl.command(b"next\n")
                     .await
-                    .context("Failed to play previous song")?;
+                    .context("Failed to play next song")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }

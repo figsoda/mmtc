@@ -101,7 +101,6 @@ enum Command {
     JumpUp,
     InputSearch(char),
     BackspaceSearch,
-    UpdateSearch,
     QuitSearch,
     Searching(bool),
 }
@@ -166,6 +165,21 @@ async fn run() -> Result<()> {
     let mut searching = false;
     let mut query = String::with_capacity(32);
     let mut filtered = Vec::new();
+
+    macro_rules! update_search {
+        () => {{
+            let query = query.to_lowercase();
+            filtered.clear();
+            for (i, track) in queue_strings.iter().enumerate() {
+                if track.contains(&query) {
+                    filtered.push(i);
+                }
+            }
+            selected = 0;
+            liststate.select(None);
+            liststate.select(Some(0));
+        }};
+    }
 
     enable_raw_mode().context("Failed to enable raw mode")?;
     let mut stdout = stdout();
@@ -321,7 +335,7 @@ async fn run() -> Result<()> {
                 liststate = ListState::default();
                 liststate.select(Some(selected));
                 if !query.is_empty() {
-                    tx.send(Command::UpdateSearch).await?;
+                    update_search!();
                 }
             }
             Command::UpdateStatus => {
@@ -519,7 +533,7 @@ async fn run() -> Result<()> {
             Command::InputSearch(c) => {
                 if query.is_empty() {
                     query.push(c);
-                    tx.send(Command::UpdateSearch).await?;
+                    update_search!();
                 } else {
                     query.push(c);
                     let mut count = 0;
@@ -537,24 +551,12 @@ async fn run() -> Result<()> {
             Command::BackspaceSearch => {
                 let c = query.pop();
                 if !query.is_empty() {
-                    tx.send(Command::UpdateSearch).await?;
+                    update_search!();
                 } else if c.is_some() {
                     selected = status.song.map_or(0, |song| song.pos);
                     liststate.select(Some(selected));
                 }
                 render!();
-            }
-            Command::UpdateSearch => {
-                let query = query.to_lowercase();
-                filtered.clear();
-                for (i, track) in queue_strings.iter().enumerate() {
-                    if track.contains(&query) {
-                        filtered.push(i);
-                    }
-                }
-                selected = 0;
-                liststate.select(None);
-                liststate.select(Some(0));
             }
             Command::QuitSearch => {
                 searching = false;

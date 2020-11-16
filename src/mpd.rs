@@ -81,7 +81,7 @@ impl Client {
             if buf != b"OK MPD " {
                 bail!("server did not greet with a success");
             }
-            cl.read_line(&mut String::new()).await?;
+            cl.read_line(&mut String::with_capacity(8)).await?;
 
             Ok(Client(cl))
         }

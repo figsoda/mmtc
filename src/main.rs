@@ -245,66 +245,66 @@ async fn run() -> Result<()> {
     tokio::spawn(async move {
         let tx = tx3;
         while let Ok(ev) = event::read() {
-            if let Some(cmd) = match ev {
-                Event::Mouse(MouseEvent::ScrollDown(..)) => Some(Command::Down),
-                Event::Mouse(MouseEvent::ScrollUp(..)) => Some(Command::Up),
-                Event::Resize(..) => Some(Command::UpdateFrame),
+            tx.send(match ev {
+                Event::Mouse(MouseEvent::ScrollDown(..)) => Command::Down,
+                Event::Mouse(MouseEvent::ScrollUp(..)) => Command::Up,
+                Event::Resize(..) => Command::UpdateFrame,
                 Event::Key(KeyEvent { code, modifiers }) => match code {
                     KeyCode::Char('q') if modifiers.contains(KeyModifiers::CONTROL) => {
-                        Some(Command::Quit)
+                        Command::Quit
                     }
                     KeyCode::Esc => {
                         searching = false;
-                        Some(Command::QuitSearch)
+                        Command::QuitSearch
                     }
-                    KeyCode::Down => Some(Command::Down),
-                    KeyCode::Up => Some(Command::Up),
-                    KeyCode::PageDown => Some(Command::JumpDown),
-                    KeyCode::PageUp => Some(Command::JumpUp),
+                    KeyCode::Down => Command::Down,
+                    KeyCode::Up => Command::Up,
+                    KeyCode::PageDown => Command::JumpDown,
+                    KeyCode::PageUp => Command::JumpUp,
                     _ => {
                         if searching {
                             match code {
-                                KeyCode::Char(c) => Some(Command::InputSearch(c)),
-                                KeyCode::Backspace => Some(Command::BackspaceSearch),
+                                KeyCode::Char(c) => Command::InputSearch(c),
+                                KeyCode::Backspace => Command::BackspaceSearch,
                                 KeyCode::Enter => {
                                     searching = false;
-                                    Some(Command::Searching(false))
+                                    Command::Searching(false)
                                 }
-                                _ => None,
+                                _ => continue,
                             }
                         } else {
                             match code {
-                                KeyCode::Char('q') => Some(Command::Quit),
-                                KeyCode::Char('r') => Some(Command::ToggleRepeat),
-                                KeyCode::Char('R') => Some(Command::ToggleRandom),
-                                KeyCode::Char('s') => Some(Command::ToggleSingle),
-                                KeyCode::Char('S') => Some(Command::ToggleOneshot),
-                                KeyCode::Char('c') => Some(Command::ToggleConsume),
-                                KeyCode::Char('p') => Some(Command::TogglePause),
-                                KeyCode::Char(';') => Some(Command::Stop),
-                                KeyCode::Char('h') | KeyCode::Left => Some(Command::SeekBackwards),
-                                KeyCode::Char('l') | KeyCode::Right => Some(Command::SeekForwards),
-                                KeyCode::Char('H') => Some(Command::Previous),
-                                KeyCode::Char('L') => Some(Command::Next),
-                                KeyCode::Enter => Some(Command::Play),
-                                KeyCode::Char(' ') => Some(Command::Reselect),
-                                KeyCode::Char('j') => Some(Command::Down),
-                                KeyCode::Char('k') | KeyCode::Up => Some(Command::Up),
-                                KeyCode::Char('J') | KeyCode::PageDown => Some(Command::JumpDown),
-                                KeyCode::Char('K') | KeyCode::PageUp => Some(Command::JumpUp),
+                                KeyCode::Char('q') => Command::Quit,
+                                KeyCode::Char('r') => Command::ToggleRepeat,
+                                KeyCode::Char('R') => Command::ToggleRandom,
+                                KeyCode::Char('s') => Command::ToggleSingle,
+                                KeyCode::Char('S') => Command::ToggleOneshot,
+                                KeyCode::Char('c') => Command::ToggleConsume,
+                                KeyCode::Char('p') => Command::TogglePause,
+                                KeyCode::Char(';') => Command::Stop,
+                                KeyCode::Char('h') | KeyCode::Left => Command::SeekBackwards,
+                                KeyCode::Char('l') | KeyCode::Right => Command::SeekForwards,
+                                KeyCode::Char('H') => Command::Previous,
+                                KeyCode::Char('L') => Command::Next,
+                                KeyCode::Enter => Command::Play,
+                                KeyCode::Char(' ') => Command::Reselect,
+                                KeyCode::Char('j') => Command::Down,
+                                KeyCode::Char('k') | KeyCode::Up => Command::Up,
+                                KeyCode::Char('J') | KeyCode::PageDown => Command::JumpDown,
+                                KeyCode::Char('K') | KeyCode::PageUp => Command::JumpUp,
                                 KeyCode::Char('/') => {
                                     searching = true;
-                                    Some(Command::Searching(true))
+                                    Command::Searching(true)
                                 }
-                                _ => None,
+                                _ => continue,
                             }
                         }
                     }
                 },
-                _ => None,
-            } {
-                tx.send(cmd).await.unwrap_or_else(die);
-            }
+                _ => continue,
+            })
+            .await
+            .unwrap_or_else(die);
         }
     });
 

@@ -181,20 +181,25 @@ async fn run() -> Result<()> {
     let mut term =
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
-    term.draw(|frame| {
-        layout::render(
-            frame,
-            frame.size(),
-            &cfg.layout,
-            &queue,
-            false,
-            &query,
-            &filtered,
-            &status,
-            &mut liststate,
-        );
-    })
-    .context("Failed to draw to terminal")?;
+    macro_rules! render {
+        () => {
+            term.draw(|frame| {
+                layout::render(
+                    frame,
+                    frame.size(),
+                    &cfg.layout,
+                    &queue,
+                    searching,
+                    &query,
+                    &filtered,
+                    &status,
+                    &mut liststate,
+                );
+            })
+            .context("Failed to draw to terminal")?
+        };
+    };
+    render!();
 
     let clear_query_on_play = opts.clear_query_on_play
         || if opts.no_clear_query_on_play {
@@ -314,21 +319,7 @@ async fn run() -> Result<()> {
     while let Some(cmd) = rx.recv().await {
         match cmd {
             Command::Quit => break,
-            Command::UpdateFrame => term
-                .draw(|frame| {
-                    layout::render(
-                        frame,
-                        frame.size(),
-                        &cfg.layout,
-                        &queue,
-                        searching,
-                        &query,
-                        &filtered,
-                        &status,
-                        &mut liststate,
-                    );
-                })
-                .context("Failed to draw to terminal")?,
+            Command::UpdateFrame => render!(),
             Command::UpdateQueue => {
                 let res = cl
                     .queue(&cfg.search_fields)
@@ -355,7 +346,7 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle repeat")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::ToggleRandom => {
                 cl.command(if status.random {
@@ -366,7 +357,7 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle random")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::ToggleSingle => {
                 cl.command(if status.single == Some(true) {
@@ -377,14 +368,14 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle single")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::ToggleOneshot => {
                 cl.command(status.single.map_or(b"single 0\n", |_| b"single oneshot\n"))
                     .await
                     .context("Failed to toggle oneshot")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::ToggleConsume => {
                 cl.command(if status.consume {
@@ -395,49 +386,49 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle consume")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Stop => {
                 cl.command(b"stop\n")
                     .await
                     .context("Failed to stop playing")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::SeekBackwards => {
                 cl.command(seek_backwards)
                     .await
                     .context("Failed to seek backwards")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::SeekForwards => {
                 cl.command(seek_forwards)
                     .await
                     .context("Failed to seek forwards")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::TogglePause => {
                 cl.command(status.state.map_or(b"play\n", |_| b"pause\n"))
                     .await
                     .context("Failed to toggle pause")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Previous => {
                 cl.command(b"previous\n")
                     .await
                     .context("Failed to play previous song")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Next => {
                 cl.command(b"next\n")
                     .await
                     .context("Failed to play next song")?;
                 tx.send(Command::UpdateStatus).await?;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Play => {
                 cl.play(if query.is_empty() {
@@ -464,7 +455,7 @@ async fn run() -> Result<()> {
             Command::Reselect => {
                 selected = status.song.map_or(0, |song| song.pos);
                 liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Down => {
                 let len = if query.is_empty() {
@@ -482,7 +473,7 @@ async fn run() -> Result<()> {
                     selected += 1;
                 }
                 liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Up => {
                 let len = if query.is_empty() {
@@ -500,7 +491,7 @@ async fn run() -> Result<()> {
                     selected -= 1;
                 }
                 liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::JumpDown => {
                 let len = if query.is_empty() {
@@ -516,7 +507,7 @@ async fn run() -> Result<()> {
                     min(selected + jump_lines, len - 1)
                 };
                 liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::JumpUp => {
                 let len = if query.is_empty() {
@@ -534,7 +525,7 @@ async fn run() -> Result<()> {
                     selected - jump_lines
                 };
                 liststate.select(Some(selected));
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::InputSearch(c) => {
                 if query.is_empty() {
@@ -552,7 +543,7 @@ async fn run() -> Result<()> {
                     }
                     filtered.truncate(count);
                 }
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::BackspaceSearch => {
                 let c = query.pop();
@@ -562,7 +553,7 @@ async fn run() -> Result<()> {
                     selected = status.song.map_or(0, |song| song.pos);
                     liststate.select(Some(selected));
                 }
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::UpdateSearch => {
                 let query = query.to_lowercase();
@@ -583,11 +574,11 @@ async fn run() -> Result<()> {
                     selected = status.song.map_or(0, |song| song.pos);
                     liststate.select(Some(selected));
                 }
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
             Command::Searching(x) => {
                 searching = x;
-                tx.send(Command::UpdateFrame).await?;
+                render!();
             }
         }
     }

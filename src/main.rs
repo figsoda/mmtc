@@ -536,15 +536,7 @@ async fn run() -> Result<()> {
                     update_search!();
                 } else {
                     query.push(c);
-                    let mut count = 0;
-                    for i in 0 .. filtered.len() {
-                        let i = filtered[i];
-                        if queue_strings[i].contains(&query) {
-                            filtered[count] = i;
-                            count += 1;
-                        }
-                    }
-                    filtered.truncate(count);
+                    filtered.retain(|&i| queue_strings[i].contains(&query));
                 }
                 render!();
             }

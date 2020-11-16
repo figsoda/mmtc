@@ -335,7 +335,7 @@ async fn run() -> Result<()> {
                 })
                 .await
                 .context("Failed to toggle repeat")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::ToggleRandom => {
@@ -346,7 +346,7 @@ async fn run() -> Result<()> {
                 })
                 .await
                 .context("Failed to toggle random")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::ToggleSingle => {
@@ -357,14 +357,14 @@ async fn run() -> Result<()> {
                 })
                 .await
                 .context("Failed to toggle single")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::ToggleOneshot => {
                 cl.command(status.single.map_or(b"single 0\n", |_| b"single oneshot\n"))
                     .await
                     .context("Failed to toggle oneshot")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::ToggleConsume => {
@@ -375,49 +375,49 @@ async fn run() -> Result<()> {
                 })
                 .await
                 .context("Failed to toggle consume")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::Stop => {
                 cl.command(b"stop\n")
                     .await
                     .context("Failed to stop playing")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::SeekBackwards => {
                 cl.command(seek_backwards)
                     .await
                     .context("Failed to seek backwards")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::SeekForwards => {
                 cl.command(seek_forwards)
                     .await
                     .context("Failed to seek forwards")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::TogglePause => {
                 cl.command(status.state.map_or(b"play\n", |_| b"pause\n"))
                     .await
                     .context("Failed to toggle pause")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::Previous => {
                 cl.command(b"previous\n")
                     .await
                     .context("Failed to play previous song")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::Next => {
                 cl.command(b"next\n")
                     .await
                     .context("Failed to play next song")?;
-                tx.send(Command::UpdateStatus).await?;
+                status = cl.status().await?;
                 render!();
             }
             Command::Play => {
@@ -434,13 +434,12 @@ async fn run() -> Result<()> {
                 })
                 .await
                 .context("Failed to play the selected song")?;
-                tx.send(Command::UpdateStatus).await?;
-                tx.send(if clear_query_on_play {
-                    Command::QuitSearch
+                status = cl.status().await?;
+                if clear_query_on_play {
+                    tx.send(Command::QuitSearch).await?;
                 } else {
-                    Command::UpdateFrame
-                })
-                .await?;
+                    render!();
+                }
             }
             Command::Reselect => {
                 selected = status.song.map_or(0, |song| song.pos);

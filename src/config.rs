@@ -22,11 +22,11 @@ pub struct Config {
     #[serde(default = "defaults::jump_lines")]
     pub jump_lines: usize,
     #[serde(default = "defaults::seek_secs")]
-    pub seek_secs: f64,
+    pub seek_secs: f32,
     #[serde(default = "defaults::search_fields")]
     pub search_fields: SearchFields,
     #[serde(default = "defaults::ups")]
-    pub ups: f64,
+    pub ups: f32,
     #[serde(default = "defaults::layout")]
     pub layout: Widget,
 }

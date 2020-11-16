@@ -27,7 +27,7 @@ pub fn jump_lines() -> usize {
     24
 }
 
-pub fn seek_secs() -> f64 {
+pub fn seek_secs() -> f32 {
     5.0
 }
 
@@ -40,7 +40,7 @@ pub fn search_fields() -> SearchFields {
     }
 }
 
-pub fn ups() -> f64 {
+pub fn ups() -> f32 {
     1.0
 }
 

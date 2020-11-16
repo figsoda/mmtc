@@ -69,11 +69,11 @@ struct Opts {
 
     /// The time to seek in seconds
     #[structopt(long, value_name = "number")]
-    seek_secs: Option<f64>,
+    seek_secs: Option<f32>,
 
     /// The amount of status updates per second
     #[structopt(long, value_name = "number")]
-    ups: Option<f64>,
+    ups: Option<f32>,
 }
 
 #[derive(Debug)]
@@ -226,7 +226,7 @@ async fn run() -> Result<()> {
     let seek_backwards = seek_backwards.as_bytes();
     let seek_forwards = format!("seekcur +{}\n", seek_secs);
     let seek_forwards = seek_forwards.as_bytes();
-    let update_interval = Duration::from_secs_f64(1.0 / opts.ups.unwrap_or(cfg.ups));
+    let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 
     let (tx, mut rx) = mpsc::channel(32);
     let tx1 = tx.clone();

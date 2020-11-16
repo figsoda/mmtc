@@ -548,8 +548,8 @@ async fn run() -> Result<()> {
                         }
                     }
                     filtered.truncate(count);
-                    tx.send(Command::UpdateFrame).await?;
                 }
+                tx.send(Command::UpdateFrame).await?;
             }
             Command::BackspaceSearch => {
                 let c = query.pop();
@@ -558,8 +558,8 @@ async fn run() -> Result<()> {
                 } else if c.is_some() {
                     selected = status.song.map_or(0, |song| song.pos);
                     liststate.select(Some(selected));
-                    tx.send(Command::UpdateFrame).await?;
                 }
+                tx.send(Command::UpdateFrame).await?;
             }
             Command::UpdateSearch => {
                 let query = query.to_lowercase();
@@ -572,7 +572,6 @@ async fn run() -> Result<()> {
                 selected = 0;
                 liststate.select(None);
                 liststate.select(Some(0));
-                tx.send(Command::UpdateFrame).await?;
             }
             Command::QuitSearch => {
                 searching = false;

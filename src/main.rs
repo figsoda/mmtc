@@ -156,7 +156,7 @@ async fn run() -> Result<()> {
 
     let addr = &opts.address.unwrap_or(cfg.address);
     let mut idle_cl = Client::init(addr).await.context("Failed to init client")?;
-    let mut cl = Client::init(addr).await.context("Faield to init client")?;
+    let mut cl = Client::init(addr).await.context("Failed to init client")?;
 
     let (mut queue, mut queue_strings) = idle_cl
         .queue(&cfg.search_fields)
@@ -400,7 +400,7 @@ async fn run() -> Result<()> {
             Command::Stop => {
                 cl.command(b"stop\n")
                     .await
-                    .context("Faield to stop playing")?;
+                    .context("Failed to stop playing")?;
                 tx.send(Command::UpdateStatus).await?;
                 tx.send(Command::UpdateFrame).await?;
             }

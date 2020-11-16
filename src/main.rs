@@ -155,11 +155,14 @@ async fn run() -> Result<()> {
     };
 
     let addr = &opts.address.unwrap_or(cfg.address);
-    let mut idle_cl = Client::init(addr).await?;
-    let mut cl = Client::init(addr).await?;
+    let mut idle_cl = Client::init(addr).await.context("Failed to init client")?;
+    let mut cl = Client::init(addr).await.context("Faield to init client")?;
 
-    let (mut queue, mut queue_strings) = idle_cl.queue(&cfg.search_fields).await?;
-    let mut status = cl.status().await?;
+    let (mut queue, mut queue_strings) = idle_cl
+        .queue(&cfg.search_fields)
+        .await
+        .context("Failed to query queue")?;
+    let mut status = cl.status().await.context("Failed to query status")?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));

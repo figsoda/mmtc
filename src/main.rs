@@ -441,8 +441,8 @@ async fn run() -> Result<()> {
                     } else {
                         continue;
                     }
-                } else if selected < filtered.len() {
-                    filtered[selected]
+                } else if let Some(&x) = filtered.get(selected) {
+                    x
                 } else {
                     continue;
                 })

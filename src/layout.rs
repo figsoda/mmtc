@@ -215,7 +215,7 @@ pub fn render(
                             txts,
                             status,
                             current_track,
-                            Some(&queue[i]),
+                            queue.get(i),
                             pos == Some(i),
                             liststate.selected() == Some(i),
                             searching,

@@ -155,14 +155,11 @@ async fn run() -> Result<()> {
     };
 
     let addr = &opts.address.unwrap_or(cfg.address);
-    let mut idle_cl = Client::init(addr).await.context("Failed to init client")?;
-    let mut cl = Client::init(addr).await.context("Failed to init client")?;
+    let mut idle_cl = Client::init(addr).await?;
+    let mut cl = Client::init(addr).await?;
 
-    let (mut queue, mut queue_strings) = idle_cl
-        .queue(&cfg.search_fields)
-        .await
-        .context("Failed to query queue")?;
-    let mut status = cl.status().await.context("Failed to query status")?;
+    let (mut queue, mut queue_strings) = idle_cl.queue(&cfg.search_fields).await?;
+    let mut status = cl.status().await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
@@ -225,11 +222,7 @@ async fn run() -> Result<()> {
     tokio::spawn(async move {
         let tx = tx1;
         loop {
-            let changed = idle_cl
-                .idle()
-                .await
-                .context("Failed to idle")
-                .unwrap_or_else(die);
+            let changed = idle_cl.idle().await.unwrap_or_else(die);
             if changed.0 {
                 tx.send(Command::UpdateQueue).await.unwrap_or_else(die);
             }
@@ -321,10 +314,7 @@ async fn run() -> Result<()> {
             Command::Quit => break,
             Command::UpdateFrame => render!(),
             Command::UpdateQueue => {
-                let res = cl
-                    .queue(&cfg.search_fields)
-                    .await
-                    .context("Failed to query queue")?;
+                let res = cl.queue(&cfg.search_fields).await?;
                 queue = res.0;
                 queue_strings = res.1;
                 selected = status.song.map_or(0, |song| song.pos);
@@ -335,7 +325,7 @@ async fn run() -> Result<()> {
                 }
             }
             Command::UpdateStatus => {
-                status = cl.status().await.context("Failed to query status")?;
+                status = cl.status().await?;
             }
             Command::ToggleRepeat => {
                 cl.command(if status.repeat {

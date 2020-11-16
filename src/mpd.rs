@@ -69,166 +69,182 @@ fn track_string(track: &Track, search_fields: &SearchFields) -> String {
 
 impl Client {
     pub async fn init(addr: &SocketAddr) -> Result<Client> {
-        let mut cl = BufReader::new(
-            TcpStream::connect(addr)
-                .await
-                .with_context(fail::connect(addr))?,
-        );
+        async {
+            let mut cl = BufReader::new(
+                TcpStream::connect(addr)
+                    .await
+                    .with_context(fail::connect(addr))?,
+            );
 
-        let buf = &mut [0; 7];
-        cl.read(buf).await?;
-        if buf != b"OK MPD " {
-            bail!("server did not greet with a success");
+            let buf = &mut [0; 7];
+            cl.read(buf).await?;
+            if buf != b"OK MPD " {
+                bail!("server did not greet with a success");
+            }
+            cl.read_line(&mut String::new()).await?;
+
+            Ok(Client(cl))
         }
-        cl.read_line(&mut String::new()).await?;
-
-        Ok(Client(cl))
+        .await
+        .context("Failed to init client")
     }
 
     pub async fn idle(&mut self) -> Result<(bool, bool)> {
-        let cl = &mut self.0;
+        async {
+            let cl = &mut self.0;
 
-        cl.write_all(b"idle playlist player options\n").await?;
-        let mut lines = cl.lines();
+            cl.write_all(b"idle playlist player options\n").await?;
+            let mut lines = cl.lines();
 
-        let mut queue = false;
-        let mut status = false;
+            let mut queue = false;
+            let mut status = false;
 
-        while let Some(line) = lines.next_line().await? {
-            match line.as_bytes() {
-                b"changed: playlist" => queue = true,
-                b"changed: player" => status = true,
-                b"changed: options" => status = true,
-                b"OK" => break,
-                _ => continue,
+            while let Some(line) = lines.next_line().await? {
+                match line.as_bytes() {
+                    b"changed: playlist" => queue = true,
+                    b"changed: player" => status = true,
+                    b"changed: options" => status = true,
+                    b"OK" => break,
+                    _ => continue,
+                }
             }
-        }
 
-        Ok((queue, status))
+            Ok((queue, status)) as tokio::io::Result<_>
+        }
+        .await
+        .context("Failed to idle")
     }
 
     pub async fn queue(
         &mut self,
         search_fields: &SearchFields,
     ) -> Result<(Vec<Track>, Vec<String>)> {
-        let cl = &mut self.0;
+        async {
+            let cl = &mut self.0;
 
-        let mut first = true;
-        let mut tracks = Vec::new();
-        let mut track_strings = Vec::new();
+            let mut first = true;
+            let mut tracks = Vec::new();
+            let mut track_strings = Vec::new();
 
-        let mut file: Option<String> = None;
-        let mut artist: Option<String> = None;
-        let mut album: Option<String> = None;
-        let mut title: Option<String> = None;
-        let mut time = None;
+            let mut file: Option<String> = None;
+            let mut artist: Option<String> = None;
+            let mut album: Option<String> = None;
+            let mut title: Option<String> = None;
+            let mut time = None;
 
-        cl.write_all(b"playlistinfo\n").await?;
-        let mut lines = cl.lines();
+            cl.write_all(b"playlistinfo\n").await?;
+            let mut lines = cl.lines();
 
-        while let Some(line) = lines.next_line().await? {
-            match line.as_bytes() {
-                b"OK" => break,
-                expand!([@b"file: ", ..]) => {
-                    if first {
-                        first = false;
-                    } else if let (Some(file), Some(time)) = (file, time) {
-                        let track = Track {
-                            file,
-                            artist,
-                            album,
-                            title,
-                            time,
-                        };
-                        track_strings.push(track_string(&track, search_fields));
-                        tracks.push(track);
-                    } else {
-                        bail!("incomplete playlist response");
+            while let Some(line) = lines.next_line().await? {
+                match line.as_bytes() {
+                    b"OK" => break,
+                    expand!([@b"file: ", ..]) => {
+                        if first {
+                            first = false;
+                        } else if let (Some(file), Some(time)) = (file, time) {
+                            let track = Track {
+                                file,
+                                artist,
+                                album,
+                                title,
+                                time,
+                            };
+                            track_strings.push(track_string(&track, search_fields));
+                            tracks.push(track);
+                        } else {
+                            bail!("incomplete playlist response");
+                        }
+
+                        file = Some(line[6 ..].into());
+                        artist = None;
+                        album = None;
+                        title = None;
+                        time = None;
                     }
-
-                    file = Some(line[6 ..].into());
-                    artist = None;
-                    album = None;
-                    title = None;
-                    time = None;
+                    expand!([@b"Artist: ", ..]) => artist = Some(line[8 ..].into()),
+                    expand!([@b"Album: ", ..]) => album = Some(line[7 ..].into()),
+                    expand!([@b"Title: ", ..]) => title = Some(line[7 ..].into()),
+                    expand!([@b"Time: ", ..]) => time = Some(line[6 ..].parse()?),
+                    _ => continue,
                 }
-                expand!([@b"Artist: ", ..]) => artist = Some(line[8 ..].into()),
-                expand!([@b"Album: ", ..]) => album = Some(line[7 ..].into()),
-                expand!([@b"Title: ", ..]) => title = Some(line[7 ..].into()),
-                expand!([@b"Time: ", ..]) => time = Some(line[6 ..].parse()?),
-                _ => continue,
             }
-        }
 
-        if let (Some(file), Some(time)) = (file, time) {
-            let track = Track {
-                file,
-                artist,
-                album,
-                title,
-                time,
-            };
-            track_strings.push(track_string(&track, search_fields));
-            tracks.push(track);
-        }
+            if let (Some(file), Some(time)) = (file, time) {
+                let track = Track {
+                    file,
+                    artist,
+                    album,
+                    title,
+                    time,
+                };
+                track_strings.push(track_string(&track, search_fields));
+                tracks.push(track);
+            }
 
-        Ok((tracks, track_strings))
+            Ok((tracks, track_strings))
+        }
+        .await
+        .context("Failed to query queue")
     }
 
     pub async fn status(&mut self) -> Result<Status> {
-        let cl = &mut self.0;
+        async {
+            let cl = &mut self.0;
 
-        let mut repeat = None;
-        let mut random = None;
-        let mut single = None;
-        let mut consume = None;
-        let mut state = None;
-        let mut pos = None;
-        let mut elapsed = None;
+            let mut repeat = None;
+            let mut random = None;
+            let mut single = None;
+            let mut consume = None;
+            let mut state = None;
+            let mut pos = None;
+            let mut elapsed = None;
 
-        cl.write_all(b"status\n").await?;
-        let mut lines = cl.lines();
+            cl.write_all(b"status\n").await?;
+            let mut lines = cl.lines();
 
-        while let Some(line) = lines.next_line().await? {
-            match line.as_bytes() {
-                b"OK" => break,
-                b"repeat: 0" => repeat = Some(false),
-                b"repeat: 1" => repeat = Some(true),
-                b"random: 0" => random = Some(false),
-                b"random: 1" => random = Some(true),
-                b"single: 0" => single = Some(Some(false)),
-                b"single: 1" => single = Some(Some(true)),
-                b"single: oneshot" => single = Some(None),
-                b"consume: 0" => consume = Some(false),
-                b"consume: 1" => consume = Some(true),
-                b"state: play" => state = Some(true),
-                b"state: pause" => state = Some(false),
-                expand!([@b"song: ", ..]) => pos = Some(line[6 ..].parse()?),
-                expand!([@b"elapsed: ", ..]) => {
-                    elapsed = Some(line[9 ..].parse::<f32>()?.round() as u16)
+            while let Some(line) = lines.next_line().await? {
+                match line.as_bytes() {
+                    b"OK" => break,
+                    b"repeat: 0" => repeat = Some(false),
+                    b"repeat: 1" => repeat = Some(true),
+                    b"random: 0" => random = Some(false),
+                    b"random: 1" => random = Some(true),
+                    b"single: 0" => single = Some(Some(false)),
+                    b"single: 1" => single = Some(Some(true)),
+                    b"single: oneshot" => single = Some(None),
+                    b"consume: 0" => consume = Some(false),
+                    b"consume: 1" => consume = Some(true),
+                    b"state: play" => state = Some(true),
+                    b"state: pause" => state = Some(false),
+                    expand!([@b"song: ", ..]) => pos = Some(line[6 ..].parse()?),
+                    expand!([@b"elapsed: ", ..]) => {
+                        elapsed = Some(line[9 ..].parse::<f32>()?.round() as u16)
+                    }
+                    _ => continue,
                 }
-                _ => continue,
+            }
+
+            if let (Some(repeat), Some(random), Some(single), Some(consume)) =
+                (repeat, random, single, consume)
+            {
+                Ok(Status {
+                    repeat,
+                    random,
+                    single,
+                    consume,
+                    state,
+                    song: if let (Some(pos), Some(elapsed)) = (pos, elapsed) {
+                        Some(Song { pos, elapsed })
+                    } else {
+                        None
+                    },
+                })
+            } else {
+                bail!("incomplete status response");
             }
         }
-
-        if let (Some(repeat), Some(random), Some(single), Some(consume)) =
-            (repeat, random, single, consume)
-        {
-            Ok(Status {
-                repeat,
-                random,
-                single,
-                consume,
-                state,
-                song: if let (Some(pos), Some(elapsed)) = (pos, elapsed) {
-                    Some(Song { pos, elapsed })
-                } else {
-                    None
-                },
-            })
-        } else {
-            bail!("incomplete status response");
-        }
+        .await
+        .context("Failed to query status")
     }
 
     pub async fn play(&mut self, pos: usize) -> Result<()> {

@@ -129,7 +129,7 @@ impl Client {
         while let Some(line) = lines.next_line().await? {
             match line.as_bytes() {
                 b"OK" => break,
-                expand!([@b"file: ", xs @ ..]) => {
+                expand!([@b"file: ", ..]) => {
                     if first {
                         first = false;
                     } else if let (Some(file), Some(time)) = (file, time) {
@@ -146,24 +146,16 @@ impl Client {
                         bail!("incomplete playlist response");
                     }
 
-                    file = Some(String::from_utf8_lossy(xs).into());
+                    file = Some(line[6 ..].into());
                     artist = None;
                     album = None;
                     title = None;
                     time = None;
                 }
-                expand!([@b"Artist: ", xs @ ..]) => {
-                    artist = Some(String::from_utf8_lossy(xs).into());
-                }
-                expand!([@b"Album: ", xs @ ..]) => {
-                    album = Some(String::from_utf8_lossy(xs).into());
-                }
-                expand!([@b"Title: ", xs @ ..]) => {
-                    title = Some(String::from_utf8_lossy(xs).into());
-                }
-                expand!([@b"Time: ", xs @ ..]) => {
-                    time = Some(String::from_utf8_lossy(xs).parse()?);
-                }
+                expand!([@b"Artist: ", ..]) => artist = Some(line[8 ..].into()),
+                expand!([@b"Album: ", ..]) => album = Some(line[7 ..].into()),
+                expand!([@b"Title: ", ..]) => title = Some(line[7 ..].into()),
+                expand!([@b"Time: ", ..]) => time = Some(line[6 ..].parse()?),
                 _ => continue,
             }
         }
@@ -211,11 +203,9 @@ impl Client {
                 b"consume: 1" => consume = Some(true),
                 b"state: play" => state = Some(true),
                 b"state: pause" => state = Some(false),
-                expand!([@b"song: ", xs @ ..]) => {
-                    pos = Some(String::from_utf8_lossy(xs).parse()?);
-                }
-                expand!([@b"elapsed: ", xs @ ..]) => {
-                    elapsed = Some(String::from_utf8_lossy(xs).parse::<f32>()?.round() as u16);
+                expand!([@b"song: ", ..]) => pos = Some(line[6 ..].parse()?),
+                expand!([@b"elapsed: ", ..]) => {
+                    elapsed = Some(line[9 ..].parse::<f32>()?.round() as u16)
                 }
                 _ => continue,
             }

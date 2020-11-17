@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v0.2.4 - 2020-11-17
+
+### Features
+- Allow seeking backwards with left key and forwards with right key when searching
+- New binding - `Ctrl + q` to quit mmtc
+
+### Optimization
+- Various performance improvements
+
+
 ## v0.2.3 - 2020-11-13
 
 ### Changes

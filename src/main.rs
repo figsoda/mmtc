@@ -80,8 +80,8 @@ struct Opts {
 enum Command {
     Quit,
     UpdateFrame,
-    UpdateQueue,
     UpdateStatus,
+    UpdateQueue,
     ToggleRepeat,
     ToggleRandom,
     ToggleSingle,
@@ -157,8 +157,8 @@ async fn run() -> Result<()> {
     let mut idle_cl = Client::init(addr).await?;
     let mut cl = Client::init(addr).await?;
 
-    let (mut queue, mut queue_strings) = idle_cl.queue(&cfg.search_fields).await?;
     let mut status = cl.status().await?;
+    let (mut queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));
@@ -238,10 +238,10 @@ async fn run() -> Result<()> {
         loop {
             let changed = idle_cl.idle().await.unwrap_or_else(die);
             if changed.0 {
-                tx.send(Command::UpdateQueue).await.unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
             }
             if changed.1 {
-                tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
+                tx.send(Command::UpdateQueue).await.unwrap_or_else(die);
             }
             tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
         }
@@ -328,7 +328,7 @@ async fn run() -> Result<()> {
             Command::Quit => break,
             Command::UpdateFrame => render!(),
             Command::UpdateQueue => {
-                let res = cl.queue(&cfg.search_fields).await?;
+                let res = cl.queue(status.queue_len, &cfg.search_fields).await?;
                 queue = res.0;
                 queue_strings = res.1;
                 selected = status.song.map_or(0, |song| song.pos);

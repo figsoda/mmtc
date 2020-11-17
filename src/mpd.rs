@@ -17,6 +17,7 @@ pub struct Status {
     pub random: bool,
     pub single: Option<bool>, // None: oneshot
     pub consume: bool,
+    pub queue_len: usize,
     pub state: Option<bool>, // Some(true): play, Some(false): pause, None: stop
     pub song: Option<Song>,
 }
@@ -93,23 +94,23 @@ impl Client {
         async {
             let cl = &mut self.0;
 
-            cl.write_all(b"idle playlist player options\n").await?;
+            cl.write_all(b"idle options player playlist\n").await?;
             let mut lines = cl.lines();
 
-            let mut queue = false;
             let mut status = false;
+            let mut queue = false;
 
             while let Some(line) = lines.next_line().await? {
                 match line.as_bytes() {
-                    b"changed: playlist" => queue = true,
-                    b"changed: player" => status = true,
                     b"changed: options" => status = true,
+                    b"changed: player" => status = true,
+                    b"changed: playlist" => queue = true,
                     b"OK" => break,
                     _ => continue,
                 }
             }
 
-            Ok((queue, status)) as tokio::io::Result<_>
+            Ok((status, queue)) as tokio::io::Result<_>
         }
         .await
         .context("Failed to idle")
@@ -117,14 +118,15 @@ impl Client {
 
     pub async fn queue(
         &mut self,
+        len: usize,
         search_fields: &SearchFields,
     ) -> Result<(Vec<Track>, Vec<String>)> {
         async {
             let cl = &mut self.0;
 
             let mut first = true;
-            let mut tracks = Vec::new();
-            let mut track_strings = Vec::new();
+            let mut tracks = Vec::with_capacity(len);
+            let mut track_strings = Vec::with_capacity(len);
 
             let mut file: Option<String> = None;
             let mut artist: Option<String> = None;
@@ -195,6 +197,7 @@ impl Client {
             let mut random = None;
             let mut single = None;
             let mut consume = None;
+            let mut queue_len = None;
             let mut state = None;
             let mut pos = None;
             let mut elapsed = None;
@@ -214,6 +217,7 @@ impl Client {
                     b"single: oneshot" => single = Some(None),
                     b"consume: 0" => consume = Some(false),
                     b"consume: 1" => consume = Some(true),
+                    expand!([@b"playlistlength: ", ..]) => queue_len = Some(line[16 ..].parse()?),
                     b"state: play" => state = Some(true),
                     b"state: pause" => state = Some(false),
                     expand!([@b"song: ", ..]) => pos = Some(line[6 ..].parse()?),
@@ -224,14 +228,15 @@ impl Client {
                 }
             }
 
-            if let (Some(repeat), Some(random), Some(single), Some(consume)) =
-                (repeat, random, single, consume)
+            if let (Some(repeat), Some(random), Some(single), Some(consume), Some(queue_len)) =
+                (repeat, random, single, consume, queue_len)
             {
                 Ok(Status {
                     repeat,
                     random,
                     single,
                     consume,
+                    queue_len,
                     state,
                     song: if let (Some(pos), Some(elapsed)) = (pos, elapsed) {
                         Some(Song { pos, elapsed })

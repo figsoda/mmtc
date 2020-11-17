@@ -29,7 +29,7 @@ use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 use std::{cmp::min, fs, io::stdout, process::exit};
 
 use crate::{
-    app::{Command, Opts},
+    app::{Command, Opts, State},
     config::Config,
     mpd::Client,
 };
@@ -86,28 +86,31 @@ async fn run() -> Result<()> {
     let mut idle_cl = Client::init(addr).await?;
     let mut cl = Client::init(addr).await?;
 
-    let mut status = cl.status().await?;
-    let (mut queue, mut queue_strings) =
-        idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
-    let mut selected = status.song.map_or(0, |song| song.pos);
-    let mut liststate = ListState::default();
-    liststate.select(Some(selected));
-    let mut searching = false;
-    let mut query = String::with_capacity(32);
-    let mut filtered = Vec::new();
+    let status = cl.status().await?;
+    let (queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
+    let mut s = State {
+        selected: status.song.map_or(0, |song| song.pos),
+        status,
+        queue,
+        liststate: ListState::default(),
+        searching: false,
+        query: String::with_capacity(32),
+        filtered: Vec::new(),
+    };
+    s.liststate.select(Some(s.selected));
 
     macro_rules! update_search {
         () => {{
-            let query = query.to_lowercase();
-            filtered.clear();
+            let query = s.query.to_lowercase();
+            s.filtered.clear();
             for (i, track) in queue_strings.iter().enumerate() {
                 if track.contains(&query) {
-                    filtered.push(i);
+                    s.filtered.push(i);
                 }
             }
-            selected = 0;
-            liststate.select(None);
-            liststate.select(Some(0));
+            s.selected = 0;
+            s.liststate.select(None);
+            s.liststate.select(Some(0));
         }};
     }
 
@@ -122,25 +125,7 @@ async fn run() -> Result<()> {
     let mut term =
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
-    macro_rules! render {
-        () => {
-            term.draw(|frame| {
-                layout::render(
-                    frame,
-                    frame.size(),
-                    &cfg.layout,
-                    &queue,
-                    searching,
-                    &query,
-                    &filtered,
-                    &status,
-                    &mut liststate,
-                );
-            })
-            .context("Failed to draw to terminal")?
-        };
-    };
-    render!();
+    layout::render(&mut term, &cfg.layout, &mut s)?;
 
     let clear_query_on_play = opts.clear_query_on_play
         || if opts.no_clear_query_on_play {
@@ -188,6 +173,7 @@ async fn run() -> Result<()> {
     });
 
     tokio::spawn(async move {
+        let mut searching = false;
         let tx = tx3;
         while let Ok(ev) = event::read() {
             tx.send(match ev {
@@ -251,242 +237,247 @@ async fn run() -> Result<()> {
     while let Some(cmd) = rx.recv().await {
         match cmd {
             Command::Quit => break,
-            Command::UpdateFrame => render!(),
+            Command::UpdateFrame => layout::render(&mut term, &cfg.layout, &mut s)?,
             Command::UpdateQueue => {
-                let res = cl.queue(status.queue_len, &cfg.search_fields).await?;
-                queue = res.0;
+                let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
+                s.queue = res.0;
                 queue_strings = res.1;
-                selected = status.song.map_or(0, |song| song.pos);
-                liststate = ListState::default();
-                liststate.select(Some(selected));
-                if !query.is_empty() {
+                s.selected = s.status.song.map_or(0, |song| song.pos);
+                s.liststate = ListState::default();
+                s.liststate.select(Some(s.selected));
+                if !s.query.is_empty() {
                     update_search!();
                 }
             }
             Command::UpdateStatus => {
-                status = cl.status().await?;
+                s.status = cl.status().await?;
             }
             Command::ToggleRepeat => {
-                cl.command(if status.repeat {
+                cl.command(if s.status.repeat {
                     b"repeat 0\n"
                 } else {
                     b"repeat 1\n"
                 })
                 .await
                 .context("Failed to toggle repeat")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleRandom => {
-                cl.command(if status.random {
+                cl.command(if s.status.random {
                     b"random 0\n"
                 } else {
                     b"random 1\n"
                 })
                 .await
                 .context("Failed to toggle random")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleSingle => {
-                cl.command(if status.single == Some(true) {
+                cl.command(if s.status.single == Some(true) {
                     b"single 0\n"
                 } else {
                     b"single 1\n"
                 })
                 .await
                 .context("Failed to toggle single")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleOneshot => {
-                cl.command(status.single.map_or(b"single 0\n", |_| b"single oneshot\n"))
-                    .await
-                    .context("Failed to toggle oneshot")?;
-                status = cl.status().await?;
-                render!();
+                cl.command(
+                    s.status
+                        .single
+                        .map_or(b"single 0\n", |_| b"single oneshot\n"),
+                )
+                .await
+                .context("Failed to toggle oneshot")?;
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleConsume => {
-                cl.command(if status.consume {
+                cl.command(if s.status.consume {
                     b"consume 0\n"
                 } else {
                     b"consume 1\n"
                 })
                 .await
                 .context("Failed to toggle consume")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Stop => {
                 cl.command(b"stop\n")
                     .await
                     .context("Failed to stop playing")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::SeekBackwards => {
                 cl.command(seek_backwards)
                     .await
                     .context("Failed to seek backwards")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::SeekForwards => {
                 cl.command(seek_forwards)
                     .await
                     .context("Failed to seek forwards")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::TogglePause => {
-                cl.command(status.state.map_or(b"play\n", |_| b"pause\n"))
+                cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
                     .await
                     .context("Failed to toggle pause")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Previous => {
                 cl.command(b"previous\n")
                     .await
                     .context("Failed to play previous song")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Next => {
                 cl.command(b"next\n")
                     .await
                     .context("Failed to play next song")?;
-                status = cl.status().await?;
-                render!();
+                s.status = cl.status().await?;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Play => {
-                cl.play(if query.is_empty() {
-                    if selected < queue.len() {
-                        selected
+                cl.play(if s.query.is_empty() {
+                    if s.selected < s.queue.len() {
+                        s.selected
                     } else {
                         continue;
                     }
-                } else if let Some(&x) = filtered.get(selected) {
+                } else if let Some(&x) = s.filtered.get(s.selected) {
                     x
                 } else {
                     continue;
                 })
                 .await
                 .context("Failed to play the selected song")?;
-                status = cl.status().await?;
+                s.status = cl.status().await?;
                 if clear_query_on_play {
                     tx.send(Command::QuitSearch).await?;
                 } else {
-                    render!();
+                    layout::render(&mut term, &cfg.layout, &mut s)?;
                 }
             }
             Command::Reselect => {
-                selected = status.song.map_or(0, |song| song.pos);
-                liststate.select(Some(selected));
-                render!();
+                s.selected = s.status.song.map_or(0, |song| song.pos);
+                s.liststate.select(Some(s.selected));
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Down => {
-                let len = if query.is_empty() {
-                    queue.len()
+                let len = if s.query.is_empty() {
+                    s.queue.len()
                 } else {
-                    filtered.len()
+                    s.filtered.len()
                 };
-                if selected >= len {
-                    selected = status.song.map_or(0, |song| song.pos);
-                } else if selected == len - 1 {
+                if s.selected >= len {
+                    s.selected = s.status.song.map_or(0, |song| song.pos);
+                } else if s.selected == len - 1 {
                     if cycle {
-                        selected = 0;
+                        s.selected = 0;
                     }
                 } else {
-                    selected += 1;
+                    s.selected += 1;
                 }
-                liststate.select(Some(selected));
-                render!();
+                s.liststate.select(Some(s.selected));
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Up => {
-                let len = if query.is_empty() {
-                    queue.len()
+                let len = if s.query.is_empty() {
+                    s.queue.len()
                 } else {
-                    filtered.len()
+                    s.filtered.len()
                 };
-                if selected >= len {
-                    selected = status.song.map_or(0, |song| song.pos);
-                } else if selected == 0 {
+                if s.selected >= len {
+                    s.selected = s.status.song.map_or(0, |song| song.pos);
+                } else if s.selected == 0 {
                     if cycle {
-                        selected = len - 1;
+                        s.selected = len - 1;
                     }
                 } else {
-                    selected -= 1;
+                    s.selected -= 1;
                 }
-                liststate.select(Some(selected));
-                render!();
+                s.liststate.select(Some(s.selected));
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::JumpDown => {
-                let len = if query.is_empty() {
-                    queue.len()
+                let len = if s.query.is_empty() {
+                    s.queue.len()
                 } else {
-                    filtered.len()
+                    s.filtered.len()
                 };
-                selected = if selected >= len {
-                    status.song.map_or(0, |song| song.pos)
+                s.selected = if s.selected >= len {
+                    s.status.song.map_or(0, |song| song.pos)
                 } else if cycle {
-                    (selected + jump_lines) % len
+                    (s.selected + jump_lines) % len
                 } else {
-                    min(selected + jump_lines, len - 1)
+                    min(s.selected + jump_lines, len - 1)
                 };
-                liststate.select(Some(selected));
-                render!();
+                s.liststate.select(Some(s.selected));
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::JumpUp => {
-                let len = if query.is_empty() {
-                    queue.len()
+                let len = if s.query.is_empty() {
+                    s.queue.len()
                 } else {
-                    filtered.len()
+                    s.filtered.len()
                 };
-                selected = if selected >= len {
-                    status.song.map_or(0, |song| song.pos)
+                s.selected = if s.selected >= len {
+                    s.status.song.map_or(0, |song| song.pos)
                 } else if cycle {
-                    ((selected as isize - jump_lines as isize) % len as isize) as usize
-                } else if selected < jump_lines {
+                    ((s.selected as isize - jump_lines as isize) % len as isize) as usize
+                } else if s.selected < jump_lines {
                     0
                 } else {
-                    selected - jump_lines
+                    s.selected - jump_lines
                 };
-                liststate.select(Some(selected));
-                render!();
+                s.liststate.select(Some(s.selected));
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::InputSearch(c) => {
-                if query.is_empty() {
-                    query.push(c);
+                if s.query.is_empty() {
+                    s.query.push(c);
                     update_search!();
                 } else {
-                    query.push(c);
-                    filtered.retain(|&i| queue_strings[i].contains(&query));
+                    s.query.push(c);
+                    let query = s.query.to_lowercase();
+                    s.filtered.retain(|&i| queue_strings[i].contains(&query));
                 }
-                render!();
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::BackspaceSearch => {
-                let c = query.pop();
-                if !query.is_empty() {
+                let c = s.query.pop();
+                if !s.query.is_empty() {
                     update_search!();
                 } else if c.is_some() {
-                    selected = status.song.map_or(0, |song| song.pos);
-                    liststate.select(Some(selected));
+                    s.selected = s.status.song.map_or(0, |song| song.pos);
+                    s.liststate.select(Some(s.selected));
                 }
-                render!();
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::QuitSearch => {
-                searching = false;
-                if !query.is_empty() {
-                    query.clear();
-                    selected = status.song.map_or(0, |song| song.pos);
-                    liststate.select(Some(selected));
+                s.searching = false;
+                if !s.query.is_empty() {
+                    s.query.clear();
+                    s.selected = s.status.song.map_or(0, |song| song.pos);
+                    s.liststate.select(Some(s.selected));
                 }
-                render!();
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Searching(x) => {
-                searching = x;
-                render!();
+                s.searching = x;
+                layout::render(&mut term, &cfg.layout, &mut s)?;
             }
         }
     }

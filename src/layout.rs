@@ -3,11 +3,12 @@ use tui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
     text::{Span, Spans},
-    widgets::{List, ListItem, ListState, Paragraph},
-    Frame,
+    widgets::{List, ListItem, Paragraph},
+    Frame, Terminal,
 };
 
 use crate::{
+    app::State,
     config::{AddStyle, Column, Condition, Constrained, Texts, Widget},
     mpd::{Song, Status, Track},
 };
@@ -33,16 +34,16 @@ struct ConditionState<'a> {
 }
 
 pub fn render(
-    frame: &mut Frame<impl Backend>,
-    size: Rect,
+    term: &mut Terminal<impl Backend>,
     widget: &Widget,
-    queue: &[Track],
-    searching: bool,
-    query: &str,
-    filtered: &[usize],
-    status: &Status,
-    liststate: &mut ListState,
-) {
+    s: &mut State,
+) -> std::io::Result<()> {
+    term.draw(|frame| {
+        _render(frame, frame.size(), widget, s);
+    })
+}
+
+fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut State) {
     match widget {
         Widget::Rows(xs) => {
             let len = xs.capacity();
@@ -76,9 +77,7 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(
-                    frame, chunk, w, queue, searching, query, filtered, status, liststate,
-                );
+                _render(frame, chunk, w, s);
             }
         }
         Widget::Columns(xs) => {
@@ -113,22 +112,20 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                render(
-                    frame, chunk, w, queue, searching, query, filtered, status, liststate,
-                );
+                _render(frame, chunk, w, s);
             }
         }
         Widget::Textbox(xs) => {
             frame.render_widget(
                 Paragraph::new(flatten(
                     xs,
-                    status,
-                    status.song.and_then(|song| queue.get(song.pos)),
+                    &s.status,
+                    s.status.song.and_then(|song| s.queue.get(song.pos)),
                     None,
                     false,
                     false,
-                    searching,
-                    query,
+                    s.searching,
+                    &s.query,
                 )),
                 size,
             );
@@ -137,13 +134,13 @@ pub fn render(
             frame.render_widget(
                 Paragraph::new(flatten(
                     xs,
-                    status,
-                    status.song.and_then(|song| queue.get(song.pos)),
+                    &s.status,
+                    s.status.song.and_then(|song| s.queue.get(song.pos)),
                     None,
                     false,
                     false,
-                    searching,
-                    query,
+                    s.searching,
+                    &s.query,
                 ))
                 .alignment(Alignment::Center),
                 size,
@@ -153,13 +150,13 @@ pub fn render(
             frame.render_widget(
                 Paragraph::new(flatten(
                     xs,
-                    status,
-                    status.song.and_then(|song| queue.get(song.pos)),
+                    &s.status,
+                    s.status.song.and_then(|song| s.queue.get(song.pos)),
                     None,
                     false,
                     false,
-                    searching,
-                    query,
+                    s.searching,
+                    &s.query,
                 ))
                 .alignment(Alignment::Right),
                 size,
@@ -170,7 +167,7 @@ pub fn render(
             let mut ws = Vec::with_capacity(len);
             let mut cs = Vec::with_capacity(len);
 
-            let len = queue.len();
+            let len = s.queue.len();
             if len == 0 {
                 return;
             }
@@ -183,9 +180,11 @@ pub fn render(
                 }
             });
 
-            let (pos, current_track) = status
-                .song
-                .map_or((None, None), |song| (Some(song.pos), queue.get(song.pos)));
+            let (pos, current_track) = if let Some(Song { pos, .. }) = s.status.song {
+                (Some(pos), s.queue.get(pos))
+            } else {
+                (None, None)
+            };
 
             for column in xs {
                 let (txts, constraint) = match &column.item {
@@ -196,30 +195,30 @@ pub fn render(
                 };
 
                 let mut items = Vec::with_capacity(len);
-                if query.is_empty() {
-                    for (i, track) in queue.iter().enumerate() {
+                if s.query.is_empty() {
+                    for (i, track) in s.queue.iter().enumerate() {
                         items.push(ListItem::new(flatten(
                             txts,
-                            status,
+                            &s.status,
                             current_track,
                             Some(track),
                             pos == Some(i),
-                            liststate.selected() == Some(i),
-                            searching,
-                            query,
+                            s.liststate.selected() == Some(i),
+                            s.searching,
+                            &s.query,
                         )));
                     }
                 } else {
-                    for &i in filtered {
+                    for &i in &s.filtered {
                         items.push(ListItem::new(flatten(
                             txts,
-                            status,
+                            &s.status,
                             current_track,
-                            queue.get(i),
+                            s.queue.get(i),
                             pos == Some(i),
-                            liststate.selected() == Some(i),
-                            searching,
-                            query,
+                            s.liststate.selected() == Some(i),
+                            s.searching,
+                            &s.query,
                         )));
                     }
                 }
@@ -239,9 +238,9 @@ pub fn render(
             let mut ws = ws.into_iter();
 
             if let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                frame.render_stateful_widget(w, chunk, liststate);
+                frame.render_stateful_widget(w, chunk, &mut s.liststate);
                 while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                    frame.render_stateful_widget(w, chunk, &mut liststate.clone());
+                    frame.render_stateful_widget(w, chunk, &mut s.liststate.clone());
                 }
             }
         }

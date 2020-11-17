@@ -1,6 +1,9 @@
 use structopt::{clap::AppSettings, StructOpt};
+use tui::widgets::ListState;
 
 use std::{net::SocketAddr, path::PathBuf};
+
+use crate::mpd::{Status, Track};
 
 /// Minimal mpd terminal client that aims to be simple yet highly configurable
 ///
@@ -47,6 +50,16 @@ pub struct Opts {
     /// The amount of status updates per second
     #[structopt(long, value_name = "number")]
     pub ups: Option<f32>,
+}
+
+pub struct State {
+    pub status: Status,
+    pub queue: Vec<Track>,
+    pub selected: usize,
+    pub liststate: ListState,
+    pub searching: bool,
+    pub query: String,
+    pub filtered: Vec<usize>,
 }
 
 #[derive(Debug)]

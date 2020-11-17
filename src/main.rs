@@ -99,21 +99,6 @@ async fn run() -> Result<()> {
     };
     s.liststate.select(Some(s.selected));
 
-    macro_rules! update_search {
-        () => {{
-            let query = s.query.to_lowercase();
-            s.filtered.clear();
-            for (i, track) in queue_strings.iter().enumerate() {
-                if track.contains(&query) {
-                    s.filtered.push(i);
-                }
-            }
-            s.selected = 0;
-            s.liststate.select(None);
-            s.liststate.select(Some(0));
-        }};
-    }
-
     enable_raw_mode().context("Failed to enable raw mode")?;
     let mut stdout = stdout();
     stdout
@@ -246,7 +231,7 @@ async fn run() -> Result<()> {
                 s.liststate = ListState::default();
                 s.liststate.select(Some(s.selected));
                 if !s.query.is_empty() {
-                    update_search!();
+                    s.update_search(&queue_strings);
                 }
             }
             Command::UpdateStatus => {
@@ -448,7 +433,7 @@ async fn run() -> Result<()> {
             Command::InputSearch(c) => {
                 if s.query.is_empty() {
                     s.query.push(c);
-                    update_search!();
+                    s.update_search(&queue_strings);
                 } else {
                     s.query.push(c);
                     let query = s.query.to_lowercase();
@@ -459,7 +444,7 @@ async fn run() -> Result<()> {
             Command::BackspaceSearch => {
                 let c = s.query.pop();
                 if !s.query.is_empty() {
-                    update_search!();
+                    s.update_search(&queue_strings);
                 } else if c.is_some() {
                     s.selected = s.status.song.map_or(0, |song| song.pos);
                     s.liststate.select(Some(s.selected));

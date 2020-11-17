@@ -90,3 +90,18 @@ pub enum Command {
     QuitSearch,
     Searching(bool),
 }
+
+impl State {
+    pub fn update_search<'a>(&mut self, queue_strings: &'a [String]) {
+        let query = self.query.to_lowercase();
+        self.filtered.clear();
+        for (i, track) in queue_strings.iter().enumerate() {
+            if track.contains(&query) {
+                self.filtered.push(i);
+            }
+        }
+        self.selected = 0;
+        self.liststate.select(None);
+        self.liststate.select(Some(0));
+    }
+}

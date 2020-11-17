@@ -158,7 +158,8 @@ async fn run() -> Result<()> {
     let mut cl = Client::init(addr).await?;
 
     let mut status = cl.status().await?;
-    let (mut queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
+    let (mut queue, mut queue_strings) =
+        idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
     let mut selected = status.song.map_or(0, |song| song.pos);
     let mut liststate = ListState::default();
     liststate.select(Some(selected));

@@ -305,9 +305,9 @@ async fn run() -> Result<()> {
                                 KeyCode::Enter => Command::Play,
                                 KeyCode::Char(' ') => Command::Reselect,
                                 KeyCode::Char('j') => Command::Down,
-                                KeyCode::Char('k') | KeyCode::Up => Command::Up,
-                                KeyCode::Char('J') | KeyCode::PageDown => Command::JumpDown,
-                                KeyCode::Char('K') | KeyCode::PageUp => Command::JumpUp,
+                                KeyCode::Char('k') => Command::Up,
+                                KeyCode::Char('J') => Command::JumpDown,
+                                KeyCode::Char('K') => Command::JumpUp,
                                 KeyCode::Char('/') => {
                                     searching = true;
                                     Command::Searching(true)

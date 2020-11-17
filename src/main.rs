@@ -2,6 +2,7 @@
 #![feature(box_patterns)]
 #![forbid(unsafe_code)]
 
+mod app;
 mod config;
 mod defaults;
 mod fail;
@@ -18,92 +19,20 @@ use crossterm::{
     ExecutableCommand,
 };
 use dirs_next::config_dir;
-use structopt::{clap::AppSettings, StructOpt};
+use structopt::StructOpt;
 use tokio::{
     sync::mpsc,
     time::{sleep_until, Duration, Instant},
 };
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
-use std::{cmp::min, fs, io::stdout, net::SocketAddr, path::PathBuf, process::exit};
+use std::{cmp::min, fs, io::stdout, process::exit};
 
-use crate::{config::Config, mpd::Client};
-
-/// Minimal mpd terminal client that aims to be simple yet highly configurable
-///
-/// Homepage: https://github.com/figsoda/mmtc
-#[derive(StructOpt)]
-#[structopt(
-    name = "mmtc",
-    rename_all = "kebab-case",
-    global_setting = AppSettings::ColoredHelp,
-)]
-struct Opts {
-    /// Clear query on play
-    #[structopt(long)]
-    clear_query_on_play: bool,
-
-    /// Cycle through the queue
-    #[structopt(long)]
-    cycle: bool,
-
-    /// Don't clear query on play
-    #[structopt(long, overrides_with("clear_query_on_play"))]
-    no_clear_query_on_play: bool,
-
-    /// Don't cycle through the queue
-    #[structopt(long, overrides_with("cycle"))]
-    no_cycle: bool,
-
-    /// Specify the address of the mpd server
-    #[structopt(long, value_name = "address")]
-    address: Option<SocketAddr>,
-
-    /// Specify the config file
-    #[structopt(short, long, value_name = "file")]
-    config: Option<PathBuf>,
-
-    /// The number of lines to jump
-    #[structopt(long, value_name = "number")]
-    jump_lines: Option<usize>,
-
-    /// The time to seek in seconds
-    #[structopt(long, value_name = "number")]
-    seek_secs: Option<f32>,
-
-    /// The amount of status updates per second
-    #[structopt(long, value_name = "number")]
-    ups: Option<f32>,
-}
-
-#[derive(Debug)]
-enum Command {
-    Quit,
-    UpdateFrame,
-    UpdateStatus,
-    UpdateQueue,
-    ToggleRepeat,
-    ToggleRandom,
-    ToggleSingle,
-    ToggleConsume,
-    ToggleOneshot,
-    TogglePause,
-    Stop,
-    SeekBackwards,
-    SeekForwards,
-    Previous,
-    Next,
-    Play,
-    Reselect,
-    Down,
-    Up,
-    JumpDown,
-    JumpUp,
-    InputSearch(char),
-    BackspaceSearch,
-    QuitSearch,
-    Searching(bool),
-}
+use crate::{
+    app::{Command, Opts},
+    config::Config,
+    mpd::Client,
+};
 
 fn cleanup() -> Result<()> {
     let mut stdout = stdout();

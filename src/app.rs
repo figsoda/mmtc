@@ -92,7 +92,7 @@ pub enum Command {
 }
 
 impl State {
-    pub fn update_search<'a>(&mut self, queue_strings: &'a [String]) {
+    pub fn update_search(&mut self, queue_strings: &[String]) {
         let query = self.query.to_lowercase();
         self.filtered.clear();
         for (i, track) in queue_strings.iter().enumerate() {

@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -33,14 +34,11 @@ struct ConditionState<'a> {
     query: &'a str,
 }
 
-pub fn render(
-    term: &mut Terminal<impl Backend>,
-    widget: &Widget,
-    s: &mut State,
-) -> std::io::Result<()> {
+pub fn render(term: &mut Terminal<impl Backend>, widget: &Widget, s: &mut State) -> Result<()> {
     term.draw(|frame| {
         _render(frame, frame.size(), widget, s);
     })
+    .context("Failed to draw to terminal")
 }
 
 fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut State) {

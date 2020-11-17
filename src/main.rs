@@ -279,38 +279,38 @@ async fn run() -> Result<()> {
                     KeyCode::Up => Command::Up,
                     KeyCode::PageDown => Command::JumpDown,
                     KeyCode::PageUp => Command::JumpUp,
-                    _ => {
+                    KeyCode::Enter => {
                         if searching {
-                            match code {
-                                KeyCode::Char(c) => Command::InputSearch(c),
-                                KeyCode::Backspace => Command::BackspaceSearch,
-                                KeyCode::Enter => {
-                                    searching = false;
-                                    Command::Searching(false)
-                                }
-                                _ => continue,
-                            }
+                            searching = false;
+                            Command::Searching(false)
                         } else {
-                            match code {
-                                KeyCode::Char('q') => Command::Quit,
-                                KeyCode::Char('r') => Command::ToggleRepeat,
-                                KeyCode::Char('R') => Command::ToggleRandom,
-                                KeyCode::Char('s') => Command::ToggleSingle,
-                                KeyCode::Char('S') => Command::ToggleOneshot,
-                                KeyCode::Char('c') => Command::ToggleConsume,
-                                KeyCode::Char('p') => Command::TogglePause,
-                                KeyCode::Char(';') => Command::Stop,
-                                KeyCode::Char('h') => Command::SeekBackwards,
-                                KeyCode::Char('l') => Command::SeekForwards,
-                                KeyCode::Char('H') => Command::Previous,
-                                KeyCode::Char('L') => Command::Next,
-                                KeyCode::Enter => Command::Play,
-                                KeyCode::Char(' ') => Command::Reselect,
-                                KeyCode::Char('j') => Command::Down,
-                                KeyCode::Char('k') => Command::Up,
-                                KeyCode::Char('J') => Command::JumpDown,
-                                KeyCode::Char('K') => Command::JumpUp,
-                                KeyCode::Char('/') => {
+                            Command::Play
+                        }
+                    }
+                    KeyCode::Backspace => Command::BackspaceSearch,
+                    KeyCode::Char(c) => {
+                        if searching {
+                            Command::InputSearch(c)
+                        } else {
+                            match c {
+                                'q' => Command::Quit,
+                                'r' => Command::ToggleRepeat,
+                                'R' => Command::ToggleRandom,
+                                's' => Command::ToggleSingle,
+                                'S' => Command::ToggleOneshot,
+                                'c' => Command::ToggleConsume,
+                                'p' => Command::TogglePause,
+                                ';' => Command::Stop,
+                                'h' => Command::SeekBackwards,
+                                'l' => Command::SeekForwards,
+                                'H' => Command::Previous,
+                                'L' => Command::Next,
+                                ' ' => Command::Reselect,
+                                'j' => Command::Down,
+                                'k' => Command::Up,
+                                'J' => Command::JumpDown,
+                                'K' => Command::JumpUp,
+                                '/' => {
                                     searching = true;
                                     Command::Searching(true)
                                 }
@@ -318,6 +318,7 @@ async fn run() -> Result<()> {
                             }
                         }
                     }
+                    _ => continue,
                 },
                 _ => continue,
             })
@@ -544,14 +545,16 @@ async fn run() -> Result<()> {
                 render!();
             }
             Command::BackspaceSearch => {
-                let c = query.pop();
-                if !query.is_empty() {
-                    update_search!();
-                } else if c.is_some() {
-                    selected = status.song.map_or(0, |song| song.pos);
-                    liststate.select(Some(selected));
+                if searching {
+                    let c = query.pop();
+                    if !query.is_empty() {
+                        update_search!();
+                    } else if c.is_some() {
+                        selected = status.song.map_or(0, |song| song.pos);
+                        liststate.select(Some(selected));
+                    }
+                    render!();
                 }
-                render!();
             }
             Command::QuitSearch => {
                 searching = false;

@@ -273,6 +273,8 @@ async fn run() -> Result<()> {
                         searching = false;
                         Command::QuitSearch
                     }
+                    KeyCode::Left => Command::SeekBackwards,
+                    KeyCode::Right => Command::SeekForwards,
                     KeyCode::Down => Command::Down,
                     KeyCode::Up => Command::Up,
                     KeyCode::PageDown => Command::JumpDown,
@@ -298,8 +300,8 @@ async fn run() -> Result<()> {
                                 KeyCode::Char('c') => Command::ToggleConsume,
                                 KeyCode::Char('p') => Command::TogglePause,
                                 KeyCode::Char(';') => Command::Stop,
-                                KeyCode::Char('h') | KeyCode::Left => Command::SeekBackwards,
-                                KeyCode::Char('l') | KeyCode::Right => Command::SeekForwards,
+                                KeyCode::Char('h') => Command::SeekBackwards,
+                                KeyCode::Char('l') => Command::SeekForwards,
                                 KeyCode::Char('H') => Command::Previous,
                                 KeyCode::Char('L') => Command::Next,
                                 KeyCode::Enter => Command::Play,

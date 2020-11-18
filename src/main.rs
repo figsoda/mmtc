@@ -10,6 +10,8 @@ mod layout;
 mod mpd;
 
 use anyhow::{Context, Error, Result};
+use async_channel::bounded;
+use async_io::{block_on, Timer};
 use crossterm::{
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyModifiers,
@@ -19,14 +21,11 @@ use crossterm::{
     ExecutableCommand,
 };
 use dirs_next::config_dir;
+use futures_lite::Future;
 use structopt::StructOpt;
-use tokio::{
-    sync::mpsc,
-    time::{sleep_until, Duration, Instant},
-};
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
-use std::{cmp::min, fs, io::stdout, process::exit};
+use std::{cmp::min, fs, io::stdout, process::exit, thread, time::Duration};
 
 use crate::{
     app::{Command, Opts, State},
@@ -52,14 +51,17 @@ fn die<T>(e: impl Into<Error>) -> T {
     exit(1);
 }
 
-#[tokio::main]
-async fn main() {
-    let res = run().await;
+fn main() {
+    let res = block_on(run());
     if let Err(e) = cleanup().and(res) {
         eprintln!("{:?}", e);
         exit(1);
     }
     exit(0);
+}
+
+fn spawn(f: impl 'static + Send + Future<Output = ()>) {
+    thread::spawn(|| block_on(f));
 }
 
 async fn run() -> Result<()> {
@@ -129,12 +131,12 @@ async fn run() -> Result<()> {
     let seek_forwards = seek_forwards.as_bytes();
     let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 
-    let (tx, mut rx) = mpsc::channel(32);
+    let (tx, rx) = bounded(32);
     let tx1 = tx.clone();
     let tx2 = tx.clone();
     let tx3 = tx.clone();
 
-    tokio::spawn(async move {
+    spawn(async move {
         let tx = tx1;
         loop {
             let changed = idle_cl.idle().await.unwrap_or_else(die);
@@ -148,17 +150,17 @@ async fn run() -> Result<()> {
         }
     });
 
-    tokio::spawn(async move {
+    spawn(async move {
         let tx = tx2;
         loop {
-            let deadline = Instant::now() + update_interval;
+            let timer = Timer::after(update_interval);
             tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
             tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
-            sleep_until(deadline).await;
+            timer.await;
         }
     });
 
-    tokio::spawn(async move {
+    spawn(async move {
         let mut searching = false;
         let tx = tx3;
         while let Ok(ev) = event::read() {
@@ -220,7 +222,7 @@ async fn run() -> Result<()> {
         }
     });
 
-    while let Some(cmd) = rx.recv().await {
+    while let Ok(cmd) = rx.recv().await {
         match cmd {
             Command::Quit => break,
             Command::UpdateFrame => render(&mut term, &cfg.layout, &mut s)?,

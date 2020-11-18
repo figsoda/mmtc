@@ -1,15 +1,19 @@
 use anyhow::{bail, Context, Result};
+use async_net::TcpStream;
 use expand::expand;
-use tokio::{
-    io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
-    net::TcpStream,
+use futures_lite::{
+    io::{split, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader, ReadHalf, WriteHalf},
+    StreamExt,
 };
 
 use std::net::SocketAddr;
 
 use crate::{config::SearchFields, fail};
 
-pub struct Client(BufReader<TcpStream>);
+pub struct Client {
+    r: BufReader<ReadHalf<TcpStream>>,
+    w: WriteHalf<TcpStream>,
+}
 
 #[derive(Debug)]
 pub struct Status {
@@ -71,20 +75,24 @@ fn track_string(track: &Track, search_fields: &SearchFields) -> String {
 impl Client {
     pub async fn init(addr: &SocketAddr) -> Result<Client> {
         async {
-            let mut cl = BufReader::new(
+            let (r, w) = split(
                 TcpStream::connect(addr)
                     .await
                     .with_context(fail::connect(addr))?,
             );
+            let mut cl = Client {
+                r: BufReader::new(r),
+                w,
+            };
 
             let buf = &mut [0; 7];
-            cl.read(buf).await?;
+            cl.r.read(buf).await?;
             if buf != b"OK MPD " {
                 bail!("server did not greet with a success");
             }
-            cl.read_line(&mut String::with_capacity(8)).await?;
+            cl.r.read_line(&mut String::with_capacity(8)).await?;
 
-            Ok(Client(cl))
+            Ok(cl)
         }
         .await
         .context("Failed to init client")
@@ -92,16 +100,13 @@ impl Client {
 
     pub async fn idle(&mut self) -> Result<(bool, bool)> {
         async {
-            let cl = &mut self.0;
-
-            cl.write_all(b"idle options player playlist\n").await?;
-            let mut lines = cl.lines();
-
+            self.w.write_all(b"idle options player playlist\n").await?;
+            let mut lines = (&mut self.r).lines();
             let mut status = false;
             let mut queue = false;
 
-            while let Some(line) = lines.next_line().await? {
-                match line.as_bytes() {
+            while let Some(line) = lines.next().await {
+                match line?.as_bytes() {
                     b"changed: options" => status = true,
                     b"changed: player" => status = true,
                     b"changed: playlist" => queue = true,
@@ -110,7 +115,7 @@ impl Client {
                 }
             }
 
-            Ok((status, queue)) as tokio::io::Result<_>
+            Ok((status, queue)) as Result<_>
         }
         .await
         .context("Failed to idle")
@@ -122,8 +127,6 @@ impl Client {
         search_fields: &SearchFields,
     ) -> Result<(Vec<Track>, Vec<String>)> {
         async {
-            let cl = &mut self.0;
-
             let mut first = true;
             let mut tracks = Vec::with_capacity(len);
             let mut track_strings = Vec::with_capacity(len);
@@ -134,10 +137,11 @@ impl Client {
             let mut title: Option<String> = None;
             let mut time = None;
 
-            cl.write_all(b"playlistinfo\n").await?;
-            let mut lines = cl.lines();
+            self.w.write_all(b"playlistinfo\n").await?;
+            let mut lines = (&mut self.r).lines();
 
-            while let Some(line) = lines.next_line().await? {
+            while let Some(line) = lines.next().await {
+                let line = line?;
                 match line.as_bytes() {
                     b"OK" => break,
                     expand!([@b"file: ", ..]) => {
@@ -191,8 +195,6 @@ impl Client {
 
     pub async fn status(&mut self) -> Result<Status> {
         async {
-            let cl = &mut self.0;
-
             let mut repeat = None;
             let mut random = None;
             let mut single = None;
@@ -202,10 +204,11 @@ impl Client {
             let mut pos = None;
             let mut elapsed = None;
 
-            cl.write_all(b"status\n").await?;
-            let mut lines = cl.lines();
+            self.w.write_all(b"status\n").await?;
+            let mut lines = (&mut self.r).lines();
 
-            while let Some(line) = lines.next_line().await? {
+            while let Some(line) = lines.next().await {
+                let line = line?;
                 match line.as_bytes() {
                     b"OK" => break,
                     b"repeat: 0" => repeat = Some(false),
@@ -253,15 +256,13 @@ impl Client {
     }
 
     pub async fn play(&mut self, pos: usize) -> Result<()> {
-        let cl = &mut self.0;
+        self.w.write_all(b"play ").await?;
+        self.w.write_all(pos.to_string().as_bytes()).await?;
+        self.w.write_all(b"\n").await?;
+        let mut lines = (&mut self.r).lines();
 
-        cl.write_all(b"play ").await?;
-        cl.write_all(pos.to_string().as_bytes()).await?;
-        cl.write_u8(b'\n').await?;
-        let mut lines = cl.lines();
-
-        while let Some(line) = lines.next_line().await? {
-            match line.as_bytes() {
+        while let Some(line) = lines.next().await {
+            match line?.as_bytes() {
                 b"OK" | expand!([@b"ACK ", ..]) => break,
                 _ => continue,
             }
@@ -271,13 +272,11 @@ impl Client {
     }
 
     pub async fn command(&mut self, cmd: &[u8]) -> Result<()> {
-        let cl = &mut self.0;
+        self.w.write_all(cmd).await?;
+        let mut lines = (&mut self.r).lines();
 
-        cl.write_all(cmd).await?;
-        let mut lines = cl.lines();
-
-        while let Some(line) = lines.next_line().await? {
-            match line.as_bytes() {
+        while let Some(line) = lines.next().await {
+            match line?.as_bytes() {
                 b"OK" | expand!([@b"ACK ", ..]) => break,
                 _ => continue,
             }

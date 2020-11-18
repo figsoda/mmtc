@@ -31,6 +31,7 @@ use std::{cmp::min, fs, io::stdout, process::exit};
 use crate::{
     app::{Command, Opts, State},
     config::Config,
+    layout::render,
     mpd::Client,
 };
 
@@ -110,7 +111,7 @@ async fn run() -> Result<()> {
     let mut term =
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
-    layout::render(&mut term, &cfg.layout, &mut s)?;
+    render(&mut term, &cfg.layout, &mut s)?;
 
     let clear_query_on_play = opts.clear_query_on_play
         || if opts.no_clear_query_on_play {
@@ -222,7 +223,7 @@ async fn run() -> Result<()> {
     while let Some(cmd) = rx.recv().await {
         match cmd {
             Command::Quit => break,
-            Command::UpdateFrame => layout::render(&mut term, &cfg.layout, &mut s)?,
+            Command::UpdateFrame => render(&mut term, &cfg.layout, &mut s)?,
             Command::UpdateQueue => {
                 let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
                 s.queue = res.0;
@@ -246,7 +247,7 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle repeat")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleRandom => {
                 cl.command(if s.status.random {
@@ -257,7 +258,7 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle random")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleSingle => {
                 cl.command(if s.status.single == Some(true) {
@@ -268,7 +269,7 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle single")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleOneshot => {
                 cl.command(
@@ -279,7 +280,7 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle oneshot")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::ToggleConsume => {
                 cl.command(if s.status.consume {
@@ -290,49 +291,49 @@ async fn run() -> Result<()> {
                 .await
                 .context("Failed to toggle consume")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Stop => {
                 cl.command(b"stop\n")
                     .await
                     .context("Failed to stop playing")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::SeekBackwards => {
                 cl.command(seek_backwards)
                     .await
                     .context("Failed to seek backwards")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::SeekForwards => {
                 cl.command(seek_forwards)
                     .await
                     .context("Failed to seek forwards")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::TogglePause => {
                 cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
                     .await
                     .context("Failed to toggle pause")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Previous => {
                 cl.command(b"previous\n")
                     .await
                     .context("Failed to play previous song")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Next => {
                 cl.command(b"next\n")
                     .await
                     .context("Failed to play next song")?;
                 s.status = cl.status().await?;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Play => {
                 cl.play(if s.query.is_empty() {
@@ -352,13 +353,13 @@ async fn run() -> Result<()> {
                 if clear_query_on_play {
                     tx.send(Command::QuitSearch).await?;
                 } else {
-                    layout::render(&mut term, &cfg.layout, &mut s)?;
+                    render(&mut term, &cfg.layout, &mut s)?;
                 }
             }
             Command::Reselect => {
                 s.selected = s.status.song.map_or(0, |song| song.pos);
                 s.liststate.select(Some(s.selected));
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Down => {
                 let len = if s.query.is_empty() {
@@ -376,7 +377,7 @@ async fn run() -> Result<()> {
                     s.selected += 1;
                 }
                 s.liststate.select(Some(s.selected));
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Up => {
                 let len = if s.query.is_empty() {
@@ -394,7 +395,7 @@ async fn run() -> Result<()> {
                     s.selected -= 1;
                 }
                 s.liststate.select(Some(s.selected));
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::JumpDown => {
                 let len = if s.query.is_empty() {
@@ -410,7 +411,7 @@ async fn run() -> Result<()> {
                     min(s.selected + jump_lines, len - 1)
                 };
                 s.liststate.select(Some(s.selected));
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::JumpUp => {
                 let len = if s.query.is_empty() {
@@ -428,7 +429,7 @@ async fn run() -> Result<()> {
                     s.selected - jump_lines
                 };
                 s.liststate.select(Some(s.selected));
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::InputSearch(c) => {
                 if s.query.is_empty() {
@@ -439,7 +440,7 @@ async fn run() -> Result<()> {
                     let query = s.query.to_lowercase();
                     s.filtered.retain(|&i| queue_strings[i].contains(&query));
                 }
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::BackspaceSearch => {
                 let c = s.query.pop();
@@ -449,7 +450,7 @@ async fn run() -> Result<()> {
                     s.selected = s.status.song.map_or(0, |song| song.pos);
                     s.liststate.select(Some(s.selected));
                 }
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::QuitSearch => {
                 s.searching = false;
@@ -458,11 +459,11 @@ async fn run() -> Result<()> {
                     s.selected = s.status.song.map_or(0, |song| song.pos);
                     s.liststate.select(Some(s.selected));
                 }
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
             Command::Searching(x) => {
                 s.searching = x;
-                layout::render(&mut term, &cfg.layout, &mut s)?;
+                render(&mut term, &cfg.layout, &mut s)?;
             }
         }
     }

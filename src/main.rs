@@ -170,10 +170,6 @@ async fn run() -> Result<()> {
                     KeyCode::Char('q') if modifiers.contains(KeyModifiers::CONTROL) => {
                         Command::Quit
                     }
-                    KeyCode::Esc => {
-                        searching = false;
-                        Command::QuitSearch
-                    }
                     KeyCode::Left => Command::SeekBackwards,
                     KeyCode::Right => Command::SeekForwards,
                     KeyCode::Down => Command::Down,
@@ -186,6 +182,10 @@ async fn run() -> Result<()> {
                     }
                     KeyCode::Enter => Command::Play,
                     KeyCode::Backspace if searching => Command::BackspaceSearch,
+                    KeyCode::Esc => {
+                        searching = false;
+                        Command::QuitSearch
+                    }
                     KeyCode::Char(c) if searching => Command::InputSearch(c),
                     KeyCode::Char(c) => match c {
                         'q' => Command::Quit,
@@ -224,6 +224,9 @@ async fn run() -> Result<()> {
         match cmd {
             Command::Quit => break,
             Command::UpdateFrame => render(&mut term, &cfg.layout, &mut s)?,
+            Command::UpdateStatus => {
+                s.status = cl.status().await?;
+            }
             Command::UpdateQueue => {
                 let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
                 s.queue = res.0;
@@ -234,9 +237,6 @@ async fn run() -> Result<()> {
                 if !s.query.is_empty() {
                     s.update_search(&queue_strings);
                 }
-            }
-            Command::UpdateStatus => {
-                s.status = cl.status().await?;
             }
             Command::ToggleRepeat => {
                 cl.command(if s.status.repeat {
@@ -293,6 +293,13 @@ async fn run() -> Result<()> {
                 s.status = cl.status().await?;
                 render(&mut term, &cfg.layout, &mut s)?;
             }
+            Command::TogglePause => {
+                cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
+                    .await
+                    .context("Failed to toggle pause")?;
+                s.status = cl.status().await?;
+                render(&mut term, &cfg.layout, &mut s)?;
+            }
             Command::Stop => {
                 cl.command(b"stop\n")
                     .await
@@ -311,13 +318,6 @@ async fn run() -> Result<()> {
                 cl.command(seek_forwards)
                     .await
                     .context("Failed to seek forwards")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::TogglePause => {
-                cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
-                    .await
-                    .context("Failed to toggle pause")?;
                 s.status = cl.status().await?;
                 render(&mut term, &cfg.layout, &mut s)?;
             }

@@ -33,6 +33,19 @@ use crate::{
     mpd::Client,
 };
 
+trait OrDie<T> {
+    fn or_die(self) -> T;
+}
+
+impl<T, E: Into<Error>> OrDie<T> for Result<T, E> {
+    fn or_die(self) -> T {
+        self.unwrap_or_else(|e| {
+            eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e.into()));
+            exit(1);
+        })
+    }
+}
+
 fn cleanup() -> Result<()> {
     let mut stdout = stdout();
     stdout
@@ -43,11 +56,6 @@ fn cleanup() -> Result<()> {
         .context("Failed to disable mouse capture")?;
     disable_raw_mode().context("Failed to disable raw mode")?;
     Ok(())
-}
-
-fn die<T>(e: impl Into<Error>) -> T {
-    eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e.into()));
-    exit(1);
 }
 
 fn main() {
@@ -134,14 +142,14 @@ async fn run() -> Result<()> {
     thread::spawn(move || {
         let tx = tx1;
         loop {
-            let changed = block_on(idle_cl.idle()).unwrap_or_else(die);
+            let changed = block_on(idle_cl.idle()).or_die();
             if changed.0 {
-                tx.send(Command::UpdateStatus).unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).or_die();
             }
             if changed.1 {
-                tx.send(Command::UpdateQueue).unwrap_or_else(die);
+                tx.send(Command::UpdateQueue).or_die();
             }
-            tx.send(Command::UpdateFrame).unwrap_or_else(die);
+            tx.send(Command::UpdateFrame).or_die();
         }
     });
 
@@ -149,8 +157,8 @@ async fn run() -> Result<()> {
         let tx = tx2;
         loop {
             let timer = Timer::after(update_interval);
-            tx.send(Command::UpdateStatus).unwrap_or_else(die);
-            tx.send(Command::UpdateFrame).unwrap_or_else(die);
+            tx.send(Command::UpdateStatus).or_die();
+            tx.send(Command::UpdateFrame).or_die();
             block_on(timer);
         }
     });
@@ -212,7 +220,7 @@ async fn run() -> Result<()> {
                 },
                 _ => continue,
             })
-            .unwrap_or_else(die);
+            .or_die();
         }
     });
 

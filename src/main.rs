@@ -10,8 +10,8 @@ mod layout;
 mod mpd;
 
 use anyhow::{Context, Error, Result};
-use async_channel::bounded;
 use async_io::{block_on, Timer};
+use crossbeam_channel::unbounded;
 use crossterm::{
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyModifiers,
@@ -131,7 +131,7 @@ async fn run() -> Result<()> {
     let seek_forwards = seek_forwards.as_bytes();
     let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 
-    let (tx, rx) = bounded(32);
+    let (tx, rx) = unbounded();
     let tx1 = tx.clone();
     let tx2 = tx.clone();
     let tx3 = tx.clone();
@@ -141,12 +141,12 @@ async fn run() -> Result<()> {
         loop {
             let changed = idle_cl.idle().await.unwrap_or_else(die);
             if changed.0 {
-                tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
+                tx.send(Command::UpdateStatus).unwrap_or_else(die);
             }
             if changed.1 {
-                tx.send(Command::UpdateQueue).await.unwrap_or_else(die);
+                tx.send(Command::UpdateQueue).unwrap_or_else(die);
             }
-            tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
+            tx.send(Command::UpdateFrame).unwrap_or_else(die);
         }
     });
 
@@ -154,8 +154,8 @@ async fn run() -> Result<()> {
         let tx = tx2;
         loop {
             let timer = Timer::after(update_interval);
-            tx.send(Command::UpdateStatus).await.unwrap_or_else(die);
-            tx.send(Command::UpdateFrame).await.unwrap_or_else(die);
+            tx.send(Command::UpdateStatus).unwrap_or_else(die);
+            tx.send(Command::UpdateFrame).unwrap_or_else(die);
             timer.await;
         }
     });
@@ -217,12 +217,11 @@ async fn run() -> Result<()> {
                 },
                 _ => continue,
             })
-            .await
             .unwrap_or_else(die);
         }
     });
 
-    while let Ok(cmd) = rx.recv().await {
+    while let Ok(cmd) = rx.recv() {
         match cmd {
             Command::Quit => break,
             Command::UpdateFrame => render(&mut term, &cfg.layout, &mut s)?,
@@ -353,7 +352,7 @@ async fn run() -> Result<()> {
                 .context("Failed to play the selected song")?;
                 s.status = cl.status().await?;
                 if clear_query_on_play {
-                    tx.send(Command::QuitSearch).await?;
+                    tx.send(Command::QuitSearch)?;
                 } else {
                     render(&mut term, &cfg.layout, &mut s)?;
                 }

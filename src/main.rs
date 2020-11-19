@@ -160,7 +160,7 @@ async fn run() -> Result<()> {
         }
     });
 
-    spawn(async move {
+    thread::spawn(move || {
         let mut searching = false;
         let tx = tx3;
         while let Ok(ev) = event::read() {

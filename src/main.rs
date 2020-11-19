@@ -21,7 +21,6 @@ use crossterm::{
     ExecutableCommand,
 };
 use dirs_next::config_dir;
-use futures_lite::Future;
 use structopt::StructOpt;
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
@@ -58,10 +57,6 @@ fn main() {
         exit(1);
     }
     exit(0);
-}
-
-fn spawn(f: impl 'static + Send + Future<Output = ()>) {
-    thread::spawn(|| block_on(f));
 }
 
 async fn run() -> Result<()> {
@@ -136,10 +131,10 @@ async fn run() -> Result<()> {
     let tx2 = tx.clone();
     let tx3 = tx.clone();
 
-    spawn(async move {
+    thread::spawn(move || {
         let tx = tx1;
         loop {
-            let changed = idle_cl.idle().await.unwrap_or_else(die);
+            let changed = block_on(idle_cl.idle()).unwrap_or_else(die);
             if changed.0 {
                 tx.send(Command::UpdateStatus).unwrap_or_else(die);
             }
@@ -150,13 +145,13 @@ async fn run() -> Result<()> {
         }
     });
 
-    spawn(async move {
+    thread::spawn(move || {
         let tx = tx2;
         loop {
             let timer = Timer::after(update_interval);
             tx.send(Command::UpdateStatus).unwrap_or_else(die);
             tx.send(Command::UpdateFrame).unwrap_or_else(die);
-            timer.await;
+            block_on(timer);
         }
     });
 

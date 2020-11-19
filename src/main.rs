@@ -64,7 +64,6 @@ fn main() {
         eprintln!("{:?}", e);
         exit(1);
     }
-    exit(0);
 }
 
 async fn run() -> Result<()> {

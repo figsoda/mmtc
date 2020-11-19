@@ -221,7 +221,7 @@ async fn run() -> Result<()> {
         }
     });
 
-    while let Ok(cmd) = rx.recv() {
+    for cmd in rx {
         match cmd {
             Command::Quit => break,
             Command::UpdateFrame => render(&mut term, &cfg.layout, &mut s)?,

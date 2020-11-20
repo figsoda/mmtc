@@ -157,24 +157,32 @@ async fn run() -> Result<()> {
     let cmds = Arc::new(SegQueue::new());
     let cmds1 = cmds.clone();
 
-    thread::spawn(move || loop {
-        updates1.fetch_or(
-            match block_on(idle_cl.idle()).or_die() {
-                (true, true) => 0b111,
-                (true, false) => 0b101,
-                (false, true) => 0b011,
-                _ => continue,
-            },
-            Ordering::Relaxed,
-        );
-        t1.unpark();
+    thread::spawn(move || {
+        block_on(async {
+            loop {
+                updates1.fetch_or(
+                    match idle_cl.idle().await.or_die() {
+                        (true, true) => 0b111,
+                        (true, false) => 0b101,
+                        (false, true) => 0b011,
+                        _ => continue,
+                    },
+                    Ordering::Relaxed,
+                );
+                t1.unpark();
+            }
+        })
     });
 
-    thread::spawn(move || loop {
-        let timer = Timer::after(update_interval);
-        updates2.fetch_or(0b101, Ordering::Relaxed);
-        t2.unpark();
-        block_on(timer);
+    thread::spawn(move || {
+        block_on(async {
+            loop {
+                let timer = Timer::after(update_interval);
+                updates2.fetch_or(0b101, Ordering::Relaxed);
+                t2.unpark();
+                timer.await;
+            }
+        })
     });
 
     thread::spawn(move || {

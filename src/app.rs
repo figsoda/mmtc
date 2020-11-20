@@ -65,9 +65,6 @@ pub struct State {
 #[derive(Debug)]
 pub enum Command {
     Quit,
-    UpdateFrame,
-    UpdateStatus,
-    UpdateQueue,
     ToggleRepeat,
     ToggleRandom,
     ToggleSingle,

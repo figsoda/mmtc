@@ -183,10 +183,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c478836e029dcef17fb47c89023448c64f781a046e0300e257ad8225ae59afab"
 
 [[package]]
-name = "crossbeam-channel"
-version = "0.5.0"
+name = "crossbeam-queue"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dca26ee1f8d361640700bde38b2c37d8c22b3ce2d360e1fc1c74ea4b0aa7d775"
+checksum = "6b2a58563f049aa3bae172bc4120f093b5901161c629f280a1f40ba55317d774"
 dependencies = [
  "cfg-if 1.0.0",
  "crossbeam-utils",
@@ -407,7 +407,7 @@ dependencies = [
  "anyhow",
  "async-io",
  "async-net",
- "crossbeam-channel",
+ "crossbeam-queue",
  "crossterm",
  "dirs-next",
  "expand",

@@ -11,7 +11,7 @@ mod mpd;
 
 use anyhow::{Context, Error, Result};
 use async_io::{block_on, Timer};
-use crossbeam_channel::unbounded;
+use crossbeam_queue::SegQueue;
 use crossterm::{
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyModifiers,
@@ -24,7 +24,18 @@ use dirs_next::config_dir;
 use structopt::StructOpt;
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
-use std::{cmp::min, fs, io::stdout, process::exit, thread, time::Duration};
+use std::{
+    cmp::min,
+    fs,
+    io::stdout,
+    process::exit,
+    sync::{
+        atomic::{AtomicU8, Ordering},
+        Arc,
+    },
+    thread,
+    time::Duration,
+};
 
 use crate::{
     app::{Command, Opts, State},
@@ -133,43 +144,46 @@ async fn run() -> Result<()> {
     let seek_forwards = seek_forwards.as_bytes();
     let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 
-    let (tx, rx) = unbounded();
-    let tx1 = tx.clone();
-    let tx2 = tx.clone();
-    let tx3 = tx.clone();
+    let t1 = thread::current();
+    let t2 = t1.clone();
+    let t3 = t1.clone();
+    let updates = Arc::new(AtomicU8::new(0b000));
+    let updates1 = updates.clone();
+    let updates2 = updates.clone();
+    let updates3 = updates.clone();
+    let cmds = Arc::new(SegQueue::new());
+    let cmds1 = cmds.clone();
 
-    thread::spawn(move || {
-        let tx = tx1;
-        loop {
-            let changed = block_on(idle_cl.idle()).or_die();
-            if changed.0 {
-                tx.send(Command::UpdateStatus).or_die();
-            }
-            if changed.1 {
-                tx.send(Command::UpdateQueue).or_die();
-            }
-            tx.send(Command::UpdateFrame).or_die();
-        }
+    thread::spawn(move || loop {
+        updates1.fetch_or(
+            match block_on(idle_cl.idle()).or_die() {
+                (true, true) => 0b111,
+                (true, false) => 0b101,
+                (false, true) => 0b011,
+                _ => continue,
+            },
+            Ordering::Relaxed,
+        );
+        t1.unpark();
     });
 
-    thread::spawn(move || {
-        let tx = tx2;
-        loop {
-            let timer = Timer::after(update_interval);
-            tx.send(Command::UpdateStatus).or_die();
-            tx.send(Command::UpdateFrame).or_die();
-            block_on(timer);
-        }
+    thread::spawn(move || loop {
+        let timer = Timer::after(update_interval);
+        updates2.fetch_or(0b101, Ordering::Relaxed);
+        t2.unpark();
+        block_on(timer);
     });
 
     thread::spawn(move || {
         let mut searching = false;
-        let tx = tx3;
         while let Ok(ev) = event::read() {
-            tx.send(match ev {
+            cmds1.push(match ev {
                 Event::Mouse(MouseEvent::ScrollDown(..)) => Command::Down,
                 Event::Mouse(MouseEvent::ScrollUp(..)) => Command::Up,
-                Event::Resize(..) => Command::UpdateFrame,
+                Event::Resize(..) => {
+                    updates3.fetch_or(0b001, Ordering::Relaxed);
+                    continue;
+                }
                 Event::Key(KeyEvent { code, modifiers }) => match code {
                     KeyCode::Char('q') if modifiers.contains(KeyModifiers::CONTROL) => {
                         Command::Quit
@@ -218,256 +232,266 @@ async fn run() -> Result<()> {
                     _ => continue,
                 },
                 _ => continue,
-            })
-            .or_die();
+            });
+            t3.unpark();
         }
     });
 
-    for cmd in rx {
+    loop {
+        let mut empty = false;
+        let cmd = cmds.pop();
+        let mut updates = updates.swap(0b000, Ordering::SeqCst);
         match cmd {
-            Command::Quit => break,
-            Command::UpdateFrame => render(&mut term, &cfg.layout, &mut s)?,
-            Command::UpdateStatus => {
-                s.status = cl.status().await?;
-            }
-            Command::UpdateQueue => {
-                let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
-                s.queue = res.0;
-                queue_strings = res.1;
-                s.selected = s.status.song.map_or(0, |song| song.pos);
-                s.liststate = ListState::default();
-                s.liststate.select(Some(s.selected));
-                if !s.query.is_empty() {
-                    s.update_search(&queue_strings);
+            Some(cmd) => match cmd {
+                Command::Quit => break,
+                Command::ToggleRepeat => {
+                    cl.command(if s.status.repeat {
+                        b"repeat 0\n"
+                    } else {
+                        b"repeat 1\n"
+                    })
+                    .await
+                    .context("Failed to toggle repeat")?;
+                    updates |= 0b101;
                 }
-            }
-            Command::ToggleRepeat => {
-                cl.command(if s.status.repeat {
-                    b"repeat 0\n"
-                } else {
-                    b"repeat 1\n"
-                })
-                .await
-                .context("Failed to toggle repeat")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::ToggleRandom => {
-                cl.command(if s.status.random {
-                    b"random 0\n"
-                } else {
-                    b"random 1\n"
-                })
-                .await
-                .context("Failed to toggle random")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::ToggleSingle => {
-                cl.command(if s.status.single == Some(true) {
-                    b"single 0\n"
-                } else {
-                    b"single 1\n"
-                })
-                .await
-                .context("Failed to toggle single")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::ToggleOneshot => {
-                cl.command(
-                    s.status
-                        .single
-                        .map_or(b"single 0\n", |_| b"single oneshot\n"),
-                )
-                .await
-                .context("Failed to toggle oneshot")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::ToggleConsume => {
-                cl.command(if s.status.consume {
-                    b"consume 0\n"
-                } else {
-                    b"consume 1\n"
-                })
-                .await
-                .context("Failed to toggle consume")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::TogglePause => {
-                cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
+                Command::ToggleRandom => {
+                    cl.command(if s.status.random {
+                        b"random 0\n"
+                    } else {
+                        b"random 1\n"
+                    })
                     .await
-                    .context("Failed to toggle pause")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::Stop => {
-                cl.command(b"stop\n")
+                    .context("Failed to toggle random")?;
+                    updates |= 0b101;
+                }
+                Command::ToggleSingle => {
+                    cl.command(if s.status.single == Some(true) {
+                        b"single 0\n"
+                    } else {
+                        b"single 1\n"
+                    })
                     .await
-                    .context("Failed to stop playing")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::SeekBackwards => {
-                cl.command(seek_backwards)
+                    .context("Failed to toggle single")?;
+                    updates |= 0b101;
+                }
+                Command::ToggleOneshot => {
+                    cl.command(
+                        s.status
+                            .single
+                            .map_or(b"single 0\n", |_| b"single oneshot\n"),
+                    )
                     .await
-                    .context("Failed to seek backwards")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::SeekForwards => {
-                cl.command(seek_forwards)
+                    .context("Failed to toggle oneshot")?;
+                    updates |= 0b101;
+                }
+                Command::ToggleConsume => {
+                    cl.command(if s.status.consume {
+                        b"consume 0\n"
+                    } else {
+                        b"consume 1\n"
+                    })
                     .await
-                    .context("Failed to seek forwards")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::Previous => {
-                cl.command(b"previous\n")
-                    .await
-                    .context("Failed to play previous song")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::Next => {
-                cl.command(b"next\n")
-                    .await
-                    .context("Failed to play next song")?;
-                s.status = cl.status().await?;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::Play => {
-                cl.play(if s.query.is_empty() {
-                    if s.selected < s.queue.len() {
-                        s.selected
+                    .context("Failed to toggle consume")?;
+                    updates |= 0b101;
+                }
+                Command::TogglePause => {
+                    cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
+                        .await
+                        .context("Failed to toggle pause")?;
+                    updates |= 0b101;
+                }
+                Command::Stop => {
+                    cl.command(b"stop\n")
+                        .await
+                        .context("Failed to stop playing")?;
+                    updates |= 0b101;
+                }
+                Command::SeekBackwards => {
+                    cl.command(seek_backwards)
+                        .await
+                        .context("Failed to seek backwards")?;
+                    updates |= 0b101;
+                }
+                Command::SeekForwards => {
+                    cl.command(seek_forwards)
+                        .await
+                        .context("Failed to seek forwards")?;
+                    updates |= 0b101;
+                }
+                Command::Previous => {
+                    cl.command(b"previous\n")
+                        .await
+                        .context("Failed to play previous song")?;
+                    updates |= 0b101;
+                }
+                Command::Next => {
+                    cl.command(b"next\n")
+                        .await
+                        .context("Failed to play next song")?;
+                    updates |= 0b101;
+                }
+                Command::Play => {
+                    cl.play(if s.query.is_empty() {
+                        if s.selected < s.queue.len() {
+                            s.selected
+                        } else {
+                            continue;
+                        }
+                    } else if let Some(&x) = s.filtered.get(s.selected) {
+                        x
                     } else {
                         continue;
+                    })
+                    .await
+                    .context("Failed to play the selected song")?;
+                    updates |= 0b100;
+                    if clear_query_on_play {
+                        s.searching = false;
+                        if !s.query.is_empty() {
+                            s.query.clear();
+                            s.selected = s.status.song.map_or(0, |song| song.pos);
+                            s.liststate.select(Some(s.selected));
+                        }
+                        updates |= 0b001;
+                    } else {
+                        updates |= 0b001;
                     }
-                } else if let Some(&x) = s.filtered.get(s.selected) {
-                    x
-                } else {
-                    continue;
-                })
-                .await
-                .context("Failed to play the selected song")?;
-                s.status = cl.status().await?;
-                if clear_query_on_play {
-                    tx.send(Command::QuitSearch)?;
-                } else {
-                    render(&mut term, &cfg.layout, &mut s)?;
                 }
-            }
-            Command::Reselect => {
-                s.selected = s.status.song.map_or(0, |song| song.pos);
-                s.liststate.select(Some(s.selected));
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::Down => {
-                let len = if s.query.is_empty() {
-                    s.queue.len()
-                } else {
-                    s.filtered.len()
-                };
-                if s.selected >= len {
-                    s.selected = s.status.song.map_or(0, |song| song.pos);
-                } else if s.selected == len - 1 {
-                    if cycle {
-                        s.selected = 0;
-                    }
-                } else {
-                    s.selected += 1;
-                }
-                s.liststate.select(Some(s.selected));
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::Up => {
-                let len = if s.query.is_empty() {
-                    s.queue.len()
-                } else {
-                    s.filtered.len()
-                };
-                if s.selected >= len {
-                    s.selected = s.status.song.map_or(0, |song| song.pos);
-                } else if s.selected == 0 {
-                    if cycle {
-                        s.selected = len - 1;
-                    }
-                } else {
-                    s.selected -= 1;
-                }
-                s.liststate.select(Some(s.selected));
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::JumpDown => {
-                let len = if s.query.is_empty() {
-                    s.queue.len()
-                } else {
-                    s.filtered.len()
-                };
-                s.selected = if s.selected >= len {
-                    s.status.song.map_or(0, |song| song.pos)
-                } else if cycle {
-                    (s.selected + jump_lines) % len
-                } else {
-                    min(s.selected + jump_lines, len - 1)
-                };
-                s.liststate.select(Some(s.selected));
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::JumpUp => {
-                let len = if s.query.is_empty() {
-                    s.queue.len()
-                } else {
-                    s.filtered.len()
-                };
-                s.selected = if s.selected >= len {
-                    s.status.song.map_or(0, |song| song.pos)
-                } else if cycle {
-                    ((s.selected as isize - jump_lines as isize) % len as isize) as usize
-                } else if s.selected < jump_lines {
-                    0
-                } else {
-                    s.selected - jump_lines
-                };
-                s.liststate.select(Some(s.selected));
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::InputSearch(c) => {
-                if s.query.is_empty() {
-                    s.query.push(c);
-                    s.update_search(&queue_strings);
-                } else {
-                    s.query.push(c);
-                    let query = s.query.to_lowercase();
-                    s.filtered.retain(|&i| queue_strings[i].contains(&query));
-                }
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::BackspaceSearch => {
-                let c = s.query.pop();
-                if !s.query.is_empty() {
-                    s.update_search(&queue_strings);
-                } else if c.is_some() {
+                Command::Reselect => {
                     s.selected = s.status.song.map_or(0, |song| song.pos);
                     s.liststate.select(Some(s.selected));
+                    updates |= 0b001;
                 }
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
-            Command::QuitSearch => {
-                s.searching = false;
-                if !s.query.is_empty() {
-                    s.query.clear();
-                    s.selected = s.status.song.map_or(0, |song| song.pos);
+                Command::Down => {
+                    let len = if s.query.is_empty() {
+                        s.queue.len()
+                    } else {
+                        s.filtered.len()
+                    };
+                    if s.selected >= len {
+                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                    } else if s.selected == len - 1 {
+                        if cycle {
+                            s.selected = 0;
+                        }
+                    } else {
+                        s.selected += 1;
+                    }
                     s.liststate.select(Some(s.selected));
+                    updates |= 0b001;
                 }
-                render(&mut term, &cfg.layout, &mut s)?;
+                Command::Up => {
+                    let len = if s.query.is_empty() {
+                        s.queue.len()
+                    } else {
+                        s.filtered.len()
+                    };
+                    if s.selected >= len {
+                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                    } else if s.selected == 0 {
+                        if cycle {
+                            s.selected = len - 1;
+                        }
+                    } else {
+                        s.selected -= 1;
+                    }
+                    s.liststate.select(Some(s.selected));
+                    updates |= 0b001;
+                }
+                Command::JumpDown => {
+                    let len = if s.query.is_empty() {
+                        s.queue.len()
+                    } else {
+                        s.filtered.len()
+                    };
+                    s.selected = if s.selected >= len {
+                        s.status.song.map_or(0, |song| song.pos)
+                    } else if cycle {
+                        (s.selected + jump_lines) % len
+                    } else {
+                        min(s.selected + jump_lines, len - 1)
+                    };
+                    s.liststate.select(Some(s.selected));
+                    updates |= 0b001;
+                }
+                Command::JumpUp => {
+                    let len = if s.query.is_empty() {
+                        s.queue.len()
+                    } else {
+                        s.filtered.len()
+                    };
+                    s.selected = if s.selected >= len {
+                        s.status.song.map_or(0, |song| song.pos)
+                    } else if cycle {
+                        ((s.selected as isize - jump_lines as isize) % len as isize) as usize
+                    } else if s.selected < jump_lines {
+                        0
+                    } else {
+                        s.selected - jump_lines
+                    };
+                    s.liststate.select(Some(s.selected));
+                    updates |= 0b001;
+                }
+                Command::InputSearch(c) => {
+                    if s.query.is_empty() {
+                        s.query.push(c);
+                        s.update_search(&queue_strings);
+                    } else {
+                        s.query.push(c);
+                        let query = s.query.to_lowercase();
+                        s.filtered.retain(|&i| queue_strings[i].contains(&query));
+                    }
+                    updates |= 0b001;
+                }
+                Command::BackspaceSearch => {
+                    let c = s.query.pop();
+                    if !s.query.is_empty() {
+                        s.update_search(&queue_strings);
+                    } else if c.is_some() {
+                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                        s.liststate.select(Some(s.selected));
+                    }
+                    updates |= 0b001;
+                }
+                Command::QuitSearch => {
+                    s.searching = false;
+                    if !s.query.is_empty() {
+                        s.query.clear();
+                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                        s.liststate.select(Some(s.selected));
+                    }
+                    updates |= 0b001;
+                }
+                Command::Searching(x) => {
+                    s.searching = x;
+                    updates |= 0b001;
+                }
+            },
+            _ => empty = true,
+        }
+
+        if updates & 0b100 == 0b100 {
+            s.status = cl.status().await?;
+        }
+
+        if updates & 0b010 == 0b010 {
+            let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
+            s.queue = res.0;
+            queue_strings = res.1;
+            s.selected = s.status.song.map_or(0, |song| song.pos);
+            s.liststate = ListState::default();
+            s.liststate.select(Some(s.selected));
+            if !s.query.is_empty() {
+                s.update_search(&queue_strings);
             }
-            Command::Searching(x) => {
-                s.searching = x;
-                render(&mut term, &cfg.layout, &mut s)?;
-            }
+        }
+
+        if updates & 0b001 == 0b001 {
+            render(&mut term, &cfg.layout, &mut s)?;
+        }
+
+        if empty {
+            thread::park();
         }
     }
 

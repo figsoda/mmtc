@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v0.2.5 - 2020-11-20
+
+### Fixes
+- Fixed hang in extreme conditions
+
+
 ## v0.2.4 - 2020-11-17
 
 ### Features

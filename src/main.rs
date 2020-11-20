@@ -472,7 +472,7 @@ async fn run() -> Result<()> {
             s.queue = res.0;
             queue_strings = res.1;
             s.selected = s.reselect();
-            s.liststate = ListState::default();
+            s.liststate.select(None);
             s.liststate.select(Some(s.selected));
             if !s.query.is_empty() {
                 s.update_search(&queue_strings);

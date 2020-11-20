@@ -354,7 +354,7 @@ async fn run() -> Result<()> {
                     updates |= 0b101;
                 }
                 Command::Reselect => {
-                    s.selected = s.status.song.map_or(0, |song| song.pos);
+                    s.selected = s.reselect();
                     s.liststate.select(Some(s.selected));
                     updates |= 0b001;
                 }
@@ -365,7 +365,7 @@ async fn run() -> Result<()> {
                         s.filtered.len()
                     };
                     if s.selected >= len {
-                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                        s.selected = s.reselect();
                     } else if s.selected == len - 1 {
                         if cycle {
                             s.selected = 0;
@@ -383,7 +383,7 @@ async fn run() -> Result<()> {
                         s.filtered.len()
                     };
                     if s.selected >= len {
-                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                        s.selected = s.reselect();
                     } else if s.selected == 0 {
                         if cycle {
                             s.selected = len - 1;
@@ -401,7 +401,7 @@ async fn run() -> Result<()> {
                         s.filtered.len()
                     };
                     s.selected = if s.selected >= len {
-                        s.status.song.map_or(0, |song| song.pos)
+                        s.reselect()
                     } else if cycle {
                         (s.selected + jump_lines) % len
                     } else {
@@ -417,7 +417,7 @@ async fn run() -> Result<()> {
                         s.filtered.len()
                     };
                     s.selected = if s.selected >= len {
-                        s.status.song.map_or(0, |song| song.pos)
+                        s.reselect()
                     } else if cycle {
                         ((s.selected as isize - jump_lines as isize) % len as isize) as usize
                     } else if s.selected < jump_lines {
@@ -444,7 +444,7 @@ async fn run() -> Result<()> {
                     if !s.query.is_empty() {
                         s.update_search(&queue_strings);
                     } else if c.is_some() {
-                        s.selected = s.status.song.map_or(0, |song| song.pos);
+                        s.selected = s.reselect();
                         s.liststate.select(Some(s.selected));
                     }
                     updates |= 0b001;
@@ -471,7 +471,7 @@ async fn run() -> Result<()> {
             let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
             s.queue = res.0;
             queue_strings = res.1;
-            s.selected = s.status.song.map_or(0, |song| song.pos);
+            s.selected = s.reselect();
             s.liststate = ListState::default();
             s.liststate.select(Some(s.selected));
             if !s.query.is_empty() {

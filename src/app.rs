@@ -89,6 +89,10 @@ pub enum Command {
 }
 
 impl State {
+    pub fn reselect(&self) -> usize {
+        self.status.song.map_or(0, |song| song.pos)
+    }
+
     pub fn update_search(&mut self, queue_strings: &[String]) {
         let query = self.query.to_lowercase();
         self.filtered.clear();

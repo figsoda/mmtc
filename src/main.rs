@@ -39,7 +39,6 @@ use std::{
 
 use crate::{
     app::{Command, Opts, State},
-    config::Config,
     layout::render,
     mpd::Client,
 };
@@ -80,7 +79,7 @@ fn main() {
 async fn run() -> Result<()> {
     let opts = Opts::from_args();
 
-    let cfg: Config = if let Some(file) = opts.config {
+    let cfg = if let Some(file) = opts.config {
         ron::de::from_bytes(&fs::read(&file).with_context(fail::read(file.display()))?)
             .with_context(fail::parse_cfg(file.display()))?
     } else if let Some(xs) = config_dir() {

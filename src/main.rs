@@ -349,12 +349,7 @@ async fn run() -> Result<()> {
                     .await
                     .context("Failed to play the selected song")?;
                     if clear_query_on_play {
-                        s.searching = false;
-                        if !s.query.is_empty() {
-                            s.query.clear();
-                            s.selected = s.status.song.map_or(0, |song| song.pos);
-                            s.liststate.select(Some(s.selected));
-                        }
+                        s.quit_search();
                     }
                     updates |= 0b101;
                 }
@@ -455,12 +450,7 @@ async fn run() -> Result<()> {
                     updates |= 0b001;
                 }
                 Command::QuitSearch => {
-                    s.searching = false;
-                    if !s.query.is_empty() {
-                        s.query.clear();
-                        s.selected = s.status.song.map_or(0, |song| song.pos);
-                        s.liststate.select(Some(s.selected));
-                    }
+                    s.quit_search();
                     updates |= 0b001;
                 }
                 Command::Searching(x) => {

@@ -101,4 +101,13 @@ impl State {
         self.liststate.select(None);
         self.liststate.select(Some(0));
     }
+
+    pub fn quit_search(&mut self) {
+        self.searching = false;
+        if !self.query.is_empty() {
+            self.query.clear();
+            self.selected = self.status.song.map_or(0, |song| song.pos);
+            self.liststate.select(Some(self.selected));
+        }
+    }
 }

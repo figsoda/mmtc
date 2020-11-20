@@ -147,6 +147,9 @@ async fn run() -> Result<()> {
     let t1 = thread::current();
     let t2 = t1.clone();
     let t3 = t1.clone();
+    // update status: 0b100
+    // update queue:  0b010
+    // update frame:  0b001
     let updates = Arc::new(AtomicU8::new(0b000));
     let updates1 = updates.clone();
     let updates2 = updates.clone();
@@ -470,10 +473,12 @@ async fn run() -> Result<()> {
             _ => empty = true,
         }
 
+        // conditionally update status
         if updates & 0b100 == 0b100 {
             s.status = cl.status().await?;
         }
 
+        // conditionally update queue
         if updates & 0b010 == 0b010 {
             let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
             s.queue = res.0;
@@ -486,10 +491,12 @@ async fn run() -> Result<()> {
             }
         }
 
+        // conditionally update frame
         if updates & 0b001 == 0b001 {
             render(&mut term, &cfg.layout, &mut s)?;
         }
 
+        // wait for more commands if none was received
         if empty {
             thread::park();
         }

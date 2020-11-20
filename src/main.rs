@@ -185,6 +185,7 @@ async fn run() -> Result<()> {
                 Event::Mouse(MouseEvent::ScrollUp(..)) => Command::Up,
                 Event::Resize(..) => {
                     updates3.fetch_or(0b001, Ordering::Relaxed);
+                    t3.unpark();
                     continue;
                 }
                 Event::Key(KeyEvent { code, modifiers }) => match code {

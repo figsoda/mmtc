@@ -347,7 +347,6 @@ async fn run() -> Result<()> {
                     })
                     .await
                     .context("Failed to play the selected song")?;
-                    updates |= 0b100;
                     if clear_query_on_play {
                         s.searching = false;
                         if !s.query.is_empty() {
@@ -355,10 +354,8 @@ async fn run() -> Result<()> {
                             s.selected = s.status.song.map_or(0, |song| song.pos);
                             s.liststate.select(Some(s.selected));
                         }
-                        updates |= 0b001;
-                    } else {
-                        updates |= 0b001;
                     }
+                    updates |= 0b101;
                 }
                 Command::Reselect => {
                     s.selected = s.status.song.map_or(0, |song| song.pos);

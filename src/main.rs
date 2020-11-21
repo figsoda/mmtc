@@ -254,7 +254,7 @@ async fn run() -> Result<()> {
         let mut updates = updates.swap(0b000, Ordering::SeqCst);
         match cmd {
             Some(cmd) => match cmd {
-                Command::Quit => break,
+                Command::Quit => return Ok(()),
                 Command::ToggleRepeat => {
                     cl.command(if s.status.repeat {
                         b"repeat 0\n"
@@ -496,6 +496,4 @@ async fn run() -> Result<()> {
             thread::park();
         }
     }
-
-    Ok(())
 }

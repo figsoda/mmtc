@@ -374,6 +374,8 @@ async fn run() -> Result<()> {
                     } else if s.selected == len - 1 {
                         if cycle {
                             s.selected = 0;
+                        } else {
+                            continue;
                         }
                     } else {
                         s.selected += 1;
@@ -392,6 +394,8 @@ async fn run() -> Result<()> {
                     } else if s.selected == 0 {
                         if cycle {
                             s.selected = len - 1;
+                        } else {
+                            continue;
                         }
                     } else {
                         s.selected -= 1;

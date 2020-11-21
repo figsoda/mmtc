@@ -249,229 +249,233 @@ async fn run() -> Result<()> {
     });
 
     loop {
-        let mut updates = updates.swap(0b000, Ordering::SeqCst);
-        if let Some(cmd) = cmds.pop() {
-            match cmd {
-                Command::Quit => return Ok(()),
-                Command::ToggleRepeat => {
-                    cl.command(if s.status.repeat {
-                        b"repeat 0\n"
-                    } else {
-                        b"repeat 1\n"
-                    })
-                    .await
-                    .context("Failed to toggle repeat")?;
-                    updates |= 0b101;
-                }
-                Command::ToggleRandom => {
-                    cl.command(if s.status.random {
-                        b"random 0\n"
-                    } else {
-                        b"random 1\n"
-                    })
-                    .await
-                    .context("Failed to toggle random")?;
-                    updates |= 0b101;
-                }
-                Command::ToggleSingle => {
-                    cl.command(if s.status.single == Some(true) {
-                        b"single 0\n"
-                    } else {
-                        b"single 1\n"
-                    })
-                    .await
-                    .context("Failed to toggle single")?;
-                    updates |= 0b101;
-                }
-                Command::ToggleOneshot => {
-                    cl.command(
-                        s.status
-                            .single
-                            .map_or(b"single 0\n", |_| b"single oneshot\n"),
-                    )
-                    .await
-                    .context("Failed to toggle oneshot")?;
-                    updates |= 0b101;
-                }
-                Command::ToggleConsume => {
-                    cl.command(if s.status.consume {
-                        b"consume 0\n"
-                    } else {
-                        b"consume 1\n"
-                    })
-                    .await
-                    .context("Failed to toggle consume")?;
-                    updates |= 0b101;
-                }
-                Command::TogglePause => {
-                    cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
+        let updates = if let Some(cmd) = cmds.pop() {
+            updates.swap(0b000, Ordering::SeqCst)
+                | match cmd {
+                    Command::Quit => return Ok(()),
+                    Command::ToggleRepeat => {
+                        cl.command(if s.status.repeat {
+                            b"repeat 0\n"
+                        } else {
+                            b"repeat 1\n"
+                        })
                         .await
-                        .context("Failed to toggle pause")?;
-                    updates |= 0b101;
-                }
-                Command::Stop => {
-                    cl.command(b"stop\n")
+                        .context("Failed to toggle repeat")?;
+                        0b101
+                    }
+                    Command::ToggleRandom => {
+                        cl.command(if s.status.random {
+                            b"random 0\n"
+                        } else {
+                            b"random 1\n"
+                        })
                         .await
-                        .context("Failed to stop playing")?;
-                    updates |= 0b101;
-                }
-                Command::SeekBackwards => {
-                    cl.command(seek_backwards)
+                        .context("Failed to toggle random")?;
+                        0b101
+                    }
+                    Command::ToggleSingle => {
+                        cl.command(if s.status.single == Some(true) {
+                            b"single 0\n"
+                        } else {
+                            b"single 1\n"
+                        })
                         .await
-                        .context("Failed to seek backwards")?;
-                    updates |= 0b101;
-                }
-                Command::SeekForwards => {
-                    cl.command(seek_forwards)
+                        .context("Failed to toggle single")?;
+                        0b101
+                    }
+                    Command::ToggleOneshot => {
+                        cl.command(
+                            s.status
+                                .single
+                                .map_or(b"single 0\n", |_| b"single oneshot\n"),
+                        )
                         .await
-                        .context("Failed to seek forwards")?;
-                    updates |= 0b101;
-                }
-                Command::Previous => {
-                    cl.command(b"previous\n")
+                        .context("Failed to toggle oneshot")?;
+                        0b101
+                    }
+                    Command::ToggleConsume => {
+                        cl.command(if s.status.consume {
+                            b"consume 0\n"
+                        } else {
+                            b"consume 1\n"
+                        })
                         .await
-                        .context("Failed to play previous song")?;
-                    updates |= 0b101;
-                }
-                Command::Next => {
-                    cl.command(b"next\n")
-                        .await
-                        .context("Failed to play next song")?;
-                    updates |= 0b101;
-                }
-                Command::Play => {
-                    cl.play(if s.query.is_empty() {
-                        if s.selected < s.queue.len() {
-                            s.selected
+                        .context("Failed to toggle consume")?;
+                        0b101
+                    }
+                    Command::TogglePause => {
+                        cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
+                            .await
+                            .context("Failed to toggle pause")?;
+                        0b101
+                    }
+                    Command::Stop => {
+                        cl.command(b"stop\n")
+                            .await
+                            .context("Failed to stop playing")?;
+                        0b101
+                    }
+                    Command::SeekBackwards => {
+                        cl.command(seek_backwards)
+                            .await
+                            .context("Failed to seek backwards")?;
+                        0b101
+                    }
+                    Command::SeekForwards => {
+                        cl.command(seek_forwards)
+                            .await
+                            .context("Failed to seek forwards")?;
+                        0b101
+                    }
+                    Command::Previous => {
+                        cl.command(b"previous\n")
+                            .await
+                            .context("Failed to play previous song")?;
+                        0b101
+                    }
+                    Command::Next => {
+                        cl.command(b"next\n")
+                            .await
+                            .context("Failed to play next song")?;
+                        0b101
+                    }
+                    Command::Play => {
+                        cl.play(if s.query.is_empty() {
+                            if s.selected < s.queue.len() {
+                                s.selected
+                            } else {
+                                continue;
+                            }
+                        } else if let Some(&x) = s.filtered.get(s.selected) {
+                            x
                         } else {
                             continue;
+                        })
+                        .await
+                        .context("Failed to play the selected song")?;
+                        if clear_query_on_play {
+                            s.quit_search();
                         }
-                    } else if let Some(&x) = s.filtered.get(s.selected) {
-                        x
-                    } else {
-                        continue;
-                    })
-                    .await
-                    .context("Failed to play the selected song")?;
-                    if clear_query_on_play {
-                        s.quit_search();
+                        0b101
                     }
-                    updates |= 0b101;
-                }
-                Command::Reselect => {
-                    s.selected = s.reselect();
-                    s.liststate.select(Some(s.selected));
-                    updates |= 0b001;
-                }
-                Command::Down => {
-                    let len = if s.query.is_empty() {
-                        s.queue.len()
-                    } else {
-                        s.filtered.len()
-                    };
-                    if s.selected >= len {
-                        s.selected = s.reselect();
-                    } else if s.selected == len - 1 {
-                        if cycle {
-                            s.selected = 0;
-                        } else {
-                            continue;
-                        }
-                    } else {
-                        s.selected += 1;
-                    }
-                    s.liststate.select(Some(s.selected));
-                    updates |= 0b001;
-                }
-                Command::Up => {
-                    let len = if s.query.is_empty() {
-                        s.queue.len()
-                    } else {
-                        s.filtered.len()
-                    };
-                    if s.selected >= len {
-                        s.selected = s.reselect();
-                    } else if s.selected == 0 {
-                        if cycle {
-                            s.selected = len - 1;
-                        } else {
-                            continue;
-                        }
-                    } else {
-                        s.selected -= 1;
-                    }
-                    s.liststate.select(Some(s.selected));
-                    updates |= 0b001;
-                }
-                Command::JumpDown => {
-                    let len = if s.query.is_empty() {
-                        s.queue.len()
-                    } else {
-                        s.filtered.len()
-                    };
-                    s.selected = if s.selected >= len {
-                        s.reselect()
-                    } else if cycle {
-                        (s.selected + jump_lines) % len
-                    } else {
-                        min(s.selected + jump_lines, len - 1)
-                    };
-                    s.liststate.select(Some(s.selected));
-                    updates |= 0b001;
-                }
-                Command::JumpUp => {
-                    let len = if s.query.is_empty() {
-                        s.queue.len()
-                    } else {
-                        s.filtered.len()
-                    };
-                    s.selected = if s.selected >= len {
-                        s.reselect()
-                    } else if cycle {
-                        ((s.selected as isize - jump_lines as isize) % len as isize) as usize
-                    } else if s.selected < jump_lines {
-                        0
-                    } else {
-                        s.selected - jump_lines
-                    };
-                    s.liststate.select(Some(s.selected));
-                    updates |= 0b001;
-                }
-                Command::InputSearch(c) => {
-                    if s.query.is_empty() {
-                        s.query.push(c);
-                        s.update_search(&queue_strings);
-                    } else {
-                        s.query.push(c);
-                        let query = s.query.to_lowercase();
-                        s.filtered.retain(|&i| queue_strings[i].contains(&query));
-                    }
-                    updates |= 0b001;
-                }
-                Command::BackspaceSearch => {
-                    let c = s.query.pop();
-                    if !s.query.is_empty() {
-                        s.update_search(&queue_strings);
-                    } else if c.is_some() {
+                    Command::Reselect => {
                         s.selected = s.reselect();
                         s.liststate.select(Some(s.selected));
+                        0b001
                     }
-                    updates |= 0b001;
+                    Command::Down => {
+                        let len = if s.query.is_empty() {
+                            s.queue.len()
+                        } else {
+                            s.filtered.len()
+                        };
+                        if s.selected >= len {
+                            s.selected = s.reselect();
+                        } else if s.selected == len - 1 {
+                            if cycle {
+                                s.selected = 0;
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            s.selected += 1;
+                        }
+                        s.liststate.select(Some(s.selected));
+                        0b001
+                    }
+                    Command::Up => {
+                        let len = if s.query.is_empty() {
+                            s.queue.len()
+                        } else {
+                            s.filtered.len()
+                        };
+                        if s.selected >= len {
+                            s.selected = s.reselect();
+                        } else if s.selected == 0 {
+                            if cycle {
+                                s.selected = len - 1;
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            s.selected -= 1;
+                        }
+                        s.liststate.select(Some(s.selected));
+                        0b001
+                    }
+                    Command::JumpDown => {
+                        let len = if s.query.is_empty() {
+                            s.queue.len()
+                        } else {
+                            s.filtered.len()
+                        };
+                        s.selected = if s.selected >= len {
+                            s.reselect()
+                        } else if cycle {
+                            (s.selected + jump_lines) % len
+                        } else {
+                            min(s.selected + jump_lines, len - 1)
+                        };
+                        s.liststate.select(Some(s.selected));
+                        0b001
+                    }
+                    Command::JumpUp => {
+                        let len = if s.query.is_empty() {
+                            s.queue.len()
+                        } else {
+                            s.filtered.len()
+                        };
+                        s.selected = if s.selected >= len {
+                            s.reselect()
+                        } else if cycle {
+                            ((s.selected as isize - jump_lines as isize) % len as isize) as usize
+                        } else if s.selected < jump_lines {
+                            0
+                        } else {
+                            s.selected - jump_lines
+                        };
+                        s.liststate.select(Some(s.selected));
+                        0b001
+                    }
+                    Command::InputSearch(c) => {
+                        if s.query.is_empty() {
+                            s.query.push(c);
+                            s.update_search(&queue_strings);
+                        } else {
+                            s.query.push(c);
+                            let query = s.query.to_lowercase();
+                            s.filtered.retain(|&i| queue_strings[i].contains(&query));
+                        }
+                        0b001
+                    }
+                    Command::BackspaceSearch => {
+                        let c = s.query.pop();
+                        if !s.query.is_empty() {
+                            s.update_search(&queue_strings);
+                        } else if c.is_some() {
+                            s.selected = s.reselect();
+                            s.liststate.select(Some(s.selected));
+                        }
+                        0b001
+                    }
+                    Command::QuitSearch => {
+                        s.quit_search();
+                        0b001
+                    }
+                    Command::Searching(x) => {
+                        s.searching = x;
+                        0b001
+                    }
                 }
-                Command::QuitSearch => {
-                    s.quit_search();
-                    updates |= 0b001;
-                }
-                Command::Searching(x) => {
-                    s.searching = x;
-                    updates |= 0b001;
-                }
-            }
-        } else if updates == 0b000 {
+        } else {
+            let updates = updates.swap(0b000, Ordering::SeqCst);
             // wait for more commands or updates if neither were received
-            thread::park();
-            continue;
-        }
+            if updates == 0b000 {
+                thread::park();
+                continue;
+            }
+            updates
+        };
 
         // conditionally update status
         if updates & 0b100 == 0b100 {

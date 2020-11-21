@@ -249,11 +249,9 @@ async fn run() -> Result<()> {
     });
 
     loop {
-        let mut empty = false;
-        let cmd = cmds.pop();
         let mut updates = updates.swap(0b000, Ordering::SeqCst);
-        match cmd {
-            Some(cmd) => match cmd {
+        if let Some(cmd) = cmds.pop() {
+            match cmd {
                 Command::Quit => return Ok(()),
                 Command::ToggleRepeat => {
                     cl.command(if s.status.repeat {
@@ -464,8 +462,11 @@ async fn run() -> Result<()> {
                     s.searching = x;
                     updates |= 0b001;
                 }
-            },
-            _ => empty = true,
+            }
+        } else if updates == 0b000 {
+            // wait for more commands or updates if neither were received
+            thread::park();
+            continue;
         }
 
         // conditionally update status
@@ -489,11 +490,6 @@ async fn run() -> Result<()> {
         // conditionally update frame
         if updates & 0b001 == 0b001 {
             render(&mut term, &cfg.layout, &mut s)?;
-        }
-
-        // wait for more commands if none was received
-        if empty {
-            thread::park();
         }
     }
 }

@@ -74,7 +74,7 @@ fn track_string(track: &Track, search_fields: &SearchFields) -> String {
 
 impl Client {
     pub async fn init(addr: &SocketAddr) -> Result<Client> {
-        async {
+        async move {
             let (r, w) = split(
                 TcpStream::connect(addr)
                     .await
@@ -99,7 +99,7 @@ impl Client {
     }
 
     pub async fn idle(&mut self) -> Result<(bool, bool)> {
-        async {
+        async move {
             self.w.write_all(b"idle options player playlist\n").await?;
             let mut lines = (&mut self.r).lines();
             let mut status = false;
@@ -126,7 +126,7 @@ impl Client {
         len: usize,
         search_fields: &SearchFields,
     ) -> Result<(Vec<Track>, Vec<String>)> {
-        async {
+        async move {
             let mut first = true;
             let mut tracks = Vec::with_capacity(len);
             let mut track_strings = Vec::with_capacity(len);
@@ -194,7 +194,7 @@ impl Client {
     }
 
     pub async fn status(&mut self) -> Result<Status> {
-        async {
+        async move {
             let mut repeat = None;
             let mut random = None;
             let mut single = None;

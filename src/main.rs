@@ -157,7 +157,7 @@ async fn run() -> Result<()> {
     let cmds1 = cmds.clone();
 
     thread::spawn(move || {
-        block_on(async {
+        block_on(async move {
             loop {
                 updates1.fetch_or(
                     match idle_cl.idle().await.or_die() {
@@ -174,7 +174,7 @@ async fn run() -> Result<()> {
     });
 
     thread::spawn(move || {
-        block_on(async {
+        block_on(async move {
             loop {
                 let timer = Timer::after(update_interval);
                 updates2.fetch_or(0b101, Ordering::Relaxed);

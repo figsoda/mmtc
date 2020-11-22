@@ -53,28 +53,28 @@ pub fn layout() -> Widget {
                     12,
                     Widget::Textbox(Texts::Styled(
                         vec![AddStyle::Fg(Color::Indexed(122)), AddStyle::Bold],
-                        Box::new(Texts::Text(String::from("Title"))),
+                        box Texts::Text(String::from("Title")),
                     )),
                 ),
                 Constrained::Ratio(
                     10,
                     Widget::Textbox(Texts::Styled(
                         vec![AddStyle::Fg(Color::Indexed(158)), AddStyle::Bold],
-                        Box::new(Texts::Text(String::from("Artist"))),
+                        box Texts::Text(String::from("Artist")),
                     )),
                 ),
                 Constrained::Ratio(
                     10,
                     Widget::Textbox(Texts::Styled(
                         vec![AddStyle::Fg(Color::Indexed(194)), AddStyle::Bold],
-                        Box::new(Texts::Text(String::from("Album"))),
+                        box Texts::Text(String::from("Album")),
                     )),
                 ),
                 Constrained::Ratio(
                     1,
                     Widget::Textbox(Texts::Styled(
                         vec![AddStyle::Fg(Color::Indexed(230)), AddStyle::Bold],
-                        Box::new(Texts::Text(String::from("Time"))),
+                        box Texts::Text(String::from("Time")),
                     )),
                 ),
             ]),
@@ -87,11 +87,8 @@ pub fn layout() -> Widget {
                         12,
                         Texts::If(
                             Condition::QueueCurrent,
-                            Box::new(Texts::Styled(
-                                vec![AddStyle::Italic],
-                                Box::new(Texts::QueueTitle),
-                            )),
-                            Some(Box::new(Texts::QueueTitle)),
+                            box Texts::Styled(vec![AddStyle::Italic], box Texts::QueueTitle),
+                            Some(box Texts::QueueTitle),
                         ),
                     ),
                     style: vec![AddStyle::Fg(Color::Indexed(75))],
@@ -106,11 +103,8 @@ pub fn layout() -> Widget {
                         10,
                         Texts::If(
                             Condition::QueueCurrent,
-                            Box::new(Texts::Styled(
-                                vec![AddStyle::Italic],
-                                Box::new(Texts::QueueArtist),
-                            )),
-                            Some(Box::new(Texts::QueueArtist)),
+                            box Texts::Styled(vec![AddStyle::Italic], box Texts::QueueArtist),
+                            Some(box Texts::QueueArtist),
                         ),
                     ),
                     style: vec![AddStyle::Fg(Color::Indexed(111))],
@@ -125,11 +119,8 @@ pub fn layout() -> Widget {
                         10,
                         Texts::If(
                             Condition::QueueCurrent,
-                            Box::new(Texts::Styled(
-                                vec![AddStyle::Italic],
-                                Box::new(Texts::QueueAlbum),
-                            )),
-                            Some(Box::new(Texts::QueueAlbum)),
+                            box Texts::Styled(vec![AddStyle::Italic], box Texts::QueueAlbum),
+                            Some(box Texts::QueueAlbum),
                         ),
                     ),
                     style: vec![AddStyle::Fg(Color::Indexed(147))],
@@ -144,11 +135,8 @@ pub fn layout() -> Widget {
                         1,
                         Texts::If(
                             Condition::QueueCurrent,
-                            Box::new(Texts::Styled(
-                                vec![AddStyle::Italic],
-                                Box::new(Texts::QueueDuration),
-                            )),
-                            Some(Box::new(Texts::QueueDuration)),
+                            box Texts::Styled(vec![AddStyle::Italic], box Texts::QueueDuration),
+                            Some(box Texts::QueueDuration),
                         ),
                     ),
                     style: vec![AddStyle::Fg(Color::Indexed(183))],
@@ -167,122 +155,108 @@ pub fn layout() -> Widget {
                     0,
                     Widget::Textbox(Texts::Styled(
                         vec![AddStyle::Bold],
-                        Box::new(Texts::If(
+                        box Texts::If(
                             Condition::Searching,
-                            Box::new(Texts::Parts(vec![
+                            box Texts::Parts(vec![
                                 Texts::Styled(
                                     vec![AddStyle::Fg(Color::Indexed(113))],
-                                    Box::new(Texts::Text(String::from("Searching: "))),
+                                    box Texts::Text(String::from("Searching: ")),
                                 ),
                                 Texts::Styled(
                                     vec![AddStyle::Fg(Color::Indexed(185))],
-                                    Box::new(Texts::Query),
+                                    box Texts::Query,
                                 ),
-                            ])),
-                            Some(Box::new(Texts::If(
-                                Condition::Not(Box::new(Condition::Stopped)),
-                                Box::new(Texts::Parts(vec![
+                            ]),
+                            Some(box Texts::If(
+                                Condition::Not(box Condition::Stopped),
+                                box Texts::Parts(vec![
                                     Texts::Styled(
                                         vec![AddStyle::Fg(Color::Indexed(113))],
-                                        Box::new(Texts::Parts(vec![
+                                        box Texts::Parts(vec![
                                             Texts::If(
                                                 Condition::Playing,
-                                                Box::new(Texts::Text(String::from("[playing: "))),
-                                                Some(Box::new(Texts::Text(String::from(
-                                                    "[paused:  ",
-                                                )))),
+                                                box Texts::Text(String::from("[playing: ")),
+                                                Some(box Texts::Text(String::from("[paused:  "))),
                                             ),
                                             Texts::CurrentElapsed,
                                             Texts::Text(String::from("/")),
                                             Texts::CurrentDuration,
                                             Texts::Text(String::from("] ")),
-                                        ])),
+                                        ]),
                                     ),
                                     Texts::If(
                                         Condition::TitleExist,
-                                        Box::new(Texts::Parts(vec![
+                                        box Texts::Parts(vec![
                                             Texts::Styled(
                                                 vec![AddStyle::Fg(Color::Indexed(149))],
-                                                Box::new(Texts::CurrentTitle),
+                                                box Texts::CurrentTitle,
                                             ),
                                             Texts::If(
                                                 Condition::ArtistExist,
-                                                Box::new(Texts::Parts(vec![
+                                                box Texts::Parts(vec![
                                                     Texts::Styled(
                                                         vec![AddStyle::Fg(Color::Indexed(216))],
-                                                        Box::new(Texts::Text(String::from(" ◆ "))),
+                                                        box Texts::Text(String::from(" ◆ ")),
                                                     ),
                                                     Texts::Styled(
                                                         vec![AddStyle::Fg(Color::Indexed(185))],
-                                                        Box::new(Texts::CurrentArtist),
+                                                        box Texts::CurrentArtist,
                                                     ),
                                                     Texts::If(
                                                         Condition::AlbumExist,
-                                                        Box::new(Texts::Parts(vec![
+                                                        box Texts::Parts(vec![
                                                             Texts::Styled(
                                                                 vec![AddStyle::Fg(Color::Indexed(
                                                                     216,
                                                                 ))],
-                                                                Box::new(Texts::Text(
-                                                                    String::from(" ◆ "),
+                                                                box Texts::Text(String::from(
+                                                                    " ◆ ",
                                                                 )),
                                                             ),
                                                             Texts::Styled(
                                                                 vec![AddStyle::Fg(Color::Indexed(
                                                                     221,
                                                                 ))],
-                                                                Box::new(Texts::CurrentAlbum),
+                                                                box Texts::CurrentAlbum,
                                                             ),
-                                                        ])),
+                                                        ]),
                                                         None,
                                                     ),
-                                                ])),
+                                                ]),
                                                 None,
                                             ),
-                                        ])),
-                                        Some(Box::new(Texts::Styled(
+                                        ]),
+                                        Some(box Texts::Styled(
                                             vec![AddStyle::Fg(Color::Indexed(185))],
-                                            Box::new(Texts::CurrentFile),
-                                        ))),
+                                            box Texts::CurrentFile,
+                                        )),
                                     ),
-                                ])),
+                                ]),
                                 None,
-                            ))),
-                        )),
+                            )),
+                        ),
                     )),
                 ),
                 Constrained::Fixed(
                     7,
                     Widget::TextboxR(Texts::Styled(
                         vec![AddStyle::Fg(Color::Indexed(81))],
-                        Box::new(Texts::Parts(vec![
+                        box Texts::Parts(vec![
                             Texts::Text(String::from("[")),
-                            Texts::If(
-                                Condition::Repeat,
-                                Box::new(Texts::Text(String::from("@"))),
-                                None,
-                            ),
-                            Texts::If(
-                                Condition::Random,
-                                Box::new(Texts::Text(String::from("#"))),
-                                None,
-                            ),
+                            Texts::If(Condition::Repeat, box Texts::Text(String::from("@")), None),
+                            Texts::If(Condition::Random, box Texts::Text(String::from("#")), None),
                             Texts::If(
                                 Condition::Single,
-                                Box::new(Texts::Text(String::from("^"))),
-                                Some(Box::new(Texts::If(
+                                box Texts::Text(String::from("^")),
+                                Some(box Texts::If(
                                     Condition::Oneshot,
-                                    Box::new(Texts::Text(String::from("!"))),
+                                    box Texts::Text(String::from("!")),
                                     None,
-                                ))),
+                                )),
                             ),
-                            Texts::If(
-                                Condition::Consume,
-                                Box::new(Texts::Text(String::from("*"))),
-                                None,
-                            ),
+                            Texts::If(Condition::Consume, box Texts::Text(String::from("*")), None),
                             Texts::Text(String::from("]")),
-                        ])),
+                        ]),
                     )),
                 ),
             ]),

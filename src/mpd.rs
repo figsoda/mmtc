@@ -115,7 +115,7 @@ impl Client {
                 }
             }
 
-            Ok((status, queue)) as Result<_>
+            Result::<_>::Ok((status, queue))
         }
         .await
         .context("Failed to idle")

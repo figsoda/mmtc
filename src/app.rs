@@ -90,7 +90,7 @@ pub enum Command {
 
 impl State {
     pub fn reselect(&self) -> usize {
-        self.status.song.map_or(0, |song| song.pos)
+        self.status.song.as_ref().map_or(0, |song| song.pos)
     }
 
     pub fn update_search(&mut self, queue_strings: &[String]) {
@@ -110,7 +110,7 @@ impl State {
         self.searching = false;
         if !self.query.is_empty() {
             self.query.clear();
-            self.selected = self.status.song.map_or(0, |song| song.pos);
+            self.selected = self.reselect();
             self.liststate.select(Some(self.selected));
         }
     }

@@ -105,7 +105,7 @@ async fn run() -> Result<()> {
     let status = cl.status().await?;
     let (queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
     let mut s = State {
-        selected: status.song.map_or(0, |song| song.pos),
+        selected: status.song.as_ref().map_or(0, |song| song.pos),
         status,
         queue,
         liststate: ListState::default(),

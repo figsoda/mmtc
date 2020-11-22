@@ -118,7 +118,10 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
                 Paragraph::new(flatten(
                     xs,
                     &s.status,
-                    s.status.song.and_then(|song| s.queue.get(song.pos)),
+                    s.status
+                        .song
+                        .as_ref()
+                        .and_then(|song| s.queue.get(song.pos)),
                     None,
                     false,
                     false,
@@ -133,7 +136,10 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
                 Paragraph::new(flatten(
                     xs,
                     &s.status,
-                    s.status.song.and_then(|song| s.queue.get(song.pos)),
+                    s.status
+                        .song
+                        .as_ref()
+                        .and_then(|song| s.queue.get(song.pos)),
                     None,
                     false,
                     false,
@@ -149,7 +155,10 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
                 Paragraph::new(flatten(
                     xs,
                     &s.status,
-                    s.status.song.and_then(|song| s.queue.get(song.pos)),
+                    s.status
+                        .song
+                        .as_ref()
+                        .and_then(|song| s.queue.get(song.pos)),
                     None,
                     false,
                     false,

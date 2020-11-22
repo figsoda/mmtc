@@ -9,7 +9,7 @@ mod fail;
 mod layout;
 mod mpd;
 
-use anyhow::{Context, Error, Result};
+use anyhow::{Context, Result};
 use async_io::{block_on, Timer};
 use crossbeam_queue::SegQueue;
 use crossterm::{
@@ -42,19 +42,6 @@ use crate::{
     layout::render,
     mpd::Client,
 };
-
-trait OrDie<T> {
-    fn or_die(self) -> T;
-}
-
-impl<T, E: Into<Error>> OrDie<T> for Result<T, E> {
-    fn or_die(self) -> T {
-        self.unwrap_or_else(|e| {
-            eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e.into()));
-            exit(1);
-        })
-    }
-}
 
 fn cleanup() -> Result<()> {
     let mut stdout = stdout();
@@ -160,11 +147,15 @@ async fn run() -> Result<()> {
         block_on(async move {
             loop {
                 updates1.fetch_or(
-                    match idle_cl.idle().await.or_die() {
-                        (true, true) => 0b111,
-                        (true, false) => 0b101,
-                        (false, true) => 0b011,
-                        _ => continue,
+                    match idle_cl.idle().await {
+                        Ok((true, true)) => 0b111,
+                        Ok((true, false)) => 0b101,
+                        Ok((false, true)) => 0b011,
+                        Ok(_) => continue,
+                        Err(e) => {
+                            eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e));
+                            exit(1);
+                        }
                     },
                     Ordering::Relaxed,
                 );

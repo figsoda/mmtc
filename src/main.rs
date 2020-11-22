@@ -1,6 +1,5 @@
 #![allow(clippy::too_many_arguments)]
-#![feature(box_patterns)]
-#![feature(box_syntax)]
+#![feature(box_patterns, box_syntax)]
 #![forbid(unsafe_code)]
 
 mod app;

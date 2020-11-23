@@ -60,7 +60,7 @@ jobs:
       - name: Cargo build
         uses: actions-rs/cargo@v1
         env:
-          RUSTFLAGS: -Ctarget-cpu=x86-64
+          RUSTFLAGS: ""
         with:
           use-cross: ${{ matrix.use-cross }}
           command: build

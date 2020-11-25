@@ -355,11 +355,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::Down => {
-                        let len = if s.query.is_empty() {
-                            s.queue.len()
-                        } else {
-                            s.filtered.len()
-                        };
+                        let len = s.queue_len();
                         if s.selected >= len {
                             s.selected = s.reselect();
                         } else if s.selected == len - 1 {
@@ -375,11 +371,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::Up => {
-                        let len = if s.query.is_empty() {
-                            s.queue.len()
-                        } else {
-                            s.filtered.len()
-                        };
+                        let len = s.queue_len();
                         if s.selected >= len {
                             s.selected = s.reselect();
                         } else if s.selected == 0 {
@@ -395,11 +387,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::JumpDown => {
-                        let len = if s.query.is_empty() {
-                            s.queue.len()
-                        } else {
-                            s.filtered.len()
-                        };
+                        let len = s.queue_len();
                         s.selected = if s.selected >= len {
                             s.reselect()
                         } else if cycle {
@@ -411,11 +399,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::JumpUp => {
-                        let len = if s.query.is_empty() {
-                            s.queue.len()
-                        } else {
-                            s.filtered.len()
-                        };
+                        let len = s.queue_len();
                         if s.selected >= len {
                             s.selected = s.reselect();
                         } else if cycle {

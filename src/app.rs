@@ -93,6 +93,14 @@ impl State {
         self.status.song.as_ref().map_or(0, |song| song.pos)
     }
 
+    pub fn queue_len(&self) -> usize {
+        if self.query.is_empty() {
+            self.queue.len()
+        } else {
+            self.filtered.len()
+        }
+    }
+
     pub fn update_search(&mut self, queue_strings: &[String]) {
         let query = self.query.to_lowercase();
         self.filtered.clear();

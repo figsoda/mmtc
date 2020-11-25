@@ -416,14 +416,17 @@ async fn run() -> Result<()> {
                         } else {
                             s.filtered.len()
                         };
-                        s.selected = if s.selected >= len {
-                            s.reselect()
+                        if s.selected >= len {
+                            s.selected = s.reselect();
                         } else if cycle {
-                            ((s.selected as isize - jump_lines as isize) % len as isize) as usize
+                            while s.selected < jump_lines {
+                                s.selected += len;
+                            }
+                            s.selected -= jump_lines;
                         } else if s.selected < jump_lines {
-                            0
+                            s.selected = 0;
                         } else {
-                            s.selected - jump_lines
+                            s.selected -= jump_lines;
                         };
                         s.liststate.select(Some(s.selected));
                         0b001

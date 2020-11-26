@@ -1,5 +1,5 @@
 #![allow(clippy::too_many_arguments)]
-#![feature(box_patterns, box_syntax)]
+#![feature(box_patterns, box_syntax, destructuring_assignment)]
 #![forbid(unsafe_code)]
 
 mod app;
@@ -462,9 +462,7 @@ async fn run() -> Result<()> {
 
         // conditionally update queue
         if updates & 0b010 == 0b010 {
-            let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
-            s.queue = res.0;
-            queue_strings = res.1;
+            (s.queue, queue_strings) = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
             s.reselect();
             s.liststate.select(None);
             s.select();

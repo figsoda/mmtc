@@ -89,6 +89,10 @@ pub enum Command {
 }
 
 impl State {
+    pub fn select(&mut self) {
+        self.liststate.select(Some(self.selected));
+    }
+
     pub fn reselect(&self) -> usize {
         self.status.song.as_ref().map_or(0, |song| song.pos)
     }

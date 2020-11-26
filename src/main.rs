@@ -99,7 +99,7 @@ async fn run() -> Result<()> {
         query: String::with_capacity(32),
         filtered: Vec::new(),
     };
-    s.liststate.select(Some(s.selected));
+    s.select();
 
     enable_raw_mode().context("Failed to enable raw mode")?;
     let mut stdout = stdout();
@@ -351,7 +351,7 @@ async fn run() -> Result<()> {
                     }
                     Command::Reselect => {
                         s.selected = s.reselect();
-                        s.liststate.select(Some(s.selected));
+                        s.select();
                         0b001
                     }
                     Command::Down => {
@@ -367,7 +367,7 @@ async fn run() -> Result<()> {
                         } else {
                             s.selected += 1;
                         }
-                        s.liststate.select(Some(s.selected));
+                        s.select();
                         0b001
                     }
                     Command::Up => {
@@ -383,7 +383,7 @@ async fn run() -> Result<()> {
                         } else {
                             s.selected -= 1;
                         }
-                        s.liststate.select(Some(s.selected));
+                        s.select();
                         0b001
                     }
                     Command::JumpDown => {
@@ -395,7 +395,7 @@ async fn run() -> Result<()> {
                         } else {
                             min(s.selected + jump_lines, len - 1)
                         };
-                        s.liststate.select(Some(s.selected));
+                        s.select();
                         0b001
                     }
                     Command::JumpUp => {
@@ -412,7 +412,7 @@ async fn run() -> Result<()> {
                         } else {
                             s.selected -= jump_lines;
                         };
-                        s.liststate.select(Some(s.selected));
+                        s.select();
                         0b001
                     }
                     Command::InputSearch(c) => {
@@ -432,7 +432,7 @@ async fn run() -> Result<()> {
                             s.update_search(&queue_strings);
                         } else if c.is_some() {
                             s.selected = s.reselect();
-                            s.liststate.select(Some(s.selected));
+                            s.select();
                         }
                         0b001
                     }
@@ -467,7 +467,7 @@ async fn run() -> Result<()> {
             queue_strings = res.1;
             s.selected = s.reselect();
             s.liststate.select(None);
-            s.liststate.select(Some(s.selected));
+            s.select();
             if !s.query.is_empty() {
                 s.update_search(&queue_strings);
             }

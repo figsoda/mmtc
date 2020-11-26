@@ -350,14 +350,14 @@ async fn run() -> Result<()> {
                         0b101
                     }
                     Command::Reselect => {
-                        s.selected = s.reselect();
+                        s.reselect();
                         s.select();
                         0b001
                     }
                     Command::Down => {
                         let len = s.len();
                         if s.selected >= len {
-                            s.selected = s.reselect();
+                            s.reselect();
                         } else if s.selected == len - 1 {
                             if cycle {
                                 s.selected = 0;
@@ -373,7 +373,7 @@ async fn run() -> Result<()> {
                     Command::Up => {
                         let len = s.len();
                         if s.selected >= len {
-                            s.selected = s.reselect();
+                            s.reselect();
                         } else if s.selected == 0 {
                             if cycle {
                                 s.selected = len - 1;
@@ -388,12 +388,12 @@ async fn run() -> Result<()> {
                     }
                     Command::JumpDown => {
                         let len = s.len();
-                        s.selected = if s.selected >= len {
-                            s.reselect()
+                        if s.selected >= len {
+                            s.reselect();
                         } else if cycle {
-                            (s.selected + jump_lines) % len
+                            s.selected = (s.selected + jump_lines) % len;
                         } else {
-                            min(s.selected + jump_lines, len - 1)
+                            s.selected = min(s.selected + jump_lines, len - 1);
                         };
                         s.select();
                         0b001
@@ -401,7 +401,7 @@ async fn run() -> Result<()> {
                     Command::JumpUp => {
                         let len = s.len();
                         if s.selected >= len {
-                            s.selected = s.reselect();
+                            s.reselect();
                         } else if cycle {
                             while s.selected < jump_lines {
                                 s.selected += len;
@@ -431,7 +431,7 @@ async fn run() -> Result<()> {
                         if !s.query.is_empty() {
                             s.update_search(&queue_strings);
                         } else if c.is_some() {
-                            s.selected = s.reselect();
+                            s.reselect();
                             s.select();
                         }
                         0b001
@@ -465,7 +465,7 @@ async fn run() -> Result<()> {
             let res = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
             s.queue = res.0;
             queue_strings = res.1;
-            s.selected = s.reselect();
+            s.reselect();
             s.liststate.select(None);
             s.select();
             if !s.query.is_empty() {

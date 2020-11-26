@@ -93,8 +93,8 @@ impl State {
         self.liststate.select(Some(self.selected));
     }
 
-    pub fn reselect(&self) -> usize {
-        self.status.song.as_ref().map_or(0, |song| song.pos)
+    pub fn reselect(&mut self) {
+        self.selected = self.status.song.as_ref().map_or(0, |song| song.pos);
     }
 
     pub fn len(&self) -> usize {
@@ -122,7 +122,7 @@ impl State {
         self.searching = false;
         if !self.query.is_empty() {
             self.query.clear();
-            self.selected = self.reselect();
+            self.reselect();
             self.liststate.select(Some(self.selected));
         }
     }

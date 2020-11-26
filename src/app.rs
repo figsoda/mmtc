@@ -97,7 +97,7 @@ impl State {
         self.status.song.as_ref().map_or(0, |song| song.pos)
     }
 
-    pub fn queue_len(&self) -> usize {
+    pub fn len(&self) -> usize {
         if self.query.is_empty() {
             self.queue.len()
         } else {

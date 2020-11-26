@@ -355,7 +355,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::Down => {
-                        let len = s.queue_len();
+                        let len = s.len();
                         if s.selected >= len {
                             s.selected = s.reselect();
                         } else if s.selected == len - 1 {
@@ -371,7 +371,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::Up => {
-                        let len = s.queue_len();
+                        let len = s.len();
                         if s.selected >= len {
                             s.selected = s.reselect();
                         } else if s.selected == 0 {
@@ -387,7 +387,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::JumpDown => {
-                        let len = s.queue_len();
+                        let len = s.len();
                         s.selected = if s.selected >= len {
                             s.reselect()
                         } else if cycle {
@@ -399,7 +399,7 @@ async fn run() -> Result<()> {
                         0b001
                     }
                     Command::JumpUp => {
-                        let len = s.queue_len();
+                        let len = s.len();
                         if s.selected >= len {
                             s.selected = s.reselect();
                         } else if cycle {

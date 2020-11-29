@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v0.2.6 - 2020-11-29
+
+### Fixes
+- Fixed jumping up in the queue logic when cycle option is turned on
+
+
 ## v0.2.5 - 2020-11-20
 
 ### Fixes

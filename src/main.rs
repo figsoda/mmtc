@@ -21,6 +21,7 @@ use crossterm::{
     ExecutableCommand,
 };
 use dirs_next::config_dir;
+use futures_lite::StreamExt;
 use structopt::StructOpt;
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
@@ -166,11 +167,11 @@ async fn run() -> Result<()> {
 
     thread::spawn(move || {
         block_on(async move {
+            let mut timer = Timer::interval(update_interval);
             loop {
-                let timer = Timer::after(update_interval);
                 updates2.fetch_or(0b101, Ordering::Relaxed);
                 t2.unpark();
-                timer.await;
+                timer.next().await;
             }
         })
     });

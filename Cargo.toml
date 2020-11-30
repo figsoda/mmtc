@@ -15,7 +15,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.34"
-async-io = "1.3.0"
+async-io = "1.3.1"
 async-net = "1.5.0"
 crossbeam-queue = "0.3.1"
 crossterm = "0.18.2"
@@ -24,7 +24,7 @@ expand = "0.2.0"
 futures-lite = "1.11.2"
 ron = "0.6.2"
 serde = { version = "1.0.117", features = ["derive"] }
-structopt = "0.3.20"
+structopt = "0.3.21"
 
 [dependencies.tui]
 version = "0.13.0"

@@ -22,7 +22,7 @@ The latest precompiled binaries are available on [github](https://github.com/fig
 Alternatively you can install mmtc from [crates.io][Crate] with cargo.
 This requires the nightly toolchain of [Rust].
 
-```shell
+```sh
 cargo +nightly install mmtc
 ```
 
@@ -31,14 +31,14 @@ cargo +nightly install mmtc
 
 This requires the nightly toolchain of [Rust].
 
-```shell
+```sh
 cargo +nightly build --release
 ```
 
 
 ## Usage
 
-```
+```sh
 mmtc [FLAGS] [OPTIONS]
 ```
 

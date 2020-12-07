@@ -509,8 +509,9 @@ fn eval_cond(cond: &Condition, s: &ConditionState) -> bool {
         Condition::ArtistExist => matches!(
             s.current_track,
             Some(Track {
-                artist: Some(_), ..
-            }),
+                artist: Some(_),
+                ..
+            })
         ),
         Condition::AlbumExist => matches!(s.current_track, Some(Track { album: Some(_), .. })),
         Condition::QueueCurrent => s.queue_current,

@@ -34,7 +34,7 @@ use std::{
         atomic::{AtomicU8, Ordering},
         Arc,
     },
-    thread,
+    thread::{self, Thread},
     time::Duration,
 };
 
@@ -132,17 +132,17 @@ async fn run() -> Result<()> {
     let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 
     let t1 = thread::current();
-    let t2 = t1.clone();
-    let t3 = t1.clone();
+    let t2 = Thread::clone(&t1);
+    let t3 = Thread::clone(&t1);
     // update status: 0b100
     // update queue:  0b010
     // update frame:  0b001
     let updates = Arc::new(AtomicU8::new(0b000));
-    let updates1 = updates.clone();
-    let updates2 = updates.clone();
-    let updates3 = updates.clone();
+    let updates1 = Arc::clone(&updates);
+    let updates2 = Arc::clone(&updates);
+    let updates3 = Arc::clone(&updates);
     let cmds = Arc::new(SegQueue::new());
-    let cmds1 = cmds.clone();
+    let cmds1 = Arc::clone(&cmds);
 
     thread::spawn(move || {
         block_on(async move {

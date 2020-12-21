@@ -22,7 +22,7 @@ crossterm = "0.18.2"
 dirs-next = "2.0.0"
 expand = "0.2.0"
 futures-lite = "1.11.3"
-ron = "0.6.3"
+ron = "0.6.4"
 serde = { version = "1.0.118", features = ["derive"] }
 structopt = "0.3.21"
 

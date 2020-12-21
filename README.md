@@ -64,26 +64,26 @@ option | description
 
 Key | Action
 -|-
-`q`, `Ctrl + q` | quit mmtc
-`r` | toggle repeat
-`R` | toggle random
-`s` | toggle single
-`S` | toggle oneshot
-`c` | toggle consume
-`p` | toggle pause
-`;` | stop
-`h`, `Left` | seek backwards
-`l`, `Right` | seek forwards
-`H` | previous song
-`L` | next song
-`Enter` | play selected song or quit searching mode if in searching mode
-`Space` | select current song or the first song in the queue
-`j`, `Down`, `ScrollDown` | go down in the queue
-`k`, `Up`, `ScrollUp` | go up in the queue
-`J`, `PageDown` | jump down in the queue
-`K`, `PageUp` | jump up in the queue
-`/` | enter searching mode
-`Escape` | quit searching mode and empty query
+<kbd>q</kbd> or <kbd>Ctrl</kbd> + <kbd>q</kbd> | quit mmtc
+<kbd>r</kbd> | toggle repeat
+<kbd>R</kbd> | toggle random
+<kbd>s</kbd> | toggle single
+<kbd>S</kbd> | toggle oneshot
+<kbd>c</kbd> | toggle consume
+<kbd>p</kbd> | toggle pause
+<kbd>;</kbd> | stop
+<kbd>h</kbd> or <kbd>Left</kbd> | seek backwards
+<kbd>l</kbd> or <kbd>Right</kbd> | seek forwards
+<kbd>H</kbd> | previous song
+<kbd>L</kbd> | next song
+<kbd>Enter</kbd> | play selected song or quit searching mode if in searching mode
+<kbd>Space</kbd> | select current song or the first song in the queue
+<kbd>j</kbd>, <kbd>Down</kbd> or <kbd>ScrollDown</kbd> | go down in the queue
+<kbd>k</kbd>, <kbd>Up</kbd> or <kbd>ScrollUp</kbd> | go up in the queue
+<kbd>J</kbd> or <kbd>PageDown</kbd> | jump down in the queue
+<kbd>K</kbd> or <kbd>PageUp</kbd> | jump up in the queue
+<kbd>/</kbd> | enter searching mode
+<kbd>Escape</kbd> | quit searching mode and empty query
 
 
 ## Configuration

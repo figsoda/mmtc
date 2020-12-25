@@ -447,13 +447,14 @@ async fn run() -> Result<()> {
                     }
                 }
         } else {
-            let updates = updates.swap(0b000, Ordering::SeqCst);
-            // wait for more commands or updates if neither were received
-            if updates == 0b000 {
-                thread::park();
-                continue;
+            match updates.swap(0b000, Ordering::SeqCst) {
+                // wait for more commands or updates if neither were received
+                x if x == 0b000 => {
+                    thread::park();
+                    continue;
+                }
+                x => x,
             }
-            updates
         };
 
         // conditionally update status

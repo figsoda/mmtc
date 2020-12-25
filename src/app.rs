@@ -89,12 +89,13 @@ pub enum Command {
 }
 
 impl State {
-    pub fn select(&mut self) {
-        self.liststate.select(Some(self.selected));
+    pub fn select(&mut self, x: usize) {
+        self.selected = x;
+        self.liststate.select(Some(x));
     }
 
     pub fn reselect(&mut self) {
-        self.selected = self.status.song.as_ref().map_or(0, |song| song.pos);
+        self.select(self.status.song.as_ref().map_or(0, |song| song.pos));
     }
 
     pub fn len(&self) -> usize {
@@ -113,9 +114,8 @@ impl State {
                 self.filtered.push(i);
             }
         }
-        self.selected = 0;
         self.liststate.select(None);
-        self.liststate.select(Some(0));
+        self.select(0);
     }
 
     pub fn quit_search(&mut self) {
@@ -123,7 +123,6 @@ impl State {
         if !self.query.is_empty() {
             self.query.clear();
             self.reselect();
-            self.liststate.select(Some(self.selected));
         }
     }
 }

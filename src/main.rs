@@ -92,7 +92,7 @@ async fn run() -> Result<()> {
     let status = cl.status().await?;
     let (queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
     let mut s = State {
-        selected: status.song.as_ref().map_or(0, |song| song.pos),
+        selected: 0,
         status,
         queue,
         liststate: ListState::default(),
@@ -100,7 +100,7 @@ async fn run() -> Result<()> {
         query: String::with_capacity(32),
         filtered: Vec::new(),
     };
-    s.select();
+    s.reselect();
 
     enable_raw_mode().context("Failed to enable raw mode")?;
     let mut stdout = stdout();
@@ -351,7 +351,6 @@ async fn run() -> Result<()> {
                 }
                 Command::Reselect => {
                     s.reselect();
-                    s.select();
                     0b001
                 }
                 Command::Down => {
@@ -360,14 +359,11 @@ async fn run() -> Result<()> {
                         s.reselect();
                     } else if s.selected == len - 1 {
                         if cycle {
-                            s.selected = 0;
-                        } else {
-                            continue;
+                            s.select(0);
                         }
                     } else {
-                        s.selected += 1;
+                        s.select(s.selected + 1);
                     }
-                    s.select();
                     0b001
                 }
                 Command::Up => {
@@ -376,14 +372,11 @@ async fn run() -> Result<()> {
                         s.reselect();
                     } else if s.selected == 0 {
                         if cycle {
-                            s.selected = len - 1;
-                        } else {
-                            continue;
+                            s.select(len - 1);
                         }
                     } else {
-                        s.selected -= 1;
+                        s.select(s.selected - 1);
                     }
-                    s.select();
                     0b001
                 }
                 Command::JumpDown => {
@@ -391,11 +384,10 @@ async fn run() -> Result<()> {
                     if s.selected >= len {
                         s.reselect();
                     } else if cycle {
-                        s.selected = (s.selected + jump_lines) % len;
+                        s.select((s.selected + jump_lines) % len);
                     } else {
-                        s.selected = min(s.selected + jump_lines, len - 1);
+                        s.select(min(s.selected + jump_lines, len - 1));
                     };
-                    s.select();
                     0b001
                 }
                 Command::JumpUp => {
@@ -407,12 +399,12 @@ async fn run() -> Result<()> {
                             s.selected += len;
                         }
                         s.selected -= jump_lines;
+                        s.liststate.select(Some(s.selected));
                     } else if s.selected < jump_lines {
-                        s.selected = 0;
+                        s.select(0);
                     } else {
-                        s.selected -= jump_lines;
+                        s.select(s.selected - jump_lines);
                     };
-                    s.select();
                     0b001
                 }
                 Command::InputSearch(c) => {
@@ -432,7 +424,6 @@ async fn run() -> Result<()> {
                         s.update_search(&queue_strings);
                     } else if c.is_some() {
                         s.reselect();
-                        s.select();
                     }
                     0b001
                 }
@@ -464,9 +455,8 @@ async fn run() -> Result<()> {
         // conditionally update queue
         if updates & 0b010 == 0b010 {
             (s.queue, queue_strings) = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
-            s.reselect();
             s.liststate.select(None);
-            s.select();
+            s.reselect();
             if !s.query.is_empty() {
                 s.update_search(&queue_strings);
             }

@@ -3,12 +3,12 @@
 
 ## File Resolution
 
-By default, mmtc looks for configuration file at `<your config directory>/mmtc/mmtc.ron`. 
+By default, mmtc looks for configuration file at `<your config directory>/mmtc/mmtc.ron`.
 Your config directory may differ depending on the operating system, so mmtc tries to find your config directory with [dirs crate](https://docs.rs/dirs-next/*/dirs_next/fn.config_dir.html).
 
 This setting can be overwritten by the command line argument `-c` or `--config`.
 
-If no config file was given from the command line and mmtc failed to find your config directory, the [default configuration](https://github.com/figsoda/mmtc/blob/main/mmtc.default.ron) would be used.
+If no config file was given from the command line and mmtc failed to find your config directory, the [default configuration](https://github.com/figsoda/mmtc/blob/main/mmtc.ron) would be used.
 
 
 ## File Structure
@@ -30,7 +30,7 @@ field | type | description | default
 `seek_secs` | non-negative number | the time to seek in seconds | `5.0`
 `search_fields` | [`SearchFields`](#SearchFields) | the fields to index from when searching | see [`SearchFields`](#SearchFields)
 `ups` | non-negative number | the amount of status updates per second | `1.0`
-`layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.default.ron](https://github.com/figsoda/mmtc/blob/main/mmtc.default.ron)
+`layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.ron](https://github.com/figsoda/mmtc/blob/main/mmtc.ron)
 
 ### SearchFields
 

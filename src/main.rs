@@ -15,7 +15,7 @@ use crossbeam_queue::SegQueue;
 use crossterm::{
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyModifiers,
-        MouseEvent,
+        MouseEvent, MouseEventKind,
     },
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
@@ -180,8 +180,14 @@ async fn run() -> Result<()> {
         let mut searching = false;
         while let Ok(ev) = event::read() {
             cmds1.push(match ev {
-                Event::Mouse(MouseEvent::ScrollDown(..)) => Command::Down,
-                Event::Mouse(MouseEvent::ScrollUp(..)) => Command::Up,
+                Event::Mouse(MouseEvent {
+                    kind: MouseEventKind::ScrollUp,
+                    ..
+                }) => Command::Down,
+                Event::Mouse(MouseEvent {
+                    kind: MouseEventKind::ScrollDown,
+                    ..
+                }) => Command::Up,
                 Event::Resize(..) => {
                     updates3.fetch_or(0b001, Ordering::Relaxed);
                     t3.unpark();

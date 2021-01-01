@@ -27,7 +27,7 @@ serde = { version = "1.0.118", features = ["derive"] }
 structopt = "0.3.21"
 
 [dependencies.tui]
-version = "0.13.0"
+version = "0.14.0"
 default-features = false
 features = ["crossterm", "serde"]
 

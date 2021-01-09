@@ -11,7 +11,7 @@ use tui::{
 use crate::{
     app::State,
     config::{AddStyle, Column, Condition, Constrained, Texts, Widget},
-    mpd::{Song, Status, Track},
+    mpd::{PlayerState, Song, Status, Track},
 };
 
 struct FlattenState<'a, 'b> {
@@ -502,9 +502,9 @@ fn eval_cond(cond: &Condition, s: &ConditionState) -> bool {
         Condition::Single => s.status.single == Some(true),
         Condition::Oneshot => s.status.single == None,
         Condition::Consume => s.status.consume,
-        Condition::Playing => s.status.state == Some(true),
-        Condition::Paused => s.status.state == Some(false),
-        Condition::Stopped => s.status.state == None,
+        Condition::Playing => s.status.state == PlayerState::Play,
+        Condition::Paused => s.status.state == PlayerState::Pause,
+        Condition::Stopped => s.status.state == PlayerState::Stop,
         Condition::TitleExist => matches!(s.current_track, Some(Track { title: Some(_), .. })),
         Condition::ArtistExist => matches!(
             s.current_track,

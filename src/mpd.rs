@@ -15,6 +15,13 @@ pub struct Client {
     w: WriteHalf<TcpStream>,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum PlayerState {
+    Play,
+    Pause,
+    Stop,
+}
+
 #[derive(Debug)]
 pub struct Status {
     pub repeat: bool,
@@ -22,7 +29,7 @@ pub struct Status {
     pub single: Option<bool>, // None: oneshot
     pub consume: bool,
     pub queue_len: usize,
-    pub state: Option<bool>, // Some(true): play, Some(false): pause, None: stop
+    pub state: PlayerState,
     pub song: Option<Song>,
 }
 
@@ -200,7 +207,7 @@ impl Client {
             let mut single = None;
             let mut consume = None;
             let mut queue_len = None;
-            let mut state = None;
+            let mut state = PlayerState::Stop;
             let mut pos = None;
             let mut elapsed = None;
 
@@ -221,8 +228,8 @@ impl Client {
                     b"consume: 0" => consume = Some(false),
                     b"consume: 1" => consume = Some(true),
                     expand!([@b"playlistlength: ", ..]) => queue_len = Some(line[16 ..].parse()?),
-                    b"state: play" => state = Some(true),
-                    b"state: pause" => state = Some(false),
+                    b"state: play" => state = PlayerState::Play,
+                    b"state: pause" => state = PlayerState::Pause,
                     expand!([@b"song: ", ..]) => pos = Some(line[6 ..].parse()?),
                     expand!([@b"elapsed: ", ..]) => {
                         elapsed = Some(line[9 ..].parse::<f32>()?.round() as u16)

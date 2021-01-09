@@ -41,7 +41,7 @@ use std::{
 use crate::{
     app::{Command, Opts, State},
     layout::render,
-    mpd::Client,
+    mpd::{Client, PlayerState},
 };
 
 fn cleanup() -> Result<()> {
@@ -301,9 +301,13 @@ async fn run() -> Result<()> {
                     0b101
                 }
                 Command::TogglePause => {
-                    cl.command(s.status.state.map_or(b"play\n", |_| b"pause\n"))
-                        .await
-                        .context("Failed to toggle pause")?;
+                    cl.command(match s.status.state {
+                        PlayerState::Play => b"play\n",
+                        PlayerState::Pause => b"pause\n",
+                        _ => continue,
+                    })
+                    .await
+                    .context("Failed to toggle pause")?;
                     0b101
                 }
                 Command::Stop => {

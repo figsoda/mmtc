@@ -552,9 +552,9 @@ checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48b82c2a1e8eb6e1bfde608de2bcbebd4072aa32d056ea48a986990cd5ca0f5a"
+checksum = "f3d82a0e6791428b9525c116cc671feac3ce1e73b26c5724a6bf26ae130ebf18"
 dependencies = [
  "bitflags",
 ]
@@ -566,7 +566,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "528532f3d801c87aec9def2add9ca802fe569e44a544afe633765267840abe64"
 dependencies = [
  "getrandom",
- "redox_syscall 0.2.1",
+ "redox_syscall 0.2.2",
 ]
 
 [[package]]

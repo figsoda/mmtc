@@ -14,7 +14,7 @@ keywords = ["cli", "mpd", "music", "terminal", "tui"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-anyhow = "1.0.37"
+anyhow = "1.0.38"
 async-io = "1.3.1"
 async-net = "1.5.0"
 crossbeam-queue = "0.3.1"
@@ -23,7 +23,7 @@ dirs-next = "2.0.0"
 expand = "0.2.0"
 futures-lite = "1.11.3"
 ron = "0.6.4"
-serde = { version = "1.0.118", features = ["derive"] }
+serde = { version = "1.0.119", features = ["derive"] }
 structopt = "0.3.21"
 
 [dependencies.tui]

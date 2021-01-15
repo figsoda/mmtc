@@ -17,7 +17,7 @@
 
 ### Features
 - Allow seeking backwards with left key and forwards with right key when searching
-- New binding - `Ctrl + q` to quit mmtc
+- New binding - <kbd>Ctrl</kbd> + <kbd>q</kbd> to quit mmtc
 
 ### Optimization
 - Various performance improvements

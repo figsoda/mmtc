@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v0.2.7 - 2021-01-15
+
+### Features
+- New binding - <kbd>g</kbd> to go to the top of the queue
+- New binding - <kbd>G</kbd> to go to the bottom of the queue
+
+
 ## v0.2.6 - 2020-11-29
 
 ### Fixes

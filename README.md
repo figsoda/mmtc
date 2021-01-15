@@ -99,6 +99,6 @@ See [CHANGELOG.md]
 
 
 [Crate]: https://crates.io/crates/mmtc
-[Configuration.md]: https://github.com/figsoda/mmtc/blob/main/Configuration.md
-[CHANGELOG.md]: https://github.com/figsoda/mmtc/blob/main/CHANGELOG.md
+[Configuration.md]: Configuration.md
+[CHANGELOG.md]: CHANGELOG.md
 [Rust]: https://www.rust-lang.org/tools/install

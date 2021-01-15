@@ -78,7 +78,7 @@
 - No longer adds extra zeros before the minute number
 
 ### Documentation
-- Added [Configuration instructions](https://github.com/figsoda/mmtc/blob/main/Configuration.md)
+- Added [configuration instructions](Configuration.md)
 
 ### Features
 - New `Condition` - `QueueCurrent`

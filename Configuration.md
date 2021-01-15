@@ -8,7 +8,7 @@ Your config directory may differ depending on the operating system, so mmtc trie
 
 This setting can be overwritten by the command line argument `-c` or `--config`.
 
-If no config file was given from the command line and mmtc failed to find your config directory, the [default configuration](https://github.com/figsoda/mmtc/blob/main/mmtc.ron) would be used.
+If no config file was given from the command line and mmtc failed to find your config directory, the [default configuration](mmtc.ron) would be used.
 
 
 ## File Structure
@@ -30,7 +30,7 @@ field | type | description | default
 `seek_secs` | non-negative number | the time to seek in seconds | `5.0`
 `search_fields` | [`SearchFields`](#SearchFields) | the fields to index from when searching | see [`SearchFields`](#SearchFields)
 `ups` | non-negative number | the amount of status updates per second | `1.0`
-`layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.ron](https://github.com/figsoda/mmtc/blob/main/mmtc.ron)
+`layout` | [`Widget`](#Widget) | the layout of the application | see [mmtc.ron](mmtc.ron)
 
 ### SearchFields
 

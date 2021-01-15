@@ -82,6 +82,8 @@ pub enum Command {
     Up,
     JumpDown,
     JumpUp,
+    GotoTop,
+    GotoBottom,
     InputSearch(char),
     BackspaceSearch,
     QuitSearch,

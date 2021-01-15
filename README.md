@@ -82,6 +82,8 @@ Key | Action
 <kbd>k</kbd>, <kbd>Up</kbd> or <kbd>ScrollUp</kbd> | go up in the queue
 <kbd>J</kbd> or <kbd>PageDown</kbd> | jump down in the queue
 <kbd>K</kbd> or <kbd>PageUp</kbd> | jump up in the queue
+<kbd>g</kbd> | go to the top of the queue
+<kbd>G</kbd> | go to the bottom of the queue
 <kbd>/</kbd> | enter searching mode
 <kbd>Escape</kbd> | quit searching mode and empty query
 

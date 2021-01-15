@@ -232,6 +232,8 @@ async fn run() -> Result<()> {
                         'k' => Command::Up,
                         'J' => Command::JumpDown,
                         'K' => Command::JumpUp,
+                        'g' => Command::GotoTop,
+                        'G' => Command::GotoBottom,
                         '/' => {
                             searching = true;
                             Command::Searching(true)
@@ -415,6 +417,18 @@ async fn run() -> Result<()> {
                     } else {
                         s.select(s.selected - jump_lines);
                     };
+                    0b001
+                }
+                Command::GotoTop => {
+                    s.select(0);
+                    0b001
+                }
+                Command::GotoBottom => {
+                    let len = s.len();
+                    if len == 0 {
+                        continue;
+                    }
+                    s.select(len - 1);
                     0b001
                 }
                 Command::InputSearch(c) => {

@@ -183,11 +183,11 @@ async fn run() -> Result<()> {
                 Event::Mouse(MouseEvent {
                     kind: MouseEventKind::ScrollUp,
                     ..
-                }) => Command::Down,
+                }) => Command::Up,
                 Event::Mouse(MouseEvent {
                     kind: MouseEventKind::ScrollDown,
                     ..
-                }) => Command::Up,
+                }) => Command::Down,
                 Event::Resize(..) => {
                     updates3.fetch_or(0b001, Ordering::Relaxed);
                     t3.unpark();

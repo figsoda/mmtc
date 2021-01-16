@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v0.2.8 - 2021-01-16
+
+### Fixes
+- Fixed scrolling direction with mouse wheels
+
+
 ## v0.2.7 - 2021-01-15
 
 ### Features

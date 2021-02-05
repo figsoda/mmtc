@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.10 - 2021-02-05
+
+### Fixes
+- Now correctly toggles pause
+
+
 ## v0.2.9 - 2021-02-05
 
 ### Changes

@@ -11,6 +11,7 @@ mod mpd;
 
 use anyhow::{Context, Result};
 use async_io::{block_on, Timer};
+use clap::Clap;
 use crossbeam_queue::SegQueue;
 use crossterm::{
     event::{
@@ -22,7 +23,6 @@ use crossterm::{
 };
 use dirs_next::config_dir;
 use futures_lite::StreamExt;
-use structopt::StructOpt;
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
@@ -65,7 +65,7 @@ fn main() {
 }
 
 async fn run() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
 
     let cfg = if let Some(file) = opts.config {
         ron::de::from_bytes(&fs::read(&file).with_context(fail::read(file.display()))?)

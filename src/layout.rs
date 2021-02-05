@@ -372,7 +372,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '
         Texts::Query => {
             spans.push(Span::styled(String::from(s.query), *s.style));
         }
-        Texts::Styled(styles, box xs) => {
+        Texts::Styled(styles, xs) => {
             _flatten(
                 spans,
                 xs,
@@ -387,7 +387,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '
                 _flatten(spans, xs, s);
             }
         }
-        Texts::If(cond, box xs, Some(box ys)) => {
+        Texts::If(cond, xs, Some(ys)) => {
             _flatten(
                 spans,
                 if eval_cond(
@@ -408,7 +408,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '
                 s,
             );
         }
-        Texts::If(cond, box xs, None) => {
+        Texts::If(cond, xs, None) => {
             if eval_cond(
                 cond,
                 &ConditionState {
@@ -518,9 +518,9 @@ fn eval_cond(cond: &Condition, s: &ConditionState) -> bool {
         Condition::Selected => s.selected,
         Condition::Searching => s.searching,
         Condition::Filtered => !s.query.is_empty(),
-        Condition::Not(box x) => !eval_cond(x, s),
-        Condition::And(box x, box y) => eval_cond(x, s) && eval_cond(y, s),
-        Condition::Or(box x, box y) => eval_cond(x, s) || eval_cond(y, s),
-        Condition::Xor(box x, box y) => eval_cond(x, s) ^ eval_cond(y, s),
+        Condition::Not(x) => !eval_cond(x, s),
+        Condition::And(x, y) => eval_cond(x, s) && eval_cond(y, s),
+        Condition::Or(x, y) => eval_cond(x, s) || eval_cond(y, s),
+        Condition::Xor(x, y) => eval_cond(x, s) ^ eval_cond(y, s),
     }
 }

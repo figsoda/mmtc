@@ -214,7 +214,7 @@ impl<'de> Deserialize<'de> for Texts {
                                 .ok_or_else(|| de::Error::invalid_length(0, &self))?,
                             sa.next_element()?.map_or_else(
                                 || Err(de::Error::invalid_length(1, &self)),
-                                |x| Ok(box x),
+                                |x| Ok(Box::new(x)),
                             )?,
                             sa.next_element()?.map(Box::new),
                         ))

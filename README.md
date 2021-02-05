@@ -20,19 +20,16 @@ Minimal [mpd](https://github.com/musicplayerdaemon/mpd) terminal client that aim
 The latest precompiled binaries are available on [github](https://github.com/figsoda/mmtc/releases/latest).
 
 Alternatively you can install mmtc from [crates.io][Crate] with cargo.
-This requires the nightly toolchain of [Rust].
 
 ```sh
-cargo +nightly install mmtc
+cargo install mmtc
 ```
 
 
 ## Building from source
 
-This requires the nightly toolchain of [Rust].
-
 ```sh
-cargo +nightly build --release
+cargo build --release
 ```
 
 
@@ -101,4 +98,3 @@ See [CHANGELOG.md]
 [Crate]: https://crates.io/crates/mmtc
 [Configuration.md]: Configuration.md
 [CHANGELOG.md]: CHANGELOG.md
-[Rust]: https://www.rust-lang.org/tools/install

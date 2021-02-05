@@ -303,8 +303,8 @@ async fn run() -> Result<()> {
                 }
                 Command::TogglePause => {
                     cl.command(match s.status.state {
-                        PlayerState::Play => b"play\n",
-                        PlayerState::Pause => b"pause\n",
+                        PlayerState::Play => b"pause\n",
+                        PlayerState::Pause => b"play\n",
                         _ => continue,
                     })
                     .await

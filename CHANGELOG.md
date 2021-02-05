@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.9 - 2021-02-05
+
+### Changes
+- Allow multiple occurrences of command line flags
+
+### Compatibility
+- Migrate to stable rust
+
 
 ## v0.2.8 - 2021-01-16
 

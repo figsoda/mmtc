@@ -8,9 +8,11 @@
 
 Minimal [mpd](https://github.com/musicplayerdaemon/mpd) terminal client that aims to be simple yet highly configurable
 
-- [Installation](#Installation)
-- [Building from source](#Building-from-source)
-- [Key bindings](#Key-bindings)
+- [Installation](#installation)
+- [Building from source](#building-from-source)
+- [Usage](#usage)
+- [Environment variables](#environment-variables)
+- [Key bindings](#key-bindings)
 - [Configuration.md]
 - [CHANGELOG.md]
 

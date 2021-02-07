@@ -1,6 +1,6 @@
 [package]
 name = "mmtc"
-version = "0.2.11"
+version = "0.2.12"
 authors = ["figsoda <figsoda@pm.me>"]
 edition = "2018"
 description = "Minimal mpd terminal client that aims to be simple yet highly configurable"

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.12 - 2021-02-07
+
+### Features
+- Support for hostname resolution
+
 
 ## v0.2.11 - 2021-02-07
 

@@ -57,6 +57,13 @@ option | description
 --ups \<number> | The amount of status updates per second
 
 
+## Environment variables
+
+Setting both `MPD_HOST` and `MPD_PORT` is the equalvalent of `--address $MPD_HOST:$MPD_PORT`
+
+Precedence: command line arguments > environment variables > configuration file
+
+
 ## Key bindings
 
 Key | Action

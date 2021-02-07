@@ -26,8 +26,9 @@ use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
     cmp::min,
-    fs,
+    env, fs,
     io::stdout,
+    net::SocketAddr,
     process::exit,
     sync::{
         atomic::{AtomicU8, Ordering},
@@ -84,7 +85,14 @@ async fn run() -> Result<()> {
         defaults::config()
     };
 
-    let addr = &opts.address.unwrap_or(cfg.address);
+    let addr = &if let Some(addr) = opts.address {
+        addr
+    } else if let (Ok(host), Ok(port)) = (env::var("MPD_HOST"), env::var("MPD_PORT")) {
+        SocketAddr::new(host.parse()?, port.parse()?)
+    } else {
+        cfg.address
+    };
+
     let mut idle_cl = Client::init(addr).await?;
     let mut cl = Client::init(addr).await?;
 

@@ -1,5 +1,12 @@
 # Changelog
 
+
+## v0.2.11 - 2021-02-07
+
+### Features
+- Support for MPD_HOST and MPD_PORT environment variables ([#2](https://github.com/figsoda/mmtc/issues/2))
+
+
 ## v0.2.10 - 2021-02-05
 
 ### Fixes

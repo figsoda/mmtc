@@ -3,7 +3,7 @@
 ## v0.2.12 - 2021-02-07
 
 ### Features
-- Support for hostname resolution
+- Support for hostname resolution ([#3](https://github.com/figsoda/mmtc/issues/3))
 
 
 ## v0.2.11 - 2021-02-07

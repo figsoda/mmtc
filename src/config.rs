@@ -4,17 +4,14 @@ use serde::{
 };
 use tui::style::Color;
 
-use std::{
-    fmt::{self, Formatter},
-    net::SocketAddr,
-};
+use std::fmt::{self, Formatter};
 
 use crate::defaults;
 
 #[derive(Deserialize)]
 pub struct Config {
     #[serde(default = "defaults::address")]
-    pub address: SocketAddr,
+    pub address: String,
     #[serde(default)]
     pub clear_query_on_play: bool,
     #[serde(default)]

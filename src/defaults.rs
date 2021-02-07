@@ -1,7 +1,5 @@
 use tui::style::Color;
 
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-
 use crate::config::{
     AddStyle, Column, Condition, Config, Constrained, SearchFields, Texts, Widget,
 };
@@ -19,8 +17,8 @@ pub fn config() -> Config {
     }
 }
 
-pub fn address() -> SocketAddr {
-    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6600)
+pub fn address() -> String {
+    String::from("127.0.0.1:6600")
 }
 
 pub fn jump_lines() -> usize {

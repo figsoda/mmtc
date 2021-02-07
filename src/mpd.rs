@@ -1,14 +1,12 @@
 use anyhow::{bail, Context, Result};
-use async_net::TcpStream;
+use async_net::{AsyncToSocketAddrs, TcpStream};
 use expand::expand;
 use futures_lite::{
     io::{split, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader, ReadHalf, WriteHalf},
     StreamExt,
 };
 
-use std::net::SocketAddr;
-
-use crate::{config::SearchFields, fail};
+use crate::config::SearchFields;
 
 pub struct Client {
     r: BufReader<ReadHalf<TcpStream>>,
@@ -80,13 +78,9 @@ fn track_string(track: &Track, search_fields: &SearchFields) -> String {
 }
 
 impl Client {
-    pub async fn init(addr: &SocketAddr) -> Result<Client> {
+    pub async fn init(addr: impl AsyncToSocketAddrs) -> Result<Client> {
         async move {
-            let (r, w) = split(
-                TcpStream::connect(addr)
-                    .await
-                    .with_context(fail::connect(addr))?,
-            );
+            let (r, w) = split(TcpStream::connect(addr).await?);
             let mut cl = Client {
                 r: BufReader::new(r),
                 w,

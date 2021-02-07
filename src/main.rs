@@ -22,13 +22,11 @@ use crossterm::{
 };
 use dirs_next::config_dir;
 use futures_lite::StreamExt;
-use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
     cmp::min,
     env, fs,
     io::stdout,
-    net::SocketAddr,
     process::exit,
     sync::{
         atomic::{AtomicU8, Ordering},
@@ -37,6 +35,7 @@ use std::{
     thread::{self, Thread},
     time::Duration,
 };
+use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use crate::{
     app::{Command, Opts, State},
@@ -85,16 +84,20 @@ async fn run() -> Result<()> {
         defaults::config()
     };
 
-    let addr = &if let Some(addr) = opts.address {
-        addr
+    let (mut idle_cl, mut cl) = if let Some(addr) = opts.address {
+        let idle_cl = Client::init(addr).await?;
+        let cl = Client::init(addr).await?;
+        (idle_cl, cl)
     } else if let (Ok(host), Ok(port)) = (env::var("MPD_HOST"), env::var("MPD_PORT")) {
-        SocketAddr::new(host.parse()?, port.parse()?)
+        let addr = &*async_net::resolve((host, port.parse()?)).await?;
+        let idle_cl = Client::init(addr).await?;
+        let cl = Client::init(addr).await?;
+        (idle_cl, cl)
     } else {
-        cfg.address
+        let idle_cl = Client::init(&cfg.address).await?;
+        let cl = Client::init(&cfg.address).await?;
+        (idle_cl, cl)
     };
-
-    let mut idle_cl = Client::init(addr).await?;
-    let mut cl = Client::init(addr).await?;
 
     let status = cl.status().await?;
     let (queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;

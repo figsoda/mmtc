@@ -9,7 +9,7 @@ use crate::mpd::{Status, Track};
 ///
 /// Homepage: https://github.com/figsoda/mmtc
 #[derive(Clap)]
-#[clap(global_setting = AppSettings::ColoredHelp)]
+#[clap(version, global_setting = AppSettings::ColoredHelp)]
 pub struct Opts {
     /// Clear query on play
     #[clap(long, multiple_occurrences(true))]

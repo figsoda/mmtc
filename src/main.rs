@@ -10,6 +10,7 @@ mod mpd;
 
 use anyhow::{Context, Result};
 use async_io::{block_on, Timer};
+use async_net::resolve;
 use clap::Clap;
 use crossbeam_queue::SegQueue;
 use crossterm::{
@@ -84,20 +85,16 @@ async fn run() -> Result<()> {
         defaults::config()
     };
 
-    let (mut idle_cl, mut cl) = if let Some(addr) = opts.address {
-        let idle_cl = Client::init(addr).await?;
-        let cl = Client::init(addr).await?;
-        (idle_cl, cl)
+    let addr = &*if let Some(addr) = opts.address {
+        resolve(addr).await?
     } else if let (Ok(host), Ok(port)) = (env::var("MPD_HOST"), env::var("MPD_PORT")) {
-        let addr = &*async_net::resolve((host, port.parse()?)).await?;
-        let idle_cl = Client::init(addr).await?;
-        let cl = Client::init(addr).await?;
-        (idle_cl, cl)
+        resolve((host, port.parse()?)).await?
     } else {
-        let idle_cl = Client::init(&cfg.address).await?;
-        let cl = Client::init(&cfg.address).await?;
-        (idle_cl, cl)
+        resolve(cfg.address).await?
     };
+
+    let mut idle_cl = Client::init(addr).await?;
+    let mut cl = Client::init(addr).await?;
 
     let status = cl.status().await?;
     let (queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;

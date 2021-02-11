@@ -19,6 +19,8 @@ Minimal [mpd](https://github.com/musicplayerdaemon/mpd) terminal client that aim
 
 ## Installation
 
+[![repology](https://repology.org/badge/vertical-allrepos/mmtc.svg)](https://repology.org/project/mmtc/versions)
+
 The latest precompiled binaries are available on [github](https://github.com/figsoda/mmtc/releases/latest).
 
 Alternatively you can install mmtc from [crates.io][Crate] with cargo.

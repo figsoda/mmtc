@@ -23,6 +23,7 @@ use crossterm::{
 };
 use dirs_next::config_dir;
 use futures_lite::StreamExt;
+use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
     cmp::min,
@@ -36,7 +37,6 @@ use std::{
     thread::{self, Thread},
     time::Duration,
 };
-use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use crate::{
     app::{Command, Opts, State},

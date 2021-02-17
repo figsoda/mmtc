@@ -2,6 +2,7 @@
 #![forbid(unsafe_code)]
 
 mod app;
+mod cli;
 mod config;
 mod defaults;
 mod fail;
@@ -39,7 +40,8 @@ use std::{
 };
 
 use crate::{
-    app::{Command, Opts, State},
+    app::{Command, State},
+    cli::Opts,
     layout::render,
     mpd::{Client, PlayerState},
 };

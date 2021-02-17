@@ -1,7 +1,7 @@
 use clap::{AppSettings, Clap};
 use tui::widgets::ListState;
 
-use std::{net::SocketAddr, path::PathBuf};
+use std::path::PathBuf;
 
 use crate::mpd::{Status, Track};
 
@@ -33,7 +33,7 @@ pub struct Opts {
 
     /// Specify the address of the mpd server
     #[clap(long, value_name = "address")]
-    pub address: Option<SocketAddr>,
+    pub address: Option<String>,
 
     /// Specify the config file
     #[clap(short, long, value_name = "file")]

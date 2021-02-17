@@ -94,6 +94,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
+        env:
+          GEN_COMPLETIONS: 1
 
       - name: Find generated completions
         run: |

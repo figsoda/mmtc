@@ -37,6 +37,8 @@ jobs:
         with:
           command: build
           args: --target ${{ matrix.target }}
+        env:
+          GEN_COMPLETIONS: 1
 
   clippy:
     name: clippy

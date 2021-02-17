@@ -73,3 +73,79 @@ jobs:
           asset_path: ./target/${{ matrix.target }}/release/mmtc${{ matrix.ext }}
           asset_name: mmtc-${{ matrix.target }}${{ matrix.ext }}
           asset_content_type: application/octet-stream
+
+  completions:
+    name: completions
+    needs: create_release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+
+      - name: Cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+      - name: Find generated completions
+        run: |
+          outputs=(target/debug/build/mmtc-*/out/completions)
+          cp -r "${outputs[0]}" completions
+
+      - name: Upload bash completion
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./completions/mmtc.bash
+          asset_name: mmtc.bash
+          asset_content_type: text/plain
+
+      - name: Upload elvish completion
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./completions/mmtc.elv
+          asset_name: mmtc.elv
+          asset_content_type: text/plain
+
+      - name: Upload fish completion
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./completions/mmtc.fish
+          asset_name: mmtc.fish
+          asset_content_type: text/plain
+
+      - name: Upload powershell completion
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./completions/_mmtc.ps1
+          asset_name: mmtc.ps1
+          asset_content_type: text/plain
+
+      - name: Upload zsh completion
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./completions/_mmtc
+          asset_name: mmtc.zsh
+          asset_content_type: text/plain

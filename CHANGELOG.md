@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.13 - 2021-02-19
+
+### Features
+- Completions for bash, elvish, fish, powershell, and zsh
+- Support hostname resolution for command line argument `--address`
+
+
 ## v0.2.12 - 2021-02-07
 
 ### Features

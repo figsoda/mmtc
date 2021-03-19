@@ -9,23 +9,23 @@ use std::path::PathBuf;
 #[clap(bin_name = "mmtc", version, global_setting = AppSettings::ColoredHelp)]
 pub struct Opts {
     /// Clear query on play
-    #[clap(long, multiple_occurrences(true))]
+    #[clap(long, multiple_occurrences = true)]
     pub clear_query_on_play: bool,
 
     /// Cycle through the queue
-    #[clap(long, multiple_occurrences(true))]
+    #[clap(long, multiple_occurrences = true)]
     pub cycle: bool,
 
     /// Don't clear query on play
     #[clap(
         long,
-        multiple_occurrences(true),
-        overrides_with("clear-query-on-play")
+        multiple_occurrences = true,
+        overrides_with = "clear-query-on-play",
     )]
     pub no_clear_query_on_play: bool,
 
     /// Don't cycle through the queue
-    #[clap(long, multiple_occurrences(true), overrides_with("cycle"))]
+    #[clap(long, multiple_occurrences = true, overrides_with = "cycle")]
     pub no_cycle: bool,
 
     /// Specify the address of the mpd server

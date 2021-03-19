@@ -20,7 +20,7 @@ pub struct Opts {
     #[clap(
         long,
         multiple_occurrences = true,
-        overrides_with = "clear-query-on-play",
+        overrides_with = "clear-query-on-play"
     )]
     pub no_clear_query_on_play: bool,
 

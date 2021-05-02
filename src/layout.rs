@@ -38,7 +38,9 @@ pub fn render(term: &mut Terminal<impl Backend>, widget: &Widget, s: &mut State)
     term.draw(|frame| {
         _render(frame, frame.size(), widget, s);
     })
-    .context("Failed to draw to terminal")
+    .context("Failed to draw to terminal")?;
+
+    Ok(())
 }
 
 fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut State) {

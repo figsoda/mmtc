@@ -20,7 +20,7 @@ crossbeam-queue = "0.3.2"
 crossterm = "0.19.0"
 dirs-next = "2.0.0"
 expand = "0.2.0"
-futures-lite = "1.11.3"
+futures-lite = "1.12.0"
 ron = "0.6.4"
 serde = { version = "1.0.126", features = ["derive"] }
 

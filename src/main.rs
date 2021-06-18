@@ -441,11 +441,11 @@ async fn run() -> Result<()> {
                     0b001
                 }
                 Command::InputSearch(c) => {
-                    if s.query.is_empty() {
-                        s.query.push(c);
+                    let empty = s.query.is_empty();
+                    s.query.push(c);
+                    if empty {
                         s.update_search(&queue_strings);
                     } else {
-                        s.query.push(c);
                         let query = s.query.to_lowercase();
                         s.filtered.retain(|&i| queue_strings[i].contains(&query));
                     }

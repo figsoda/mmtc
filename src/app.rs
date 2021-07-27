@@ -36,6 +36,7 @@ pub enum Command {
     GotoBottom,
     InputSearch(char),
     BackspaceSearch,
+    ClearSearch,
     QuitSearch,
     Searching(bool),
 }

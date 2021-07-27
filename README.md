@@ -93,6 +93,7 @@ Key | Action
 <kbd>g</kbd> | go to the top of the queue
 <kbd>G</kbd> | go to the bottom of the queue
 <kbd>/</kbd> | enter searching mode
+<kbd>Ctrl</kbd> + <kbd>u</kbd> | empty search query
 <kbd>Escape</kbd> | quit searching mode and empty query
 
 

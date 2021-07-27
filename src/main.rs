@@ -206,6 +206,9 @@ async fn run() -> Result<()> {
                     KeyCode::Char('q') if modifiers.contains(KeyModifiers::CONTROL) => {
                         Command::Quit
                     }
+                    KeyCode::Char('u') if modifiers.contains(KeyModifiers::CONTROL) => {
+                        Command::ClearSearch
+                    }
                     KeyCode::Left => Command::SeekBackwards,
                     KeyCode::Right => Command::SeekForwards,
                     KeyCode::Down => Command::Down,
@@ -456,6 +459,13 @@ async fn run() -> Result<()> {
                     if !s.query.is_empty() {
                         s.update_search(&queue_strings);
                     } else if c.is_some() {
+                        s.reselect();
+                    }
+                    0b001
+                }
+                Command::ClearSearch => {
+                    if !s.query.is_empty() {
+                        s.query.clear();
                         s.reselect();
                     }
                     0b001

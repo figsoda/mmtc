@@ -18,7 +18,7 @@ fn main() {
 
     macro_rules! generate {
         ($($g:ident),*) => {
-            $(generate_to::<generators::$g, _, _>(app, "mmtc", out);)*
+            $(generate_to::<generators::$g, _, _>(app, "mmtc", out).unwrap();)*
         }
     }
 

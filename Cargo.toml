@@ -12,10 +12,10 @@ keywords = ["cli", "mpd", "music", "terminal", "tui"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-anyhow = "1.0.42"
+anyhow = "1.0.43"
 async-io = "1.6.0"
 async-net = "1.6.1"
-clap = "3.0.0-beta.2"
+clap = "3.0.0-beta.4"
 crossbeam-queue = "0.3.2"
 crossterm = "0.20.0"
 dirs-next = "2.0.0"
@@ -30,8 +30,8 @@ default-features = false
 features = ["crossterm", "serde"]
 
 [build-dependencies]
-clap = "3.0.0-beta.2"
-clap_generate = "3.0.0-beta.2"
+clap = "3.0.0-beta.4"
+clap_generate = "3.0.0-beta.4"
 
 [profile.release]
 lto = true

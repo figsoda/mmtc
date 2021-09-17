@@ -22,7 +22,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use dirs_next::config_dir;
+use dirs::config_dir;
 use futures_lite::StreamExt;
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 

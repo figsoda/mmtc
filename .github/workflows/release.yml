@@ -39,23 +39,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1.0.7
-        with:
-          profile: minimal
-          toolchain: nightly
-          target: ${{ matrix.target }}
-          default: true
-
       - name: Cargo build
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: build
-          args: --release --target ${{ matrix.target }}
+        run: |
+          rustup toolchain install nightly --profile minimal -t ${{ matrix.target }}
+          cargo +nightly build --release --target ${{ matrix.target }}
         env:
           RUSTFLAGS: -Z strip=symbols
 
-      - name: Upload release asset
+      - name: Upload asset
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ github.token }}
@@ -72,17 +63,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1.0.7
-        with:
-          profile: minimal
-          toolchain: nightly
-          default: true
-
       - name: Cargo build
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: build
+        run: |
+          rustup toolchain install nightly --profile minimal
+          cargo +nightly build
         env:
           GEN_COMPLETIONS: 1
 
@@ -90,40 +74,13 @@ jobs:
         run: |
           outputs=(target/debug/build/mmtc-*/out/completions)
           cp -r "${outputs[0]}" completions
+          mv completions/{_,}mmtc.ps1
+          mv completions/{_mmtc,mmtc.zsh}
 
-      - name: Upload bash completion
+      - name: Upload completions
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ github.token }}
           tag: ${{ github.ref }}
-          file: ./completions/mmtc.bash
-
-      - name: Upload elvish completion
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ github.token }}
-          tag: ${{ github.ref }}
-          file: ./completions/mmtc.elv
-
-      - name: Upload fish completion
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ github.token }}
-          tag: ${{ github.ref }}
-          file: ./completions/mmtc.fish
-
-      - name: Upload powershell completion
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ github.token }}
-          tag: ${{ github.ref }}
-          file: ./completions/_mmtc.ps1
-          asset_name: mmtc.ps1
-
-      - name: Upload zsh completion
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ github.token }}
-          tag: ${{ github.ref }}
-          file: ./completions/_mmtc
-          asset_name: mmtc.zsh
+          file: completions/*
+          file_glob: true

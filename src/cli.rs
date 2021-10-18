@@ -1,12 +1,12 @@
-use clap::{AppSettings, Clap};
+use clap::Parser;
 
 use std::path::PathBuf;
 
 /// Minimal mpd terminal client that aims to be simple yet highly configurable
 ///
 /// Homepage: https://github.com/figsoda/mmtc
-#[derive(Clap)]
-#[clap(bin_name = "mmtc", version, global_setting = AppSettings::ColoredHelp)]
+#[derive(Parser)]
+#[clap(version)]
 pub struct Opts {
     /// Clear query on play
     #[clap(long, multiple_occurrences = true)]

@@ -15,7 +15,7 @@ categories = ["command-line-utilities"]
 anyhow = "1.0.44"
 async-io = "1.6.0"
 async-net = "1.6.1"
-clap = "3.0.0-beta.4"
+clap = "3.0.0-beta.5"
 crossbeam-queue = "0.3.2"
 crossterm = "0.21.0"
 dirs = "4.0.0"
@@ -30,8 +30,8 @@ default-features = false
 features = ["crossterm", "serde"]
 
 [build-dependencies]
-clap = "3.0.0-beta.4"
-clap_generate = "3.0.0-beta.4"
+clap = "3.0.0-beta.5"
+clap_generate = "3.0.0-beta.5"
 
 [profile.release]
 lto = true

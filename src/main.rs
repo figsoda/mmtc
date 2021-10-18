@@ -12,7 +12,7 @@ mod mpd;
 use anyhow::{Context, Result};
 use async_io::{block_on, Timer};
 use async_net::resolve;
-use clap::Clap;
+use clap::Parser;
 use crossbeam_queue::SegQueue;
 use crossterm::{
     event::{

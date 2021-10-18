@@ -1,5 +1,5 @@
-use clap::IntoApp;
-use clap_generate::{generate_to, generators};
+use clap::{ArgEnum, IntoApp};
+use clap_generate::{generate_to, Shell};
 
 use std::{env, fs::create_dir_all, path::Path};
 
@@ -16,11 +16,7 @@ fn main() {
     create_dir_all(out).unwrap();
     let app = &mut Opts::into_app();
 
-    macro_rules! generate {
-        ($($g:ident),*) => {
-            $(generate_to::<generators::$g, _, _>(app, "mmtc", out).unwrap();)*
-        }
+    for shell in Shell::value_variants() {
+        generate_to(*shell, app, "mmtc", out).unwrap();
     }
-
-    generate![Bash, Elvish, Fish, PowerShell, Zsh];
 }

@@ -26,8 +26,8 @@ jobs:
 
       - name: Cargo build
         run: |
-          rustup toolchain install stable --profile minimal
-          cargo +stable build
+          rustup toolchain install stable --profile minimal -t ${{ matrix.target }}
+          cargo +stable build --target ${{ matrix.target }}
         env:
           GEN_COMPLETIONS: 1
 

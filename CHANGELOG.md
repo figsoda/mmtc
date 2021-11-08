@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.14 - 2021-11-08
+
+### Features
+- Add cursor to search bar in default settings
+- New binding - <kbd>Ctrl</kbd> + <kbd>u</kbd> to clear search
+- New binding - <kbd>Ctrl</kbd> + <kbd>d</kbd> to jump down in the queue
+- New binding - <kbd>Ctrl</kbd> + <kbd>u</kbd> to jump up in the queue
+
+
 ## v0.2.13 - 2021-02-19
 
 ### Features

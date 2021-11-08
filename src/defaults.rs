@@ -176,6 +176,10 @@ pub fn layout() -> Widget {
                                     vec![AddStyle::Fg(Color::Indexed(185))],
                                     Box::new(Texts::Query),
                                 ),
+                                Texts::Styled(
+                                    vec![AddStyle::Fg(Color::Indexed(185))],
+                                    Box::new(Texts::Text(String::from("⎸"))),
+                                ),
                             ])),
                             Some(Box::new(Texts::If(
                                 Condition::Not(Box::new(Condition::Stopped)),

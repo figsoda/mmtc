@@ -57,6 +57,7 @@ Config(
                 Parts([
                     Styled([Fg(Indexed(113))], Text("Searching: ")),
                     Styled([Fg(Indexed(185))], Query),
+                    Styled([Fg(Indexed(185))], Text("⎸")),
                 ]),
                 If(Not(Stopped), Parts([
                     Styled([Fg(Indexed(113))], Parts([

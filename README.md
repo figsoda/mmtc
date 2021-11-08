@@ -86,10 +86,10 @@ Key | Action
 <kbd>L</kbd> | next song
 <kbd>Enter</kbd> | play selected song or quit searching mode if in searching mode
 <kbd>Space</kbd> | select current song or the first song in the queue
-<kbd>j</kbd>, <kbd>Down</kbd> or <kbd>ScrollDown</kbd> | go down in the queue
-<kbd>k</kbd>, <kbd>Up</kbd> or <kbd>ScrollUp</kbd> | go up in the queue
-<kbd>J</kbd> or <kbd>PageDown</kbd> | jump down in the queue
-<kbd>K</kbd> or <kbd>PageUp</kbd> | jump up in the queue
+<kbd>j</kbd>, <kbd>Down</kbd>, or <kbd>ScrollDown</kbd> | go down in the queue
+<kbd>k</kbd>, <kbd>Up</kbd>, or <kbd>ScrollUp</kbd> | go up in the queue
+<kbd>J</kbd>, <kbd>Ctrl</kbd> + <kbd>d</kbd>, or <kbd>PageDown</kbd> | jump down in the queue
+<kbd>K</kbd>, <kbd>Ctrl</kbd> + <kbd>u</kbd>, or <kbd>PageUp</kbd> | jump up in the queue
 <kbd>g</kbd> | go to the top of the queue
 <kbd>G</kbd> | go to the bottom of the queue
 <kbd>/</kbd> | enter searching mode

@@ -207,7 +207,11 @@ async fn run() -> Result<()> {
                         Command::Quit
                     }
                     KeyCode::Char('u') if modifiers.contains(KeyModifiers::CONTROL) => {
-                        Command::ClearSearch
+                        if searching {
+                            Command::ClearSearch
+                        } else {
+                            Command::JumpUp
+                        }
                     }
                     KeyCode::Left => Command::SeekBackwards,
                     KeyCode::Right => Command::SeekForwards,
@@ -243,6 +247,7 @@ async fn run() -> Result<()> {
                         'j' => Command::Down,
                         'k' => Command::Up,
                         'J' => Command::JumpDown,
+                        'd' if modifiers.contains(KeyModifiers::CONTROL) => Command::JumpDown,
                         'K' => Command::JumpUp,
                         'g' => Command::GotoTop,
                         'G' => Command::GotoBottom,

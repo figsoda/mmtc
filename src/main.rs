@@ -1,4 +1,3 @@
-#![allow(clippy::too_many_arguments)]
 #![forbid(unsafe_code)]
 
 mod app;

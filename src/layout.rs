@@ -256,6 +256,7 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn flatten<'a>(
     xs: &'a Texts,
     status: &'a Status,

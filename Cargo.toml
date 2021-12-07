@@ -2,7 +2,7 @@
 name = "mmtc"
 version = "0.2.14"
 authors = ["figsoda <figsoda@pm.me>"]
-edition = "2018"
+edition = "2021"
 description = "Minimal mpd terminal client that aims to be simple yet highly configurable"
 readme = "README.md"
 homepage = "https://github.com/figsoda/mmtc"

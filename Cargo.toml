@@ -31,7 +31,7 @@ features = ["crossterm", "serde"]
 
 [build-dependencies]
 clap = "3.0.0-beta.5"
-clap_generate = "3.0.0-beta.5"
+clap_generate = "3.0.0-rc.3"
 
 [profile.release]
 lto = true

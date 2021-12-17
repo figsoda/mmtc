@@ -22,7 +22,7 @@ dirs = "4.0.0"
 expand = "0.2.0"
 futures-lite = "1.12.0"
 ron = "0.7.0"
-serde = { version = "1.0.131", features = ["derive"] }
+serde = { version = "1.0.132", features = ["derive"] }
 
 [dependencies.tui]
 version = "0.16.0"

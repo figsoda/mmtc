@@ -1,5 +1,5 @@
 use clap::{ArgEnum, IntoApp};
-use clap_generate::{generate_to, Shell};
+use clap_complete::{generate_to, Shell};
 
 use std::{env, fs::create_dir_all, path::Path};
 

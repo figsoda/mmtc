@@ -16,7 +16,7 @@ anyhow = "1.0.56"
 async-io = "1.6.0"
 async-net = "1.6.1"
 clap = { version = "3.0.10", features = ["cargo", "derive", "unicode"] }
-crossbeam-queue = "0.3.3"
+crossbeam-queue = "0.3.5"
 crossterm = "0.23.1"
 dirs = "4.0.0"
 expand = "0.2.0"

@@ -12,7 +12,7 @@ keywords = ["cli", "mpd", "music", "terminal", "tui"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-anyhow = "1.0.56"
+anyhow = "1.0.57"
 async-io = "1.6.0"
 async-net = "1.6.1"
 clap = { version = "3.0.10", features = ["cargo", "derive", "unicode"] }
@@ -25,7 +25,7 @@ ron = "0.7.0"
 serde = { version = "1.0.136", features = ["derive"] }
 
 [dependencies.tui]
-version = "0.17.0"
+version = "0.18.0"
 default-features = false
 features = ["crossterm", "serde"]
 

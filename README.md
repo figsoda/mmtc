@@ -2,7 +2,7 @@
 
 [![release](https://img.shields.io/github/v/release/figsoda/mmtc?logo=github&style=flat-square)](https://github.com/figsoda/mmtc/releases)
 [![version](https://img.shields.io/crates/v/mmtc?logo=rust&style=flat-square)][crate]
-[![dependencies](https://img.shields.io/librariesio/release/cargo/mmtc?style=flat-square)](https://libraries.io/cargo/mmtc)
+[![deps](https://deps.rs/repo/github/figsoda/mmtc/status.svg?style=flat-square&compact=true)](https://deps.rs/repo/github/figsoda/mmtc)
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue?style=flat-square)](https://www.mozilla.org/en-US/MPL/2.0)
 [![ci](https://img.shields.io/github/workflow/status/figsoda/mmtc/ci?label=ci&logo=github-actions&style=flat-square)](https://github.com/figsoda/mmtc/actions?query=workflow:ci)
 

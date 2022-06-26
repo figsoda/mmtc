@@ -15,7 +15,7 @@ categories = ["command-line-utilities"]
 anyhow = "1.0.58"
 async-io = "1.7.0"
 async-net = "1.6.1"
-clap = { version = "3.1.18", features = ["cargo", "derive", "unicode"] }
+clap = { version = "3.2.6", features = ["cargo", "derive", "unicode"] }
 crossbeam-queue = "0.3.5"
 crossterm = "0.23.2"
 dirs = "4.0.0"
@@ -30,7 +30,7 @@ default-features = false
 features = ["crossterm", "serde"]
 
 [build-dependencies]
-clap = { version = "3.1.18", features = ["derive"] }
+clap = { version = "3.2.6", features = ["derive"] }
 clap_complete = "3.2.2"
 
 [profile.release]

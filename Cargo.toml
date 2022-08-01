@@ -12,7 +12,7 @@ keywords = ["cli", "mpd", "music", "terminal", "tui"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-anyhow = "1.0.58"
+anyhow = "1.0.59"
 async-io = "1.7.0"
 async-net = "1.6.1"
 clap = { version = "3.2.16", features = ["cargo", "derive", "unicode"] }

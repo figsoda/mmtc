@@ -201,7 +201,9 @@ async fn run() -> Result<()> {
                     t3.unpark();
                     continue;
                 }
-                Event::Key(KeyEvent { code, modifiers }) => match code {
+                Event::Key(KeyEvent {
+                    code, modifiers, ..
+                }) => match code {
                     KeyCode::Char('q') if modifiers.contains(KeyModifiers::CONTROL) => {
                         Command::Quit
                     }

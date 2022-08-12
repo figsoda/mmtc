@@ -13,7 +13,7 @@ pub struct Client {
     w: WriteHalf<TcpStream>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum PlayerState {
     Play,
     Pause,

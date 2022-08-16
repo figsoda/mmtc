@@ -21,7 +21,7 @@ crossterm = "0.25.0"
 dirs = "4.0.0"
 expand = "0.2.0"
 futures-lite = "1.12.0"
-ron = "0.7.1"
+ron = "0.8.0"
 serde = { version = "1.0.143", features = ["derive"] }
 
 [dependencies.tui]

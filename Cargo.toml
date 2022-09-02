@@ -13,7 +13,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.63"
-async-io = "1.8.0"
+async-io = "1.9.0"
 async-net = "1.7.0"
 clap = { version = "3.2.20", features = ["cargo", "derive", "unicode"] }
 crossbeam-queue = "0.3.6"

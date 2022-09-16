@@ -44,7 +44,7 @@ jobs:
           rustup toolchain install nightly --profile minimal -t ${{ matrix.target }}
           cargo +nightly build --release --target ${{ matrix.target }}
         env:
-          RUSTFLAGS: -Z strip=symbols
+          RUSTFLAGS: -C strip=symbols
 
       - name: Upload asset
         uses: svenstaro/upload-release-action@v2

@@ -503,7 +503,7 @@ fn eval_cond(cond: &Condition, s: &ConditionState) -> bool {
         Condition::Repeat => s.status.repeat,
         Condition::Random => s.status.random,
         Condition::Single => s.status.single == Some(true),
-        Condition::Oneshot => s.status.single == None,
+        Condition::Oneshot => s.status.single.is_none(),
         Condition::Consume => s.status.consume,
         Condition::Playing => s.status.state == PlayerState::Play,
         Condition::Paused => s.status.state == PlayerState::Pause,

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.15 - 2022-09-29
+
+### Internal
+- Switch to Rust 2021 edition
+- Update dependencies
+
+
 ## v0.2.14 - 2021-11-08
 
 ### Features

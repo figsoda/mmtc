@@ -6,45 +6,41 @@ use std::path::PathBuf;
 ///
 /// Homepage: https://github.com/figsoda/mmtc
 #[derive(Parser)]
-#[clap(version)]
+#[command(version)]
 pub struct Opts {
     /// Clear query on play
-    #[clap(long, multiple_occurrences = true)]
+    #[arg(long)]
     pub clear_query_on_play: bool,
 
     /// Cycle through the queue
-    #[clap(long, multiple_occurrences = true)]
+    #[arg(long)]
     pub cycle: bool,
 
     /// Don't clear query on play
-    #[clap(
-        long,
-        multiple_occurrences = true,
-        overrides_with = "clear-query-on-play"
-    )]
+    #[arg(long, overrides_with = "clear_query_on_play")]
     pub no_clear_query_on_play: bool,
 
     /// Don't cycle through the queue
-    #[clap(long, multiple_occurrences = true, overrides_with = "cycle")]
+    #[arg(long, overrides_with = "cycle")]
     pub no_cycle: bool,
 
     /// Specify the address of the mpd server
-    #[clap(long, value_name = "address")]
+    #[arg(long, value_name = "address")]
     pub address: Option<String>,
 
     /// Specify the config file
-    #[clap(short, long, value_name = "file")]
+    #[arg(short, long, value_name = "file")]
     pub config: Option<PathBuf>,
 
     /// The number of lines to jump
-    #[clap(long, value_name = "number")]
+    #[arg(long, value_name = "number")]
     pub jump_lines: Option<usize>,
 
     /// The time to seek in seconds
-    #[clap(long, value_name = "number")]
+    #[arg(long, value_name = "number")]
     pub seek_secs: Option<f32>,
 
     /// The amount of status updates per second
-    #[clap(long, value_name = "number")]
+    #[arg(long, value_name = "number")]
     pub ups: Option<f32>,
 }

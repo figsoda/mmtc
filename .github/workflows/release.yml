@@ -54,8 +54,8 @@ jobs:
           file: target/${{ matrix.target }}/release/mmtc${{ matrix.ext }}
           asset_name: mmtc-${{ matrix.target }}${{ matrix.ext }}
 
-  completions:
-    name: completions
+  artifacts:
+    name: artifacts
     needs: create_release
     runs-on: ubuntu-latest
 
@@ -68,19 +68,17 @@ jobs:
           rustup toolchain install nightly --profile minimal
           cargo +nightly build
         env:
-          GEN_COMPLETIONS: 1
+          GEN_ARTIFACTS: artifacts
 
-      - name: Find generated completions
+      - name: Rename generated artifacts
         run: |
-          outputs=(target/debug/build/mmtc-*/out/completions)
-          cp -r "${outputs[0]}" completions
-          mv completions/{_,}mmtc.ps1
-          mv completions/{_mmtc,mmtc.zsh}
+          mv artifacts/{_,}mmtc.ps1
+          mv artifacts/{_mmtc,mmtc.zsh}
 
-      - name: Upload completions
+      - name: Upload artifacts
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ github.token }}
           tag: ${{ github.ref }}
-          file: completions/*
+          file: artifacts/*
           file_glob: true

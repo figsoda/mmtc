@@ -109,7 +109,7 @@ variant | struct, tuple or unit | fields | description
 `SlowBlink` | unit | | slow blink
 `NoSlowBlink` | unit | | remove slow blink
 `RapidBlink` | unit | | rapid blink
-`NoRapidBlink` | unit | | remvoe slow blink
+`NoRapidBlink` | unit | | remove slow blink
 `Reversed` | unit | | reversed
 `NoReversed` | unit | | remove reversed
 `Hidden` | unit | | hidden

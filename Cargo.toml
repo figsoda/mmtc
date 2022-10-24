@@ -19,7 +19,7 @@ clap = { version = "4.0.18", features = ["cargo", "derive", "unicode"] }
 crossbeam-queue = "0.3.6"
 crossterm = "0.25.0"
 dirs = "4.0.0"
-expand = "0.2.0"
+expand = "0.2.1"
 futures-lite = "1.12.0"
 ron = "0.8.0"
 serde = { version = "1.0.147", features = ["derive"] }

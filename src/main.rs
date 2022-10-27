@@ -94,10 +94,16 @@ async fn run() -> Result<()> {
         resolve(cfg.address).await?
     };
 
-    let mut idle_cl = Client::init(addr).await?;
     let mut cl = Client::init(addr).await?;
+    if let Some(cmd) = opts.cmd {
+        for cmd in cmd {
+            cl.command((cmd + "\n").as_bytes()).await?;
+        }
+        exit(0); // skip cleanup
+    }
 
     let status = cl.status().await?;
+    let mut idle_cl = Client::init(addr).await?;
     let (queue, mut queue_strings) = idle_cl.queue(status.queue_len, &cfg.search_fields).await?;
     let mut s = State {
         selected: 0,

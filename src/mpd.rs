@@ -274,6 +274,7 @@ impl Client {
 
     pub async fn command(&mut self, cmd: &[u8]) -> Result<()> {
         self.w.write_all(cmd).await?;
+        self.w.write_all(&[b'\n']).await?;
         let mut lines = (&mut self.r).lines();
 
         while let Some(line) = lines.next().await {

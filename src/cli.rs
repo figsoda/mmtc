@@ -16,7 +16,7 @@ pub struct Opts {
     ///
     /// See https://mpd.readthedocs.io/en/latest/protocol.html for more information
     #[arg(short = 'C', long, num_args = ..)]
-    pub cmd: Option<Vec<String>>,
+    pub cmd: Option<Vec<Vec<u8>>>,
 
     /// Cycle through the queue
     #[arg(long)]

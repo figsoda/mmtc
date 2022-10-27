@@ -97,7 +97,7 @@ async fn run() -> Result<()> {
     let mut cl = Client::init(addr).await?;
     if let Some(cmd) = opts.cmd {
         for cmd in cmd {
-            cl.command((cmd + "\n").as_bytes()).await?;
+            cl.command(&cmd).await?;
         }
         exit(0); // skip cleanup
     }
@@ -139,9 +139,9 @@ async fn run() -> Result<()> {
     let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
     let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
 
-    let seek_backwards = format!("seekcur -{seek_secs}\n");
+    let seek_backwards = format!("seekcur -{seek_secs}");
     let seek_backwards = seek_backwards.as_bytes();
-    let seek_forwards = format!("seekcur +{seek_secs}\n");
+    let seek_forwards = format!("seekcur +{seek_secs}");
     let seek_forwards = seek_forwards.as_bytes();
     let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 
@@ -278,9 +278,9 @@ async fn run() -> Result<()> {
                 Command::Quit => return Ok(()),
                 Command::ToggleRepeat => {
                     cl.command(if s.status.repeat {
-                        b"repeat 0\n"
+                        b"repeat 0"
                     } else {
-                        b"repeat 1\n"
+                        b"repeat 1"
                     })
                     .await
                     .context("Failed to toggle repeat")?;
@@ -288,9 +288,9 @@ async fn run() -> Result<()> {
                 }
                 Command::ToggleRandom => {
                     cl.command(if s.status.random {
-                        b"random 0\n"
+                        b"random 0"
                     } else {
-                        b"random 1\n"
+                        b"random 1"
                     })
                     .await
                     .context("Failed to toggle random")?;
@@ -298,29 +298,25 @@ async fn run() -> Result<()> {
                 }
                 Command::ToggleSingle => {
                     cl.command(if s.status.single == Some(true) {
-                        b"single 0\n"
+                        b"single 0"
                     } else {
-                        b"single 1\n"
+                        b"single 1"
                     })
                     .await
                     .context("Failed to toggle single")?;
                     0b101
                 }
                 Command::ToggleOneshot => {
-                    cl.command(
-                        s.status
-                            .single
-                            .map_or(b"single 0\n", |_| b"single oneshot\n"),
-                    )
-                    .await
-                    .context("Failed to toggle oneshot")?;
+                    cl.command(s.status.single.map_or(b"single 0", |_| b"single oneshot"))
+                        .await
+                        .context("Failed to toggle oneshot")?;
                     0b101
                 }
                 Command::ToggleConsume => {
                     cl.command(if s.status.consume {
-                        b"consume 0\n"
+                        b"consume 0"
                     } else {
-                        b"consume 1\n"
+                        b"consume 1"
                     })
                     .await
                     .context("Failed to toggle consume")?;
@@ -328,8 +324,8 @@ async fn run() -> Result<()> {
                 }
                 Command::TogglePause => {
                     cl.command(match s.status.state {
-                        PlayerState::Play => b"pause\n",
-                        PlayerState::Pause => b"play\n",
+                        PlayerState::Play => b"pause",
+                        PlayerState::Pause => b"play",
                         _ => continue,
                     })
                     .await
@@ -337,7 +333,7 @@ async fn run() -> Result<()> {
                     0b101
                 }
                 Command::Stop => {
-                    cl.command(b"stop\n")
+                    cl.command(b"stop")
                         .await
                         .context("Failed to stop playing")?;
                     0b101
@@ -355,13 +351,13 @@ async fn run() -> Result<()> {
                     0b101
                 }
                 Command::Previous => {
-                    cl.command(b"previous\n")
+                    cl.command(b"previous")
                         .await
                         .context("Failed to play previous song")?;
                     0b101
                 }
                 Command::Next => {
-                    cl.command(b"next\n")
+                    cl.command(b"next")
                         .await
                         .context("Failed to play next song")?;
                     0b101

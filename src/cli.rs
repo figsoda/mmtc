@@ -3,19 +3,22 @@ use clap::Parser;
 use std::path::PathBuf;
 
 /// Minimal mpd terminal client that aims to be simple yet highly configurable
-///
-/// Homepage: https://github.com/figsoda/mmtc
+/// https://github.com/figsoda/mmtc
 #[derive(Parser)]
-#[command(version)]
+#[command(version, verbatim_doc_comment)]
 pub struct Opts {
     /// Clear query on play
     #[arg(long)]
     pub clear_query_on_play: bool,
 
-    /// Run mpd commands and quit
+    /// Run mpd commands and exit
+    ///
+    /// For example:
+    /// `mmtc -C next pause` will switch to the next song then toggle pause
+    /// `mmtc -C status` will show the current status of mpd
     ///
     /// See https://mpd.readthedocs.io/en/latest/protocol.html for more information
-    #[arg(short = 'C', long, num_args = ..)]
+    #[arg(short = 'C', long, num_args = .., verbatim_doc_comment)]
     pub cmd: Option<Vec<Vec<u8>>>,
 
     /// Cycle through the queue

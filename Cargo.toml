@@ -15,7 +15,6 @@ categories = ["command-line-utilities"]
 anyhow = "1.0.66"
 async-io = "1.9.0"
 async-net = "1.7.0"
-clap = { version = "4.0.18", features = ["cargo", "derive", "unicode"] }
 crossbeam-queue = "0.3.6"
 crossterm = "0.25.0"
 dirs = "4.0.0"
@@ -23,6 +22,10 @@ expand = "0.2.1"
 futures-lite = "1.12.0"
 ron = "0.8.0"
 serde = { version = "1.0.147", features = ["derive"] }
+
+[dependencies.clap]
+version = "4.0.18"
+features = ["cargo", "derive", "unicode", "wrap_help"]
 
 [dependencies.tui]
 version = "0.19.0"

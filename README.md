@@ -39,26 +39,23 @@ cargo build --release
 
 ## Usage
 
-```sh
-mmtc [FLAGS] [OPTIONS]
 ```
+Usage: mmtc [OPTIONS]
 
-flag | description
--|-
---clear-query-on-play | Clear query on play
---cycle | Cycle through the queue
--h, --help | Prints help information
---no-clear-query-on-play | Don't clear query on play
---no-cycle | Don't cycle through the queue
--V, --version | Prints version information
-
-option | description
--|-
---address \<address> | Specify the address of the mpd server
--c, --config \<file> | Specify the config file
---jump-lines \<number> | The number of lines to jump
---seek-secs \<number> | The time to seek in seconds
---ups \<number> | The amount of status updates per second
+Options:
+      --clear-query-on-play     Clear query on play
+  -C, --cmd [<CMD>...]          Run mpd commands and exit
+      --cycle                   Cycle through the queue
+      --no-clear-query-on-play  Don't clear query on play
+      --no-cycle                Don't cycle through the queue
+      --address <address>       Specify the address of the mpd server
+  -c, --config <file>           Specify the config file
+      --jump-lines <number>     The number of lines to jump
+      --seek-secs <number>      The time to seek in seconds
+      --ups <number>            The amount of status updates per second
+  -h, --help                    Print help information (use `--help` for more detail)
+  -V, --version                 Print version information
+```
 
 
 ## Environment variables

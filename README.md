@@ -1,4 +1,4 @@
-# mmtc
+## mmtc
 
 [![release](https://img.shields.io/github/v/release/figsoda/mmtc?logo=github&style=flat-square)](https://github.com/figsoda/mmtc/releases)
 [![version](https://img.shields.io/crates/v/mmtc?logo=rust&style=flat-square)][crate]

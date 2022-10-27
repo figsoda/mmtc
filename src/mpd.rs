@@ -6,6 +6,8 @@ use futures_lite::{
     StreamExt,
 };
 
+use std::io::{stdout, Write};
+
 use crate::config::SearchFields;
 
 pub struct Client {
@@ -274,11 +276,33 @@ impl Client {
 
     pub async fn command(&mut self, cmd: &[u8]) -> Result<()> {
         self.w.write_all(cmd).await?;
-        self.w.write_all(&[b'\n']).await?;
+        self.w.write_all(b"\n").await?;
         let mut lines = (&mut self.r).lines();
 
         while let Some(line) = lines.next().await {
             match line?.as_bytes() {
+                b"OK" | expand!([@b"ACK ", ..]) => break,
+                _ => continue,
+            }
+        }
+
+        Ok(())
+    }
+
+    pub async fn command_stdout(&mut self, cmd: &[u8]) -> Result<()> {
+        self.w.write_all(cmd).await?;
+        self.w.write_all(b"\n").await?;
+
+        let mut stdout = stdout().lock();
+        let mut lines = (&mut self.r).lines();
+
+        while let Some(line) = lines.next().await {
+            let line = line?;
+            let line = line.as_bytes();
+
+            stdout.write_all(line)?;
+            stdout.write_all(b"\n")?;
+            match line {
                 b"OK" | expand!([@b"ACK ", ..]) => break,
                 _ => continue,
             }

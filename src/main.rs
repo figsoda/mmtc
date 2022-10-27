@@ -97,7 +97,7 @@ async fn run() -> Result<()> {
     let mut cl = Client::init(addr).await?;
     if let Some(cmd) = opts.cmd {
         for cmd in cmd {
-            cl.command(&cmd).await?;
+            cl.command_stdout(&cmd).await?;
         }
         exit(0); // skip cleanup
     }

@@ -4,7 +4,6 @@ mod app;
 mod cli;
 mod config;
 mod defaults;
-mod fail;
 mod layout;
 mod mpd;
 
@@ -69,16 +68,18 @@ async fn run() -> Result<()> {
     let opts = Opts::parse();
 
     let cfg = if let Some(file) = opts.config {
-        ron::de::from_bytes(&fs::read(&file).with_context(fail::read(file.display()))?)
-            .with_context(fail::parse_cfg(file.display()))?
+        ron::de::from_bytes(
+            &fs::read(&file).with_context(|| format!("Failed to read file {}", file.display()))?,
+        )
+        .with_context(|| format!("Failed to parse configuration file {}", file.display()))?
     } else if let Some(xs) = config_dir() {
-        let mut xs = xs;
-        xs.push("mmtc");
-        xs.push("mmtc.ron");
+        let xs = xs.join("mmtc").join("mmtc.ron");
 
         if xs.is_file() {
-            ron::de::from_bytes(&fs::read(&xs).with_context(fail::read(xs.display()))?)
-                .with_context(fail::parse_cfg(xs.display()))?
+            ron::de::from_bytes(
+                &fs::read(&xs).with_context(|| format!("Failed to read file {}", xs.display()))?,
+            )
+            .with_context(|| format!("Failed to parse configuration file {}", xs.display()))?
         } else {
             defaults::config()
         }
@@ -505,9 +506,7 @@ async fn run() -> Result<()> {
 
         // conditionally update queue
         if updates & 0b010 == 0b010 {
-            let queue = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
-            s.queue = queue.0;
-            queue_strings = queue.1;
+            (s.queue, queue_strings) = cl.queue(s.status.queue_len, &cfg.search_fields).await?;
             s.liststate.select(None);
             s.reselect();
             if !s.query.is_empty() {

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.0 - 2022-10-27
+
+### Features
+- Add `--cmd` flag for running arbitrary mpd commands
+- Man page
+
+
 ## v0.2.15 - 2022-09-29
 
 ### Internal

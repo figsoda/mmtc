@@ -60,7 +60,7 @@ fn cleanup() -> Result<()> {
 fn main() {
     let res = block_on(run());
     if let Err(e) = cleanup().and(res) {
-        eprintln!("{:?}", e);
+        eprintln!("{e:?}");
         exit(1);
     }
 }
@@ -133,9 +133,9 @@ async fn run() -> Result<()> {
     let jump_lines = opts.jump_lines.unwrap_or(cfg.jump_lines);
     let seek_secs = opts.seek_secs.unwrap_or(cfg.seek_secs);
 
-    let seek_backwards = format!("seekcur -{}\n", seek_secs);
+    let seek_backwards = format!("seekcur -{seek_secs}\n");
     let seek_backwards = seek_backwards.as_bytes();
-    let seek_forwards = format!("seekcur +{}\n", seek_secs);
+    let seek_forwards = format!("seekcur +{seek_secs}\n");
     let seek_forwards = seek_forwards.as_bytes();
     let update_interval = Duration::from_secs_f32(1.0 / opts.ups.unwrap_or(cfg.ups));
 

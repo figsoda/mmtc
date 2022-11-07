@@ -44,24 +44,37 @@ use crate::{
     mpd::{Client, PlayerState},
 };
 
-fn cleanup() -> Result<()> {
+fn cleanup() {
     let mut stdout = stdout();
-    stdout
+
+    if let Err(e) = stdout
         .execute(LeaveAlternateScreen)
-        .context("Failed to leave alternate screen")?;
-    stdout
+        .context("Failed to leave alternate screen")
+    {
+        eprintln!("{e:?}");
+    }
+
+    if let Err(e) = stdout
         .execute(DisableMouseCapture)
-        .context("Failed to disable mouse capture")?;
-    disable_raw_mode().context("Failed to disable raw mode")?;
-    Ok(())
+        .context("Failed to disable mouse capture")
+    {
+        eprintln!("{e:?}");
+    }
+
+    if let Err(e) = disable_raw_mode().context("Failed to disable raw mode") {
+        eprintln!("{e:?}");
+    }
 }
 
-fn main() {
-    let res = block_on(run());
-    if let Err(e) = cleanup().and(res) {
-        eprintln!("{e:?}");
-        exit(1);
+struct Cleanup;
+impl Drop for Cleanup {
+    fn drop(&mut self) {
+        cleanup();
     }
+}
+
+fn main() -> Result<()> {
+    block_on(run())
 }
 
 async fn run() -> Result<()> {
@@ -100,7 +113,7 @@ async fn run() -> Result<()> {
         for cmd in cmd {
             cl.command_stdout(&cmd).await?;
         }
-        exit(0); // skip cleanup
+        return Ok(());
     }
 
     let status = cl.status().await?;
@@ -125,6 +138,7 @@ async fn run() -> Result<()> {
     stdout
         .execute(EnterAlternateScreen)
         .context("Failed to enter alternate screen")?;
+    let __ = Cleanup;
     let mut term =
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 
@@ -169,7 +183,7 @@ async fn run() -> Result<()> {
                         Ok((false, true)) => 0b011,
                         Ok(_) => continue,
                         Err(e) => {
-                            eprintln!("{:?}", cleanup().map_or_else(|x| x, |_| e));
+                            eprintln!("{e:?}");
                             exit(1);
                         }
                     },

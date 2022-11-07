@@ -138,7 +138,7 @@ async fn run() -> Result<()> {
     stdout
         .execute(EnterAlternateScreen)
         .context("Failed to enter alternate screen")?;
-    let __ = Cleanup;
+    let _cleanup = Cleanup;
     let mut term =
         Terminal::new(CrosstermBackend::new(stdout)).context("Failed to initialize terminal")?;
 

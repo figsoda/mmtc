@@ -175,5 +175,5 @@ Type: struct
 field | type | description | default
 -|-|-|-
 `item` | [`Constrained`](#Constrained) [`Texts`](#Texts) | `Queue` [`Widget`](#Widget) creates an `item` for each track in your queue for each column | mandatory, no default value
-`style` | list of [`Style`s](Style) | style of the item when not selected | `[]`
-`selected_style` | list of [`Style`s](Style) | style of the item when selected | `[]`
+`style` | list of [`Style`s](#Style) | style of the item when not selected | `[]`
+`selected_style` | list of [`Style`s](#Style) | style of the item when selected | `[]`

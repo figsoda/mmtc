@@ -21,7 +21,7 @@ dirs = "4.0.0"
 expand = "0.2.1"
 futures-lite = "1.12.0"
 ron = "0.8.0"
-serde = { version = "1.0.147", features = ["derive"] }
+serde = { version = "1.0.148", features = ["derive"] }
 
 [dependencies.clap]
 version = "4.0.27"

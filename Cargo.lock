@@ -14,20 +14,20 @@ version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e14485364214912d3b19cc3435dde4df66065127f05fa0d75c712f36f12c2f28"
 dependencies = [
- "concurrent-queue",
+ "concurrent-queue 1.2.4",
  "event-listener",
  "futures-core",
 ]
 
 [[package]]
 name = "async-io"
-version = "1.10.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8121296a9f05be7f34aa4196b1747243b3b62e048bb7906f644f3fbfc490cf7"
+checksum = "8c374dda1ed3e7d8f0d9ba58715f924862c63eae6849c92d3a18e7fbde9e2794"
 dependencies = [
  "async-lock",
  "autocfg",
- "concurrent-queue",
+ "concurrent-queue 2.0.0",
  "futures-lite",
  "libc",
  "log",
@@ -36,7 +36,7 @@ dependencies = [
  "slab",
  "socket2",
  "waker-fn",
- "winapi",
+ "windows-sys 0.42.0",
 ]
 
 [[package]]
@@ -195,6 +195,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af4780a44ab5696ea9e28294517f1fffb421a83a25af521333c838635509db9c"
 dependencies = [
  "cache-padded",
+]
+
+[[package]]
+name = "concurrent-queue"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd7bef69dc86e3c610e4e7aed41035e2a7ed12e72dd7530f61327a6579a4390b"
+dependencies = [
+ "crossbeam-utils",
 ]
 
 [[package]]

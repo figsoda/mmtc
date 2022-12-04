@@ -178,13 +178,13 @@ impl Client {
                 }
             }
 
-            if let (Some(file), Some(time)) = (file, time) {
+            if let Some(file) = file {
                 let track = Track {
                     file,
                     artist,
                     album,
                     title,
-                    time,
+                    time: time.unwrap_or_default(),
                 };
                 track_strings.push(track_string(&track, search_fields));
                 tracks.push(track);

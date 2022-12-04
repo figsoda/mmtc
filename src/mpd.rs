@@ -134,11 +134,11 @@ impl Client {
             let mut tracks = Vec::with_capacity(len);
             let mut track_strings = Vec::with_capacity(len);
 
-            let mut file: Option<String> = None;
-            let mut artist: Option<String> = None;
-            let mut album: Option<String> = None;
-            let mut title: Option<String> = None;
-            let mut time = None;
+            let mut file = None;
+            let mut artist = None;
+            let mut album = None;
+            let mut title = None;
+            let mut time = 0;
 
             self.w.write_all(b"playlistinfo\n").await?;
             let mut lines = (&mut self.r).lines();
@@ -150,7 +150,7 @@ impl Client {
                     expand!([@b"file: ", ..]) => {
                         if first {
                             first = false;
-                        } else if let (Some(file), Some(time)) = (file, time) {
+                        } else if let Some(file) = file {
                             let track = Track {
                                 file,
                                 artist,
@@ -168,12 +168,12 @@ impl Client {
                         artist = None;
                         album = None;
                         title = None;
-                        time = None;
+                        time = 0;
                     }
                     expand!([@b"Artist: ", ..]) => artist = Some(line[8 ..].into()),
                     expand!([@b"Album: ", ..]) => album = Some(line[7 ..].into()),
                     expand!([@b"Title: ", ..]) => title = Some(line[7 ..].into()),
-                    expand!([@b"Time: ", ..]) => time = Some(line[6 ..].parse()?),
+                    expand!([@b"Time: ", ..]) => time = line[6 ..].parse()?,
                     _ => continue,
                 }
             }
@@ -184,7 +184,7 @@ impl Client {
                     artist,
                     album,
                     title,
-                    time: time.unwrap_or_default(),
+                    time,
                 };
                 track_strings.push(track_string(&track, search_fields));
                 tracks.push(track);

@@ -119,6 +119,7 @@ pub enum Condition {
     TitleExist,
     ArtistExist,
     AlbumExist,
+    QueueTitleExist,
     QueueCurrent,
     Selected,
     Searching,

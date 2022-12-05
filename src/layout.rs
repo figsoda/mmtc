@@ -28,6 +28,7 @@ struct FlattenState<'a, 'b> {
 struct ConditionState<'a> {
     status: &'a Status,
     current_track: Option<&'a Track>,
+    queue_track: Option<&'a Track>,
     queue_current: bool,
     selected: bool,
     searching: bool,
@@ -343,7 +344,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '
             }
         }
         Texts::QueueFile => {
-            if let Some(Track { file, .. }) = s.current_track {
+            if let Some(Track { file, .. }) = s.queue_track {
                 spans.push(Span::styled(file, *s.style));
             }
         }
@@ -398,6 +399,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '
                     &ConditionState {
                         status: s.status,
                         current_track: s.current_track,
+                        queue_track: s.queue_track,
                         queue_current: s.queue_current,
                         selected: s.selected,
                         searching: s.searching,
@@ -417,6 +419,7 @@ fn _flatten<'a>(spans: &mut Vec<Span<'a>>, xs: &'a Texts, s: &FlattenState<'a, '
                 &ConditionState {
                     status: s.status,
                     current_track: s.current_track,
+                    queue_track: s.queue_track,
                     queue_current: s.queue_current,
                     selected: s.selected,
                     searching: s.searching,
@@ -517,6 +520,7 @@ fn eval_cond(cond: &Condition, s: &ConditionState) -> bool {
             })
         ),
         Condition::AlbumExist => matches!(s.current_track, Some(Track { album: Some(_), .. })),
+        Condition::QueueTitleExist => matches!(s.queue_track, Some(Track { title: Some(_), .. })),
         Condition::QueueCurrent => s.queue_current,
         Condition::Selected => s.selected,
         Condition::Searching => s.searching,

@@ -87,9 +87,17 @@ pub fn layout() -> Widget {
                             Condition::QueueCurrent,
                             Box::new(Texts::Styled(
                                 vec![AddStyle::Italic],
-                                Box::new(Texts::QueueTitle),
+                                Box::new(Texts::If(
+                                    Condition::QueueTitleExist,
+                                    Box::new(Texts::QueueTitle),
+                                    Some(Box::new(Texts::QueueFile)),
+                                )),
                             )),
-                            Some(Box::new(Texts::QueueTitle)),
+                            Some(Box::new(Texts::If(
+                                Condition::QueueTitleExist,
+                                Box::new(Texts::QueueTitle),
+                                Some(Box::new(Texts::QueueFile)),
+                            ))),
                         ),
                     ),
                     style: vec![AddStyle::Fg(Color::Indexed(75))],

@@ -21,8 +21,8 @@ Config(
         Min(0, Queue([
             Column(
                 item: Ratio(12, If(QueueCurrent,
-                    Styled([Italic], QueueTitle),
-                    QueueTitle,
+                    Styled([Italic], If(QueueTitleExist, QueueTitle, QueueFile)),
+                    If(QueueTitleExist, QueueTitle, QueueFile),
                 )),
                 style: [Fg(Indexed(75))],
                 selected_style: [Fg(Black), Bg(Indexed(75)), Bold],

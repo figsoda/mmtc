@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.3.1 - 2022-12-05
+
+### Features
+- New condition - `QueueTitleExist` to check whether the queue entry has a title
+
+### Fixes
+- Crash when playlist file contains and url ([#167](https://github.com/figsoda/mmtc/issues/167))
+- `QueueFile` now displays the file name correctly
+
+
 ## v0.3.0 - 2022-10-27
 
 ### Features

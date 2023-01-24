@@ -34,7 +34,7 @@ features = ["crossterm", "serde"]
 
 [build-dependencies]
 clap = { version = "4.1.1", features = ["derive"] }
-clap_complete = "4.1.0"
+clap_complete = "4.1.1"
 clap_mangen = "0.2.7"
 
 [profile.release]

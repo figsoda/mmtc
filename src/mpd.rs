@@ -5,6 +5,7 @@ use futures_lite::{
     io::{split, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader, ReadHalf, WriteHalf},
     StreamExt,
 };
+use secular::lower_lay_string;
 
 use std::io::{stdout, Write};
 
@@ -52,27 +53,27 @@ fn track_string(track: &Track, search_fields: &SearchFields) -> String {
     let mut track_string = String::with_capacity(64);
 
     if search_fields.file {
-        track_string.push_str(&track.file.to_lowercase());
+        track_string.push_str(&lower_lay_string(&track.file));
         track_string.push('\n');
     }
 
     if search_fields.title {
         if let Some(title) = &track.title {
-            track_string.push_str(&title.to_lowercase());
+            track_string.push_str(&lower_lay_string(title));
             track_string.push('\n');
         }
     }
 
     if search_fields.artist {
         if let Some(artist) = &track.artist {
-            track_string.push_str(&artist.to_lowercase());
+            track_string.push_str(&lower_lay_string(artist));
             track_string.push('\n');
         }
     }
 
     if search_fields.album {
         if let Some(album) = &track.album {
-            track_string.push_str(&album.to_lowercase());
+            track_string.push_str(&lower_lay_string(album));
         }
     }
 

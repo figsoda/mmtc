@@ -1,3 +1,4 @@
+use secular::lower_lay_string;
 use tui::widgets::ListState;
 
 use crate::mpd::{Status, Track};
@@ -60,7 +61,7 @@ impl State {
     }
 
     pub fn update_search(&mut self, queue_strings: &[String]) {
-        let query = self.query.to_lowercase();
+        let query = lower_lay_string(&self.query);
         self.filtered.clear();
         for (i, track) in queue_strings.iter().enumerate() {
             if track.contains(&query) {

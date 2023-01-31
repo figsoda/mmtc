@@ -22,6 +22,7 @@ use crossterm::{
 };
 use dirs::config_dir;
 use futures_lite::StreamExt;
+use secular::lower_lay_string;
 use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
@@ -472,7 +473,7 @@ async fn run() -> Result<()> {
                     if empty {
                         s.update_search(&queue_strings);
                     } else {
-                        let query = s.query.to_lowercase();
+                        let query = lower_lay_string(&s.query);
                         s.filtered.retain(|&i| queue_strings[i].contains(&query));
                     }
                     0b001

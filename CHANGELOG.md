@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.2 - 2022-02-15
+
+### Changes
+- Ignore diacritics when searching
+
+### Fixes
+- Fix CI badge
+
+
 ## v0.3.1 - 2022-12-05
 
 ### Features

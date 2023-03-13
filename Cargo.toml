@@ -22,7 +22,7 @@ expand = "0.2.1"
 futures-lite = "1.12.0"
 ron = "0.8.0"
 secular = { version = "1.0.1", features = ["normalization"] }
-serde = { version = "1.0.154", features = ["derive"] }
+serde = { version = "1.0.155", features = ["derive"] }
 
 [dependencies.clap]
 version = "4.1.8"

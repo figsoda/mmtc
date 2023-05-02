@@ -22,8 +22,8 @@ use crossterm::{
 };
 use dirs::config_dir;
 use futures_lite::StreamExt;
+use ratatui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 use secular::lower_lay_string;
-use tui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 
 use std::{
     cmp::min,

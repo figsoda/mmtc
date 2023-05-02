@@ -1,4 +1,4 @@
-use tui::style::Color;
+use ratatui::style::Color;
 
 use crate::config::{
     AddStyle, Column, Condition, Config, Constrained, SearchFields, Texts, Widget,

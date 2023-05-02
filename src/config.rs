@@ -1,8 +1,8 @@
+use ratatui::style::Color;
 use serde::{
     de::{self, EnumAccess, SeqAccess, VariantAccess, Visitor},
     Deserialize, Deserializer,
 };
-use tui::style::Color;
 
 use std::fmt::{self, Formatter};
 

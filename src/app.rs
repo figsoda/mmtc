@@ -1,5 +1,5 @@
+use ratatui::widgets::ListState;
 use secular::lower_lay_string;
-use tui::widgets::ListState;
 
 use crate::mpd::{Status, Track};
 

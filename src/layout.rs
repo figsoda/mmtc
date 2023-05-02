@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use tui::{
+use ratatui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
@@ -74,11 +74,12 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
                 .direction(Direction::Vertical)
                 .constraints(cs);
 
-            let mut chunks = layout.split(size).into_iter();
+            let chunks = layout.split(size);
+            let mut chunks = chunks.iter();
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                _render(frame, chunk, w, s);
+                _render(frame, *chunk, w, s);
             }
         }
         Widget::Columns(xs) => {
@@ -109,11 +110,12 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
                 .direction(Direction::Horizontal)
                 .constraints(cs);
 
-            let mut chunks = layout.split(size).into_iter();
+            let chunks = layout.split(size);
+            let mut chunks = chunks.iter();
             let mut ws = ws.into_iter();
 
             while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                _render(frame, chunk, w, s);
+                _render(frame, *chunk, w, s);
             }
         }
         Widget::Textbox(xs) => {
@@ -244,13 +246,14 @@ fn _render(frame: &mut Frame<impl Backend>, size: Rect, widget: &Widget, s: &mut
                 .direction(Direction::Horizontal)
                 .constraints(cs);
 
-            let mut chunks = layout.split(size).into_iter();
+            let chunks = layout.split(size);
+            let mut chunks = chunks.iter();
             let mut ws = ws.into_iter();
 
             if let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                frame.render_stateful_widget(w, chunk, &mut s.liststate);
+                frame.render_stateful_widget(w, *chunk, &mut s.liststate);
                 while let (Some(chunk), Some(w)) = (chunks.next(), ws.next()) {
-                    frame.render_stateful_widget(w, chunk, &mut s.liststate.clone());
+                    frame.render_stateful_widget(w, *chunk, &mut s.liststate.clone());
                 }
             }
         }

@@ -25,16 +25,16 @@ secular = { version = "1.0.1", features = ["normalization"] }
 serde = { version = "1.0.163", features = ["derive"] }
 
 [dependencies.clap]
-version = "4.1.11"
+version = "4.3.0"
 features = ["cargo", "derive", "unicode", "wrap_help"]
 
 [dependencies.ratatui]
-version = "0.20.1"
+version = "0.21.0"
 default-features = false
 features = ["crossterm", "serde"]
 
 [build-dependencies]
-clap = { version = "4.1.11", features = ["derive"] }
+clap = { version = "4.3.0", features = ["derive"] }
 clap_complete = "4.3.0"
 clap_mangen = "0.2.11"
 

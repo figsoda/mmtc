@@ -3,7 +3,7 @@ use ratatui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
-    text::{Span, Spans},
+    text::{Line, Span},
     widgets::{List, ListItem, Paragraph},
     Frame, Terminal,
 };
@@ -270,7 +270,7 @@ fn flatten<'a>(
     selected: bool,
     searching: bool,
     query: &'a str,
-) -> Spans<'a> {
+) -> Line<'a> {
     let mut spans = Vec::new();
     _flatten(
         &mut spans,

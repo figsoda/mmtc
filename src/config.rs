@@ -1,10 +1,10 @@
+use std::fmt::{self, Formatter};
+
 use ratatui::style::Color;
 use serde::{
     de::{self, EnumAccess, SeqAccess, VariantAccess, Visitor},
     Deserialize, Deserializer,
 };
-
-use std::fmt::{self, Formatter};
 
 use crate::defaults;
 

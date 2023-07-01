@@ -1,3 +1,5 @@
+use std::io::{stdout, Write};
+
 use anyhow::{bail, Context, Result};
 use async_net::{AsyncToSocketAddrs, TcpStream};
 use expand::expand;
@@ -6,8 +8,6 @@ use futures_lite::{
     StreamExt,
 };
 use secular::lower_lay_string;
-
-use std::io::{stdout, Write};
 
 use crate::config::SearchFields;
 

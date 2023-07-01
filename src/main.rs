@@ -7,6 +7,19 @@ mod defaults;
 mod layout;
 mod mpd;
 
+use std::{
+    cmp::min,
+    env, fs,
+    io::stdout,
+    process::exit,
+    sync::{
+        atomic::{AtomicU8, Ordering},
+        Arc,
+    },
+    thread::{self, Thread},
+    time::Duration,
+};
+
 use anyhow::{Context, Result};
 use async_io::{block_on, Timer};
 use async_net::resolve;
@@ -24,19 +37,6 @@ use dirs::config_dir;
 use futures_lite::StreamExt;
 use ratatui::{backend::CrosstermBackend, widgets::ListState, Terminal};
 use secular::lower_lay_string;
-
-use std::{
-    cmp::min,
-    env, fs,
-    io::stdout,
-    process::exit,
-    sync::{
-        atomic::{AtomicU8, Ordering},
-        Arc,
-    },
-    thread::{self, Thread},
-    time::Duration,
-};
 
 use crate::{
     app::{Command, State},

@@ -1,6 +1,6 @@
-use clap::Parser;
-
 use std::path::PathBuf;
+
+use clap::Parser;
 
 /// Minimal mpd terminal client that aims to be simple yet highly configurable
 /// https://github.com/figsoda/mmtc

@@ -89,9 +89,9 @@ dependencies = [
 
 [[package]]
 name = "async-io"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8557f564c11bb72e6e82e80c2cf2b9d8377e45919597bcabf1945f8bd1759916"
+checksum = "10da8f3146014722c89e7859e1d7bb97873125d7346d10ca642ffab794355828"
 dependencies = [
  "async-lock",
  "cfg-if",
@@ -556,7 +556,7 @@ name = "mmtc"
 version = "0.3.2"
 dependencies = [
  "anyhow",
- "async-io 2.0.0",
+ "async-io 2.1.0",
  "async-net",
  "clap",
  "clap_complete",

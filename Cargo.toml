@@ -13,7 +13,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.75"
-async-io = "2.2.0"
+async-io = "2.2.1"
 async-net = "2.0.0"
 crossbeam-queue = "0.3.8"
 crossterm = "0.27.0"

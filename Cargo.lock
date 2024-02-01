@@ -77,7 +77,7 @@ dependencies = [
  "cfg-if",
  "concurrent-queue",
  "futures-io",
- "futures-lite 2.1.0",
+ "futures-lite 2.2.0",
  "parking",
  "polling",
  "rustix",
@@ -114,7 +114,7 @@ checksum = "b948000fad4873c1c9339d60f2623323a0cfd3816e5181033c6a5cb68b2accf7"
 dependencies = [
  "async-io",
  "blocking",
- "futures-lite 2.1.0",
+ "futures-lite 2.2.0",
 ]
 
 [[package]]
@@ -438,9 +438,9 @@ dependencies = [
 
 [[package]]
 name = "futures-lite"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aeee267a1883f7ebef3700f262d2d54de95dfaf38189015a74fdc4e0c7ad8143"
+checksum = "445ba825b27408685aaecefd65178908c36c6e96aaf6d8599419d46e624192ba"
 dependencies = [
  "fastrand 2.0.1",
  "futures-core",
@@ -550,7 +550,7 @@ dependencies = [
  "crossterm",
  "dirs",
  "expand",
- "futures-lite 2.1.0",
+ "futures-lite 2.2.0",
  "ratatui",
  "ron",
  "secular",
